@@ -4,7 +4,9 @@
 var jwt = require('../services/jwt');
 var httpStatus = require('../services/http-status');
 var customError = require('../errors/errors');
-
+var Dias = require('../models/dias.model');
+var Delegate = require('../models/delegate.model');
+var Admin = require('../models/admin.model');
 
 exports.login = async (req, res, next) => {
     try {
@@ -12,13 +14,16 @@ exports.login = async (req, res, next) => {
 
         let reqUser = null;
         if (params.type == 'dias') {
-            
+            reqUser = await Dias.findOne({email: params.email, password: params.password}, 'name');
+        } else if (params.type == 'del') {
+            reqUser = await Delegate.findOne({email: params.email, password: params.password}, 'name');
+        } else if (params.type == 'admin') {
+            reqUser = await Admin.findOne({email: params.email, password: params.password}, 'name');
         }
 
-        let reqUser = await User.findOne({email: params.email, password: params.password});
         if (!reqUser) throw new customError.AuthenticationError("invalid username or password");
 
-        let token = jwt.signUser(reqUser._id, '1h');
+        let token = jwt.signUser(reqUser._id, params.type, '1d');
 
         res.json({
             statusCode: 200,
@@ -36,7 +41,16 @@ exports.changePassword = async (req, res, next) => {
     try {
         let params = req.body;
 
-        let reqUser = await User.findById(params._id, 'password');
+        let reqUser = null;
+
+        if (params.user.type == 'dias') {
+            reqUser = await Dias.findById(params.user._id, 'password');
+        } else if (params.type == 'del') {
+            reqUser = await Delegate.findById(params.user._id, 'password');
+        } else if (params.type == 'admin') {
+            reqUser = await Admin.findById(params.user._id, 'password');
+        }
+
         if (reqUser.password != params.oldPassword) throw new customError.AuthenticationError("invalid oldPassword");
 
         await reqUser.update({password: params.newPassword});

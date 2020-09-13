@@ -33,6 +33,10 @@ const committeeSchema = new Schema({
         type: String,
         required: true
     },
+    sessionStatus: {
+        type: Boolean,
+        required: true
+    },
     logs: [logSchema],
 }, {
     timestamps: true

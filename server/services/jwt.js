@@ -6,6 +6,7 @@ var config = require('../config/config').vars;
 var customError = require('../errors/errors');
 var Dias = require('../models/dias.model');
 var Delegate = require('../models/delegate.model');
+var Admin = require('../models/admin.model');
 
 exports.signUser = (id, type, expiry) => {
     return jwt.sign({_id: id, type: type}, config.key, {expiresIn: expiry});
@@ -36,7 +37,10 @@ exports.verfiyUser = async (req, res, next) => {
             reqUser = await Dias.findById(decodedObj._id);
         } else if (decodedObj.type == 'del') {
             reqUser = await Delegate.findById(decodedObj._id);
+        } else if (decodedObj.type == 'admin') {
+            reqUser = await Admin.findById(decodedObj._id);
         }
+        
         if (reqUser) {
             req.body.user = decodedObj;
         } else {
