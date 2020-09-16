@@ -1,0 +1,40 @@
+.parent {
+    background: white;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    height: 1;
+    grid-template-areas: 
+                        "a d"
+                        "b e"
+                        "c f";
+    }
+
+    .Information-Bar { 
+        grid-area: a; 
+        margin: 1vh;
+    }
+    .Notifications { 
+        grid-area: d; 
+        margin: 1vh;
+       
+    }
+    .Zoom { 
+        grid-area: b; 
+        margin: 1vh 0 0 0;
+    }
+    .Virtual-Aud { 
+        grid-area: e; 
+        margin: 1vh 0 0 0;
+    
+    }
+    .Buttons { 
+        grid-area: c; 
+        margin: 1vh 0 0 0;
+    }
+    .MessageBox { 
+        grid-area: f; 
+        margin: 1vh 0 0 0;
+    
+    }
