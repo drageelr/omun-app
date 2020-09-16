@@ -52,3 +52,5 @@ exports.verfiyUser = async (req, res, next) => {
         next(e);
     }
 }
+
+module.exports.decodeToken = decodeToken;

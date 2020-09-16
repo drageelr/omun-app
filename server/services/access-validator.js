@@ -20,7 +20,7 @@ exports.validateAccess = (req, res, next) => {
 
         if (userAccess) {
             for (let u of userAccess) {
-                if (a === req.body.user.type) {
+                if (u === req.body.user.type) {
                     accessGranted = true;
                     break;
                 }

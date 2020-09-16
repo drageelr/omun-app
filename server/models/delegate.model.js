@@ -37,8 +37,8 @@ const delegateSchema = new Schema({
         type: Boolean,
     },
     blockId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Block'
+        type: Number,
+        required: true
     }
 }, {
     timestamps: true

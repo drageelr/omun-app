@@ -9,7 +9,8 @@ var mongoose = require('./services/mongoose');
 var { errorHandler } = require('./errors/errorhandler');
 var accountRouter = require('./routes/account.route');
 var authRouter = require('./routes/auth.route');
-var sessionRouter;
+var sessionRouter = require('./routes/session.route');
+var { defaultAdmin } = require('./controllers/account.controller');
 
 var app = express();
 
@@ -18,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+app.use(express.static(path.join(__dirname, '/public')));
+
 app.use('/api/account', accountRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/session', sessionRouter);
@@ -25,5 +28,7 @@ app.use('/api/session', sessionRouter);
 app.use(errorHandler);
 
 mongoose.connect();
+
+defaultAdmin();
 
 module.exports = app;

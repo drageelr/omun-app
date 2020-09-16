@@ -1,6 +1,6 @@
 'use strict'
 
 exports.vars = {
-    dbName: "crudDB",
+    dbName: "omunDB",
     key: "SECRET_KEY"
 }

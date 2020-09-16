@@ -127,3 +127,11 @@ exports.compareLists = (list1, list2) => {
     console.log(list2.length);
     return (count===list2.length) && (count===list1.length);
 }
+
+exports.createLog = (type, content) => {
+    try {
+        return "[" + type + "]: " + content;
+    } catch (e) {
+        console.log(e);
+    }
+}

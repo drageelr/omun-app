@@ -6,9 +6,7 @@ var Joi = require('@hapi/joi');
 // API 1.1:
 exports.addCommittees = {
     body: Joi.object({
-        committees: Joi.array().items(Joi.object({
-            name: Joi.string().required(),
-        }))
+        committees: Joi.array().items(Joi.string().required()).required()
     })
 };
 
@@ -18,7 +16,7 @@ exports.addDias = {
         dias: Joi.array().items(Joi.object({
             name: Joi.string().required(),
             email: Joi.string().email().required(),
-        }))
+        })).required()
     })
 };
 
@@ -30,6 +28,6 @@ exports.addDelegates = {
             email: Joi.string().email().required(),
             country: Joi.string().required(),
             committee: Joi.string().required(),
-        }))
+        })).required()
     })
 };

@@ -10,17 +10,39 @@ const logSchema = new Schema({
     content: {
         type: String,
         required: true
-    },
-    type: {
-        type: String,
-        required: true
-    },
-    delegateId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Delegate'
     }
 }, {
     timestamps: true
+});
+
+// Notification Schema
+const notificationScehma = new Schema({
+    content: {
+        type: String,
+        required: true
+    },
+    diasId: {
+        type: Number,
+        required: true
+    }
+}, {
+    timestamps: true
+});
+
+// Seat Schema
+const seatSchema = new Schema({
+    seatId: {
+        type: Number,
+        required: true
+    },
+    blocked: {
+        type: Boolean,
+        required: true
+    },
+    delegateId: {
+        type: Number,
+        required: true,
+    }
 });
 
 // Committee Schema
@@ -31,13 +53,15 @@ const committeeSchema = new Schema({
     },
     name: {
         type: String,
-        required: true
+        unique: true
     },
     sessionStatus: {
         type: Boolean,
         required: true
     },
     logs: [logSchema],
+    notifications: [notificationScehma],
+    seats: [seatSchema]
 }, {
     timestamps: true
 });

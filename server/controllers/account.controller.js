@@ -9,12 +9,14 @@ var { generate } = require('generate-password');
 var Dias = require('../models/dias.model');
 var Delegate = require('../models/delegate.model');
 var Committee = require('../models/committee.model');
+var Admin = require('../models/admin.model');
+var hFuncs = require('../services/helper-funcs');
 
 function genPass() {
     return generate({
         length: 30,
         numbers: true,
-        symbols: true,
+        symbols: false,
         lowercase: true,
         uppercase: true,
         excludeSimilarCharacters: true,
@@ -22,13 +24,32 @@ function genPass() {
     });
 }
 
+function createSeats(n) {
+    let seats = [];
+    for (let i = 0; i < n; i++) {
+        let seat = {
+            seatId: i + 1,
+            blocked: false,
+            delegateId: -1,
+        };
+
+        seats.push(seat);
+    }
+    return seats;
+}
+
 exports.addCommittees = async (req, res, next) => {
     try {
         let committees = req.body.committees;
 
+        let seats = createSeats(50);
+
         for(let i = 0; i < committees.length; i++) {
             let newCom = new Committee({
-                name: committees[i].name
+                name: committees[i],
+                sessionStatus: false,
+                seats: seats,
+                logs: [{content: hFuncs.createLog("System", "Committee created.")}]
             });
 
             await newCom.save();
@@ -88,7 +109,8 @@ exports.addDelegates = async (req, res, next) => {
                 name: delegates[i].name,
                 password: pass,
                 country: delegates[i].country,
-                committeeId: cmt._id
+                committeeId: cmt._id,
+                blockId: -1
             });
 
             await newDelegate.save();
@@ -103,5 +125,23 @@ exports.addDelegates = async (req, res, next) => {
         });
     } catch(e) {
         next(e);
+    }
+}
+
+exports.defaultAdmin = async () => {
+    try {
+        let reqAdmin = await Admin.findOne({});
+        if (!reqAdmin) {
+            reqAdmin = new Admin({
+                email: "admin123@omunapp.com",
+                name: "OMUN Admin",
+                password: "Admin12345"
+            });
+
+            reqAdmin.save();
+            console.log("New Admin: admin123@omunapp.com Admin12345");
+        }
+    } catch (e) {
+        console.log(e);
     }
 }
