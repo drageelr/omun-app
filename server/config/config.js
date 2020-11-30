@@ -1,6 +1,8 @@
 'use strict'
 
 exports.vars = {
-    dbName: "omunDB",
+    dbName: "omun_db",
+    dbUser: "omun",
+    dbPassword: "omun123",
     key: "SECRET_KEY"
 }
