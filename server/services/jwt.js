@@ -35,7 +35,7 @@ exports.verfiyUser = async (req, res, next) => {
         let reqUser = null;
         if (decodedObj.type == 'dias') {
             reqUser = await Dias.findById(decodedObj._id);
-        } else if (decodedObj.type == 'del') {
+        } else if (decodedObj.type == 'delegate') {
             reqUser = await Delegate.findById(decodedObj._id);
         } else if (decodedObj.type == 'admin') {
             reqUser = await Admin.findById(decodedObj._id);

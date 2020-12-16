@@ -1,4 +1,7 @@
 'use strict'
+
+var crypto = require('crypto');
+
 /*
 ------------------ CODE BODY --------------------
 */
@@ -6,6 +9,10 @@
 /*
 <<<<< EXPORT FUNCTIONS >>>>>
 */
+
+exports.hash = (str) => {
+    return crypto.createHash('sha256').update(str).digest('base64');
+}
 
 /**
 * Creates a duplicate of an object.
