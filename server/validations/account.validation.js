@@ -3,7 +3,7 @@
 // Dependancies
 var Joi = require('@hapi/joi');
 
-// API 1.1:
+// API 2.1:
 exports.createAdmin = {
     body: Joi.object({
         admins: Joi.array().items(Joi.object({
@@ -13,23 +13,54 @@ exports.createAdmin = {
     })
 };
 
-// API 1.2:
+// API 2.2:
 exports.createCommittee = {
     body: Joi.object({
-        admins: Joi.array().items(Joi.object({
+        committees: Joi.array().items(Joi.object({
             name: Joi.string().max(100).required(),
             initials: Joi.string().max(20).required(),
         })).required()
     })
 };
 
-// API 1.3:
+// API 2.3:
 exports.createCountry = {
     body: Joi.object({
-        admins: Joi.array().items(Joi.object({
+        countries: Joi.array().items(Joi.object({
             name: Joi.string().max(100).required(),
             initials: Joi.string().max(20).required(),
             veto: Joi.boolean().required()
         })).required()
     })
 };
+
+// API 2.4:
+exports.createDias = {
+    body: Joi.object({
+        dias: Joi.array().items(Joi.object({
+            name: Joi.string().max(50).required(),
+            email: Joi.string().email().max(50).required(),
+            committeId: Joi.number().required()
+        })).required()
+    })
+};
+
+// API 2.5:
+exports.createDelegate = {
+    body: Joi.object({
+        delegates: Joi.array().items(Joi.object({
+            name: Joi.string().max(50).required(),
+            email: Joi.string().email().max(50).required(),
+            committeId: Joi.number().required(),
+            countryId: Joi.number().required()
+        })).required()
+    })
+};
+
+// API 2.6:
+exports.changePassword = {
+    body: Joi.object({
+        oldPassword: Joi.string().min(8).max(30).required(),
+        newPassword: Joi.string().min(8).max(30).required()
+    })
+}

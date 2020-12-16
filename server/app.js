@@ -8,6 +8,9 @@ var logger = require('morgan');
 var { errorHandler } = require('./errors/errorhandler')
 var db = require('./services/mysql');
 
+var authRouter = require('./routes/auth.route');
+var accountRouter = require('./routes/account.route');
+
 var app = express();
 
 app.use(logger('dev'));
@@ -16,6 +19,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, '/public')));
+
+app.use('/api/auth', authRouter);
+app.use('/api/account', accountRouter);
 
 app.use(errorHandler);
 

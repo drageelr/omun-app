@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('men-crud:server');
 var http = require('http');
-var { handleHTTPUpgrade } = require('../services/ws');
+// var { handleHTTPUpgrade } = require('../services/ws');
 
 /**
  * Get port from environment and store in Express.
@@ -29,7 +29,7 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-server.on('upgrade', handleHTTPUpgrade);
+// server.on('upgrade', handleHTTPUpgrade);
 
 /**
  * Normalize a port into a number, string, or false.
