@@ -1,14 +1,8 @@
-export const newlogin = (payload,id)=>{
-    return ({
-        type:'newLogin',
-        payload:payload,
-        id:id,
-    });
-}
+import apiCaller from '../../apiHelper';
 
-export const rememberButton =(payload)=>{
-    return({
-        type:'rememberMe',
-        payload:payload
-    })
+export async function newlogin({email, password, userType}) {
+    console.log(email, password, userType);
+    const {token, user} = await apiCaller( '/api/auth/login/'+userType, {email, password}, 200, data => data);//api, body, successCode, dataReturner
+    localStorage.token = token;
+    return user;
 }

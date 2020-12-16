@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route} from "react-router-dom";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
-import Login from './components/Login/login'
+import Login from './components/Login/Login'
 import ResetPassword from './components/Login/ResetPassword';
 import MainScreen from './components/Main/MainScreen';
 import './App.css';
