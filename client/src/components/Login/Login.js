@@ -9,10 +9,10 @@ import * as Yup from 'yup'
 import './Login.css'
 
 
-function Login(){
+function Login({setIsLoggedIn, setUser}){
     const selectedBGStyle = {backgroundColor: "goldenrod", color:"white"}
     const normalBGStyle = {backgroundColor: "sienna", color:"white"}
-    const [userType, setUserType] = React.useState("Delegate")
+    const [userType, setUserType] = React.useState("delegate")
 
     return (
         <Formik
@@ -36,6 +36,8 @@ function Login(){
             const user = await newlogin({email: values.email, password: values.password, userType: userType});
             setSubmitting(false);
             console.log("User logged in", user);
+            setUser(user);
+            setIsLoggedIn(true);
           }
         }
 
@@ -49,21 +51,21 @@ function Login(){
             <div className="form-group">
                 <ToggleButtonGroup size="medium" value={userType} exclusive>
                 <ToggleButton 
-                value="Delegate" 
-                onClick={()=>setUserType("Delegate")}
-                style={userType==="Delegate" ? selectedBGStyle : normalBGStyle}>
+                value="delegate" 
+                onClick={()=>setUserType("delegate")}
+                style={userType==="delegate" ? selectedBGStyle : normalBGStyle}>
                     Delegate
                 </ToggleButton>,
                 <ToggleButton
-                value="Dias" 
-                onClick={()=>setUserType("Dias")} 
-                style={userType==="Dias" ? selectedBGStyle : normalBGStyle}>
+                value="dias" 
+                onClick={()=>setUserType("dias")} 
+                style={userType==="dias" ? selectedBGStyle : normalBGStyle}>
                     Dias
                 </ToggleButton>,
                 <ToggleButton
-                value="Admin" 
-                onClick={()=>setUserType("Admin")} 
-                style={userType==="Admin" ? selectedBGStyle : normalBGStyle}>
+                value="admin" 
+                onClick={()=>setUserType("admin")} 
+                style={userType==="admin" ? selectedBGStyle : normalBGStyle}>
                     Admin
                 </ToggleButton>
                 </ToggleButtonGroup>

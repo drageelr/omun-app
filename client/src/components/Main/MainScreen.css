@@ -1,5 +1,5 @@
 .parent {
-    background: white;
+    background: #2D2B36;
     display: grid;
     grid-template-columns: 50% 50%;
     grid-column-gap: 0px;

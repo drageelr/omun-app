@@ -1,26 +1,33 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { BrowserRouter as Router, Switch, Route} from "react-router-dom";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
 import Login from './components/Login/Login'
 import ResetPassword from './components/Login/ResetPassword';
 import MainScreen from './components/Main/MainScreen';
+import Home from './components/Main/Home';
 import './App.css';
 
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState({})
+
   return (
-  <Router>
-    <div className="App">
-          <Switch>
-            <Route exact path='/MainScreen' component={MainScreen}/>
-            <div className="auth-wrapper">
-              <div className="auth-inner">
-              <Route exact path='/' component={Login} />
-              <Route exact path='/ResetPassword' component={ResetPassword}/>
+    <Router>
+      <div className="App">
+            <Switch>
+              <Route exact path='/main' component={MainScreen}/>
+              <div className="auth-wrapper">
+                <div className="auth-inner">
+                <Route exact path='/' component={ 
+                  isLoggedIn ? 
+                  () => <Home user={user}/> : 
+                  () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
+                }/>
+                </div>
               </div>
-            </div>
-          </Switch>
-    </div>
+            </Switch>
+      </div>
     </Router>
   );
 }

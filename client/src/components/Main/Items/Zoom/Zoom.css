@@ -1,4 +1,9 @@
 .Image{
     max-width: 100%;
     max-height: 100%;
+    object-fit:contain;
+}
+
+.Zoom-Header{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }

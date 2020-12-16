@@ -2,6 +2,7 @@
   "name": "login",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:3000",
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
@@ -11,6 +12,7 @@
     "bootstrap": "^4.5.2",
     "formik": "^2.2.6",
     "formik-material-ui": "^3.0.1",
+    "jquery": "^3.5.1",
     "material-ui": "^0.20.2",
     "react": "^16.13.1",
     "react-countdown-circle-timer": "^2.3.7",
@@ -18,15 +20,17 @@
     "react-redux": "^7.2.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
-    "reactstrap": "^8.5.1",
+    "react-web-tabs": "^1.0.1",
+    "reactstrap": "^8.7.1",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
+    "socket.io-client": "^3.0.4",
     "tachyons": "^4.12.0",
     "yup": "^0.32.8"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=3001 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

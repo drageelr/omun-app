@@ -5,32 +5,9 @@ import "./NotificationTimer.css";
 import { toggleTimer ,requestAPI } from '../actions';
 
 
-const mapStateToProps = (state)=>{
-    console.log(state)
-    return {
-      timerKey:state.infoBar.timerKey,
-      timerOn:state.infoBar.timerOn,
-      apiResponse:state.resolve.apiResponse
-    }
-  }
-  
-  const mapDispatchToProps = (dispatch)=>{
-    return {
-        onTimerButton:(onOff)=>dispatch(toggleTimer(onOff)),
-        onRequest:(url)=>requestAPI(dispatch,url)
-    }
-  }
-  
-
-
-class NotificationTimer extends Component {
-
-    // componentDidMount(){
-    //     console.log('requesting')
-    //     // this.props.onRequest('https://postman-echo.com/oauth1');
-    // }
+function NotificationTimer ({timerKey , onTimerButton , text , timerOn ,time }) {
     
-    renderTime = ({ remainingTime }) => {
+    function renderTime ({ remainingTime }){
         if (remainingTime === 0) {
           return (
             <div className="timer">
@@ -46,13 +23,9 @@ class NotificationTimer extends Component {
             {/* <div className="text">seconds</div> */}
           </div>
         );
-      };
+    }
 
-    render()
-    {
-        const {timerKey , onTimerButton , text , timerOn ,time } = this.props;
-        
-        return (
+    return (
       <div className="App" onClick={onTimerButton}>
         <h1>
           {text}'s Timer
@@ -64,16 +37,16 @@ class NotificationTimer extends Component {
             size={80}
             duration={time}
             strokeWidth={10}
-            colors={[["#32CD32", 0.66], ["#A30000"]]}
+            colors={[["#3EA849", 0.66 ], ["#A30000"]]}
             onComplete={()=>{
                 return [false]
             }}
           >
-            {this.renderTime}
+          <RenderTime/>
           </CountdownCircleTimer>
         </div>
       </div>
-    );}
+    );
   }
 
   export default NotificationTimer;
