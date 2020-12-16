@@ -8,8 +8,8 @@ var { vars } = require('../config/config');
 var con = mysql.createConnection({
     host: "localhost",
     user: vars.dbUser,
-    password: vars.dbUser,
-    database: vars.dbPassword
+    password: vars.dbPassword,
+    database: vars.dbName,
 });
 
 con.on('connect', (err) => {
@@ -31,6 +31,6 @@ module.exports.defaultAdmin = async () => {
 
     if (adminCount[0]['count(*)']) { return; }
 
-    await query('INSERT INTO admin (name, email, password, active) VALUES ("Default Admin", "admin@omunapp.com", "' + hFuncs.hash("Test12345") + '")');
+    await query('INSERT INTO admin (name, email, password) VALUES ("Default Admin", "admin@omunapp.com", "' + hFuncs.hash("Test12345") + '")');
     console.log("Default Admin Created: admin@omunapp.com Test12345");
 }

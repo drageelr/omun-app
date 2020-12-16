@@ -4,9 +4,7 @@
 var jwt = require('jsonwebtoken');
 var config = require('../config/config').vars;
 var customError = require('../errors/errors');
-var Dias = require('../models/dias.model');
-var Delegate = require('../models/delegate.model');
-var Admin = require('../models/admin.model');
+var db = require('./mysql');
 
 exports.signUser = (id, type, expiry) => {
     return jwt.sign({_id: id, type: type}, config.key, {expiresIn: expiry});
@@ -32,19 +30,11 @@ exports.verfiyUser = async (req, res, next) => {
         let decodedObj = decodeToken(token);
         if(decodedObj.err) throw new customError.ForbiddenAccessError("invalid token");
 
-        let reqUser = null;
-        if (decodedObj.type == 'dias') {
-            reqUser = await Dias.findById(decodedObj._id);
-        } else if (decodedObj.type == 'delegate') {
-            reqUser = await Delegate.findById(decodedObj._id);
-        } else if (decodedObj.type == 'admin') {
-            reqUser = await Admin.findById(decodedObj._id);
-        }
-        
-        if (reqUser) {
-            req.body.user = decodedObj;
-        } else {
+        let reqUser = await db.query('SELECT * FROM ' + decodedObj.type + ' WHERE id = ' + decodedObj.id);
+        if (!reqUser.length) {
             throw new customError.ForbiddenAccessError("invalid token");
+        } else {
+            req.body.user = decodedObj;
         }
 
         next();
