@@ -7,7 +7,6 @@
 var app = require('../app');
 var debug = require('debug')('men-crud:server');
 var http = require('http');
-// var { handleHTTPUpgrade } = require('../services/ws');
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +20,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = require('socket.io')(server);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -29,7 +29,6 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-// server.on('upgrade', handleHTTPUpgrade);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -90,3 +89,5 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+module.exports.io = io;

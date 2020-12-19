@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www.js"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -16,7 +16,7 @@
     "morgan": "~1.9.1",
     "mysql": "^2.18.1",
     "nodemailer": "^6.4.11",
-    "ws": "^7.3.1"
+    "socket.io": "^3.0.4"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"

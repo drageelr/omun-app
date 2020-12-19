@@ -25,6 +25,12 @@
 
 - **Note: * means the field mentioned is required (For `Request Object`)**
 
+### 3. Session Management
+|#|Name|Description|Route|Request Object|Request Type|Response Object (Success)|Access|
+|-|----|-----------|-----|------------|--------------|-------------------------|------|
+|1|Start New Session|Starts a new session. For admin user it starts the session for the committeId specified. For Dias it automatically checks from token. Does not start session if a session is ongoing|`/api/session/start`|`{committeId: Number}`|POST|`{}`|`Admin`, `Dias`|
+|2|Stop Latest Session|Stops the latest session. For admin user it stops the session for the committeId specified. For Dias it automatically checks from token.|`/api/session/stop`|`{committeId: Number}`|POST|`{}`|`Admin`, `Dias`|
+
 ### 3. Fetch 
 
 ## Error Objects

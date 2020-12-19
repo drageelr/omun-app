@@ -10,7 +10,8 @@ exports.errorHandler = (err, req, res, next) => {
     if (err instanceof customError.AuthenticationError ||
         err instanceof customError.ForbiddenAccessError ||
         err instanceof customError.NotFoundError ||
-        err instanceof customError.DuplicateResourceError) {
+        err instanceof customError.DuplicateResourceError ||
+        err instanceof customError.ValidationError) {
         res.json({
             statusCode: err.statusCode,
             statusName: httpStatus.getName(err.statusCode),
