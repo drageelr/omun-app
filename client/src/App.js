@@ -8,10 +8,11 @@ import Home from './components/Main/Home';
 import './App.css';
 
 
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState({})
-
+  console.log(user);
   return (
     <Router>
       <div className="App">
@@ -20,8 +21,8 @@ function App() {
               <div className="auth-wrapper">
                 <div className="auth-inner">
                 <Route exact path='/' component={ 
-                  isLoggedIn ? 
-                  () => <Home user={user}/> : 
+                  isLoggedIn ?                           //change later to not
+                  () => <Home user={user} /> : 
                   () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                 }/>
                 </div>

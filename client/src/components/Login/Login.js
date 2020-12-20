@@ -33,7 +33,7 @@ function Login({setIsLoggedIn, setUser}){
 
         onSubmit={ async (values, { setSubmitting }) => {
             console.log(values);
-            const user = await newlogin({email: values.email, password: values.password, userType: userType});
+            const user = await newlogin({email: values.email, password: values.password, userType:userType});
             setSubmitting(false);
             console.log("User logged in", user);
             setUser(user);
@@ -44,11 +44,11 @@ function Login({setIsLoggedIn, setUser}){
         >
         {({submitForm, isSubmitting})=> (
           
-          <Form>
+          <Form style={{textAlign:'center'}}>
     
             <h3>Sign In</h3>
 
-            <div className="form-group">
+            <div className="form-group" >
                 <ToggleButtonGroup size="medium" value={userType} exclusive>
                 <ToggleButton 
                 value="delegate" 
@@ -97,7 +97,7 @@ function Login({setIsLoggedIn, setUser}){
                 </Field>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block btn-dark">Login</button>
+            <button type="submit" className="btn btn-primary btn-block btn-dark" style={{width:'80px',marginLeft:'36%'}}>Login</button>
           </Form>
         )}
       </Formik>

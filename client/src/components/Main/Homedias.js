@@ -60,7 +60,7 @@ function handleElementsUpload(e) {
 function Home({user}){
     const classes = useStyles();
     //localStorage.token
-    if (user.Type === 'admin')
+    // if (user === 'admin')
     return(
         <>
         <h5 style={{ marginTop:'10px'}}>Create Admins</h5>
@@ -73,32 +73,32 @@ function Home({user}){
             <CSVReader1 mode='contiCr'/>
             <h5>Create Delegates</h5>
             <CSVReader1 mode='delCr'/>
-            <Button style={{marginLeft:'20vw', marginTop:'10px', marginBottom:'0px'}} href='/main'>Next</Button>
+            <Button style={{marginLeft:'20vw', marginTop:'10px', marginBottom:'0px'}}>Next</Button>
         </>
     );
     
-    else if (user.Type==='dias')
-    return(
+    // else if (user==='dias')
+    // return(
         
-        <div className='parent' style={{height:'70vh', backgroundColor:'white' , backgroundImage:'url()'}}>
-          dias {user.name}!
-        </div>
-    );
+    //     <div className='parent' style={{height:'70vh', backgroundColor:'white' , backgroundImage:'url()'}}>
+    //       dias {user.name}!
+    //     </div>
+    // );
 
-    else if (user.Type==='delegate')
-    return(
+    // else if (user==='delegate')
+    // return(
         
-        <div className='parent' style={{height:'70vh', backgroundColor:'white' , backgroundImage:'url()'}}>
-          delegate {user.name}!
-        </div>
-    );
-    else 
-    return(
+    //     <div className='parent' style={{height:'70vh', backgroundColor:'white' , backgroundImage:'url()'}}>
+    //       delegate {user.name}!
+    //     </div>
+    // );
+    // else 
+    // return(
         
-        <div className='parent' style={{height:'70vh', backgroundColor:'white' , backgroundImage:'url()'}}>
-          welcome {user.name}!
-        </div>
-    );
+    //     <div className='parent' style={{height:'70vh', backgroundColor:'white' , backgroundImage:'url()'}}>
+    //       welcome {user.name}!
+    //     </div>
+    // );
     
 }
 
