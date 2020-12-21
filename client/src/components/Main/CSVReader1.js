@@ -110,7 +110,7 @@ const save = (e) =>{
   }
 
     return (
-      < div style={{width:'500px'}} >
+      < div  >
         <CSVReader
           ref={buttonRef}
           onFileLoad={handleOnFileLoad}

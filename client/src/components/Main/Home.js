@@ -61,31 +61,32 @@ function Home({user}){
     {
         switch (crea) {
             case 0:
-                return <><h5 style={{ marginTop:'10px'}}>Create Admins</h5><CSVReader1 mode='admin'/>
+                return <><h5 style={{ marginTop:'10px'}}>Create Admins</h5><CSVReader1 mode='admin' style={{width:'50px'}}/>
+                <br></br>
                 <ButtonGroup fullWidth={true}>
                     <Button  href='/'> Back </Button>
                     <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
                 </ButtonGroup></>
             case 1:
-                return<><h5 style={{ marginTop:'10px'}}>Create Dias</h5><CSVReader1 mode='dias'/>
+                return<><h5 style={{ marginTop:'10px'}}>Create Dias</h5><CSVReader1 mode='dias'/><br></br>
                 <ButtonGroup fullWidth={true}>
                     <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
                     <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
                 </ButtonGroup></>
             case 2: 
-                return<><h5 style={{ marginTop:'10px'}}>Create Committees</h5><CSVReader1 mode='committee'/>
+                return<><h5 style={{ marginTop:'10px'}}>Create Committees</h5><CSVReader1 mode='committee'/><br></br>
                 <ButtonGroup fullWidth={true}>
                     <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
                     <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
                 </ButtonGroup></>
             case 3: 
-                return<><h5 style={{ marginTop:'10px'}}>Create Countries</h5><CSVReader1 mode='contry'/>
+                return<><h5 style={{ marginTop:'10px'}}>Create Countries</h5><CSVReader1 mode='contry'/><br></br>
                 <ButtonGroup fullWidth={true}>
                     <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
                     <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
                 </ButtonGroup></>
             case 4:
-                return<><h5 style={{ marginTop:'10px'}}>Create Delegates</h5><CSVReader1 mode='delegate'/>
+                return<><h5 style={{ marginTop:'10px'}}>Create Delegates</h5><CSVReader1 mode='delegate'/><br></br>
                 <ButtonGroup fullWidth={true}>
                     <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
                     <Button  onClick={() => setCrea(0)} href='/main'> Next </Button>
