@@ -1,22 +1,19 @@
 import React, {useState, useEffect, Component} from 'react'
 import $ from 'jquery'
+import CSVReader1 from './CSVReader1.js';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import CSVReader1 from './CSVReader1.js';
+import { ButtonGroup } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      margin: theme.spacing(1),
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+      '& > *': {
+        margin: '50px',
+      },
     },
-  },
-  input: {
-    display: 'none',
-  },
-}));
-
-
-
+  }));
 function saveArrayCSV(csvArray, fname){
     const templateCSV = "data:text/csv;charset=utf-8," 
     + csvArray.map(e => e.join(",")).join("\n")
@@ -56,26 +53,48 @@ function handleElementsUpload(e) {
     }
 }
 
-
 function Home({user}){
     const classes = useStyles();
+    const [crea, setCrea] = useState(0)
     //localStorage.token
     if (user.Type === 'admin')
-    return(
-        <>
-        <h5 style={{ marginTop:'10px'}}>Create Admins</h5>
-            <CSVReader1 mode='adminCr'/>
-        <h5>Create Dias</h5>
-        <CSVReader1 mode='diasCr'/>
-        <h5>Create Committees</h5>
-            <CSVReader1 mode='commiCr'/>
-            <h5>Create Countries</h5>
-            <CSVReader1 mode='contiCr'/>
-            <h5>Create Delegates</h5>
-            <CSVReader1 mode='delCr'/>
-            <Button style={{marginLeft:'20vw', marginTop:'10px', marginBottom:'0px'}} href='/main'>Next</Button>
-        </>
-    );
+    {
+        switch (crea) {
+            case 0:
+                return <><h5 style={{ marginTop:'10px'}}>Create Admins</h5><CSVReader1 mode='adminCr'/>
+                <ButtonGroup fullWidth={true}>
+                    <Button  href='/'> Back </Button>
+                    <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
+                </ButtonGroup></>
+            case 1:
+                return<><h5 style={{ marginTop:'10px'}}>Create Dias</h5><CSVReader1 mode='diasCr'/>
+                <ButtonGroup fullWidth={true}>
+                    <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
+                    <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
+                </ButtonGroup></>
+            case 2: 
+                return<><h5 style={{ marginTop:'10px'}}>Create Committees</h5><CSVReader1 mode='commiCr'/>
+                <ButtonGroup fullWidth={true}>
+                    <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
+                    <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
+                </ButtonGroup></>
+            case 3: 
+                return<><h5 style={{ marginTop:'10px'}}>Create Countries</h5><CSVReader1 mode='contiCr'/>
+                <ButtonGroup fullWidth={true}>
+                    <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
+                    <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
+                </ButtonGroup></>
+            case 4:
+                return<><h5 style={{ marginTop:'10px'}}>Create Delegates</h5><CSVReader1 mode='delCr'/>
+                <ButtonGroup fullWidth={true}>
+                    <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
+                    <Button  onClick={() => setCrea(0)} href='/main'> Next </Button>
+                </ButtonGroup></>
+            default:
+                break;
+        }
+
+    }
     
     else if (user.Type==='dias')
     return(

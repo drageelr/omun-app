@@ -15,6 +15,7 @@ const buttonRef = React.createRef()
 
 
 export default function CSVReader1 ({mode}) {
+
     const classes = useStyles();
     let toSend = [];
     let toDisplay = [];
@@ -23,14 +24,16 @@ export default function CSVReader1 ({mode}) {
     let packet;
     var encodedUri;
     let up = 0;
-    
     if (mode=='adminCr') toSave.push(['Ids','Names','Emails']);
     if (mode=='commiCr') toSave.push(['Ids','Names','Initials']);
     if (mode=='contiCr') toSave.push(['Ids','Names','Initials','Veto']);
     if (mode=='diasCr') toSave.push(['Ids','Names','Email','Title','ComitteeId']);
 
-    const save = () =>{
+const save = (e) =>{
     window.open(encodedUri);
+    if (buttonRef.current) {
+        buttonRef.current.removeFile(e)
+      }
     }
   const handleOpenDialog = (e) => {
     // Note that the ref is set async, so it might be null at some point
@@ -91,7 +94,6 @@ export default function CSVReader1 ({mode}) {
   }
 
   const handleOnRemoveFile = (data) => {
-    console.log('---------------------------')
     console.log('---------------------------')
   }
 

@@ -22,7 +22,7 @@ function App() {
                 <div className="auth-inner">
                 <Route exact path='/' component={ 
                   isLoggedIn ?                           //change later to not
-                  () => <Home user={user} /> : 
+                  () => <Home user={user} />: 
                   () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                 }/>
                 </div>
