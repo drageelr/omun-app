@@ -5,6 +5,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { makeStyles } from '@material-ui/core/styles';
 import SaveIcon from '@material-ui/icons/Save';
+import {send} from './Actions';
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -24,10 +25,10 @@ export default function CSVReader1 ({mode}) {
     let packet;
     var encodedUri;
     let up = 0;
-    if (mode=='adminCr') toSave.push(['Ids','Names','Emails']);
-    if (mode=='commiCr') toSave.push(['Ids','Names','Initials']);
-    if (mode=='contiCr') toSave.push(['Ids','Names','Initials','Veto']);
-    if (mode=='diasCr') toSave.push(['Ids','Names','Email','Title','ComitteeId']);
+    if (mode=='admin') toSave.push(['Ids','Names','Emails']);
+    if (mode=='committee') toSave.push(['Ids','Names','Initials']);
+    if (mode=='country') toSave.push(['Ids','Names','Initials','Veto']);
+    if (mode=='dias') toSave.push(['Ids','Names','Email','Title','ComitteeId']);
 
 const save = (e) =>{
     window.open(encodedUri);
@@ -42,30 +43,33 @@ const save = (e) =>{
     }
   }
 
-  const handleOnFileLoad = (data) => {
+  const handleOnFileLoad =(data) => {
     console.log('---------------------------')
-    if (mode=='adminCr') {
+    let packet;
+    if (mode=='admin') {
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'email' : item.data[1] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'email' : item.data[1] }]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] ])}});
             packet={'admins' : toSend};
+            
+    
     }
-    if (mode=='commiCr'){
+    if (mode=='committee'){
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'initials' : item.data[1] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'initials' : item.data[1] }]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] ])}});
             packet={"committees" : toSend};
     }
-    if (mode=='contiCr'){
+    if (mode=='country'){
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'initials' : item.data[1] , 'veto' :'0'}])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'initials' : item.data[1] , 'veto' :'0'}]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] , '0'])}});
             packet={"countries" : toSend};
     }
-    if (mode=='diasCr') {
+    if (mode=='dias') {
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'email' : item.data[1] , 'title' : item.data[2], 'comitteeId' : item.data[3]}]);
@@ -78,8 +82,9 @@ const save = (e) =>{
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'email' : item.data[1] , 'title' : item.data[2], 'comitteeId' : item.data[3] ,'countryId' : item.data[4]}]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] , item.data[2], item.data[3] , item.data[4] ])}});
             packet={"delegates" : toSend};
-    }
 
+    }
+    const resp = send(packet,mode);
     csv = "data:text/csv;charset=utf-8," 
     + toSave.map(e => e.join(",")).join("\n");
     encodedUri = encodeURI(csv);

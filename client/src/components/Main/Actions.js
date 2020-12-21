@@ -1,9 +1,8 @@
 import apiCaller from '../../apiHelper';
 
-export async function send(packet) {
-    console.log(email, password, userType);
-    const {token, user} = await apiCaller( '/api/auth/login/'+userType, {email, password}, 200, data => data);//api, body, successCode, dataReturner
-    localStorage.token = token;
+export async function send(packet,mode) {
+    console.log("send",packet,mode);
+    const ids = await apiCaller( '/api/account/create/'+mode, packet, 200, data => data);//api, body, successCode, dataReturner
     
-    return user === undefined ? {name: "lumun", id: "lmnID" , Type: userType} : user; //!TODO: FIX LATER
+    return ids === undefined ? ["-1"] : ids; 
 }
