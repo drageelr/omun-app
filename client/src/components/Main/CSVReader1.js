@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component , useState } from 'react'
 import { CSVReader , jsonToCSV } from 'react-papaparse'
 import Button from '@material-ui/core/Button';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -16,13 +16,13 @@ const buttonRef = React.createRef()
 
 
 export default function CSVReader1 ({mode}) {
-
+    const [saveb, setSaveb] = useState(false)
+    const [removeb, setRemoveb] = useState(false)
     const classes = useStyles();
     let toSend = [];
     let toDisplay = [];
     let toSave = [];
     let csv;
-    let packet;
     var encodedUri;
     let up = 0;
     if (mode=='admin') toSave.push(['Ids','Names','Emails']);
@@ -43,7 +43,7 @@ const save = (e) =>{
     }
   }
 
-  const handleOnFileLoad =(data) => {
+  const handleOnFileLoad = async (data) => {
     console.log('---------------------------')
     let packet;
     if (mode=='admin') {
@@ -84,22 +84,25 @@ const save = (e) =>{
             packet={"delegates" : toSend};
 
     }
-    const resp = send(packet,mode);
+    setRemoveb(true);
+    //loading circle // handle save button
+    const resp = await send(packet,mode);
+    //loading circle off
     csv = "data:text/csv;charset=utf-8," 
     + toSave.map(e => e.join(",")).join("\n");
     encodedUri = encodeURI(csv);
-
-    console.log(toSend)
+    setSaveb(true);
     console.log(csv)
-    console.log('---------------------------')
+    console.log('-',resp)
   }
 
   const handleOnError = (err, file, inputElem, reason) => {
-    console.log(err)
+    alert(err)
   }
 
   const handleOnRemoveFile = (data) => {
-    console.log('---------------------------')
+    setRemoveb(false);
+    setSaveb(false);
   }
 
   const handleRemoveFile = (e) =>  {
@@ -144,6 +147,7 @@ const save = (e) =>{
                 onClick={handleRemoveFile}
                 color="secondary"
                 size="small"
+                disabled={!removeb}
                 className={classes.button}
                 startIcon={<DeleteIcon />}
             >
@@ -153,6 +157,7 @@ const save = (e) =>{
                 onClick={save}
                 color="primary"
                 size="small"
+                disabled={!saveb}
                 className={classes.button}
                 startIcon={<SaveIcon />}
             >
