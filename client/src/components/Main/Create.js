@@ -1,8 +1,8 @@
 import React, {useState, useEffect, Component} from 'react'
-import CSVReader from './CSVReader.js';
-import CSVReader1 from './CSVReader1.js';
-import CSVReader2 from './CSVReader2.js';
-import CSVReader3 from './CSVReader3.js';
+import CSVReader from './csv/CSVReader.js';
+import CSVReader1 from './csv/CSVReader1.js';
+import CSVReader2 from './csv/CSVReader2.js';
+import CSVReader3 from './csv/CSVReader3.js';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ButtonGroup } from '@material-ui/core';

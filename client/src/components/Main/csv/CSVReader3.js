@@ -5,7 +5,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { makeStyles } from '@material-ui/core/styles';
 import SaveIcon from '@material-ui/icons/Save';
-import {send} from './Actions';
+import {send} from '../Actions';
 import { css } from "@emotion/core";
 import FadeLoader from "react-spinners/FadeLoader";
 
