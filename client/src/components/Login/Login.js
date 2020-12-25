@@ -1,4 +1,4 @@
-import React from 'react'
+import React , {useState} from 'react'
 import { Link } from "react-router-dom";
 import { newlogin } from './Actions'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
@@ -7,13 +7,20 @@ import { TextField } from 'formik-material-ui'
 import {Formik, Form, Field} from 'formik'
 import * as Yup from 'yup'
 import './Login.css'
-
+import { css } from "@emotion/core";
+import MoonLoader from "react-spinners/MoonLoader";
+import Button from '@material-ui/core/Button';
 
 function Login({setIsLoggedIn, setUser}){
     const selectedBGStyle = {backgroundColor: "goldenrod", color:"white"}
     const normalBGStyle = {backgroundColor: "sienna", color:"white"}
     const [userType, setUserType] = React.useState("delegate")
-
+    const [loada, setLoada] = useState(false)
+    const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: grey;
+`;
     return (
         <Formik
         validateOnChange={false} validateOnBlur={true}
@@ -32,12 +39,14 @@ function Login({setIsLoggedIn, setUser}){
         })}
 
         onSubmit={ async (values, { setSubmitting }) => {
+            setLoada(true)
             console.log(values);
             const user = await newlogin({email: values.email, password: values.password, userType:userType});
             setSubmitting(false);
             console.log("User logged in", user);
             setUser(user);
             setIsLoggedIn(true);
+            setLoada(false)
           }
         }
 
@@ -96,8 +105,12 @@ function Login({setIsLoggedIn, setUser}){
                 > 
                 </Field>
             </div>
-
-            <button type="submit" className="btn btn-primary btn-block btn-dark" style={{width:'80px',marginLeft:'36%'}}>Login</button>
+            <Button type="submit" color="primary">
+              <MoonLoader
+                    css={override}
+                    size={15}
+                    loading={loada}
+                /> Login</Button>
           </Form>
         )}
       </Formik>

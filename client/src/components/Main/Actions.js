@@ -24,6 +24,5 @@ export async function end(packet) {
 export async function join(packet) {
     console.log("join",packet);
     const resp = await apiCaller( '/api/session/join', packet, 200, data => data);//api, body, successCode, dataReturner
-    
     return resp === undefined ? ["-1"] : resp; 
 };

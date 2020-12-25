@@ -97,9 +97,10 @@ function Home({user}){
         return( 
             <div style={{textAlign:'center'}}>
                 <h3>Admin Portal</h3>
+                <h6><i>Welcome {user.name}</i></h6>
                 
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">Session No:</InputLabel>
+                    <InputLabel id="demo-controlled-open-select-label">Comittee Id:</InputLabel>
                     <Select
                     labelId="demo-controlled-open-select-label"
                     id="demo-controlled-open-select"
@@ -126,7 +127,7 @@ function Home({user}){
                 { Suca && <><br/><i>Session Started</i></>}
                 <br/>
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">Session No:</InputLabel>
+                    <InputLabel id="demo-controlled-open-select-label">Comittee Id:</InputLabel>
                     <Select
                     labelId="demo-controlled-open-select-label"
                     id="demo-controlled-open-select"
@@ -154,7 +155,7 @@ function Home({user}){
                 { Sucb && <><br/><i>Session Stoped</i></>}
                 <br/>
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">Session No:</InputLabel>
+                    <InputLabel id="demo-controlled-open-select-label">Comittee Id:</InputLabel>
                     <Select
                     labelId="demo-controlled-open-select-label"
                     id="demo-controlled-open-select"
@@ -236,6 +237,7 @@ function Home({user}){
     return( 
         <div style={{textAlign:'center'}}>
             <h3>Delegate Portal</h3>
+            <h6><i>Welcome {user.name}</i></h6>
             <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
             <FadeLoader
                     css={override}

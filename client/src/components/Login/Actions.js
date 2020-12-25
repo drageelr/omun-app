@@ -5,7 +5,7 @@ export async function newlogin({email, password, userType}) {
     const {token, user} = await apiCaller( '/api/auth/login/'+userType, {email, password}, 200, data => data);//api, body, successCode, dataReturner
     localStorage.token = token;
     
-    return user === undefined ? {name: "altruy", id: "99" , Type: userType} : user; //!TODO: FIX LATER
+    return user === undefined ? {name: "turyal", id: "99" , Type: userType} : user; //!TODO: FIX LATER
 }
 
 export async function reset(packet) {
