@@ -53,7 +53,7 @@ function Create({user}){
             return<><h5 style={{ marginTop:'10px'}}>Create Delegates</h5><CSVReader1 files={files} setFiles={setFiles} mode='delegate'/><br></br>
             <ButtonGroup fullWidth={true}>
                 <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
-                <Button  onClick={() => setCrea(0)} href='/main'> Next </Button>
+                <Button  onClick={() => setCrea(0)} href='/'> Next </Button>
             </ButtonGroup></>
         default:
             break;

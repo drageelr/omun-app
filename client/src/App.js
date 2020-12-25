@@ -11,7 +11,7 @@ import Create from './components/Main/Create';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState({})
+  const [user, setUser] = useState({name: "altruy", id: "99" , Type: 'admin'})
   console.log(user);
   return (
     <Router>
@@ -21,7 +21,7 @@ function App() {
               <div className="auth-wrapper">
                 <div className="auth-inner">
                 <Route exact path='/' component={ 
-                  isLoggedIn ?                           //change later to not
+                  isLoggedIn ?                           
                   () => <Home user={user} />: 
                   () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                 }/>
