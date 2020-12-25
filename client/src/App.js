@@ -2,11 +2,11 @@ import React, {useState} from 'react';
 import { BrowserRouter as Router, Switch, Route} from "react-router-dom";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
 import Login from './components/Login/Login'
-import ResetPassword from './components/Login/ResetPassword';
+import ResetPassword from './components/Login/ResetPassword'
 import MainScreen from './components/Main/MainScreen';
 import Home from './components/Main/Home';
 import './App.css';
-
+import Create from './components/Main/Create';
 
 
 function App() {
@@ -25,6 +25,9 @@ function App() {
                   () => <Home user={user} />: 
                   () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                 }/>
+                <Route exact path='/Create' component={Create}/>
+                <Route exact path='/ChangePassword' component={ResetPassword}/>
+                <Route exact path='/home' component={Home}/>
                 </div>
               </div>
             </Switch>

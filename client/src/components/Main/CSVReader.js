@@ -1,5 +1,5 @@
-import React, { Component , useState } from 'react'
-import { CSVReader , jsonToCSV } from 'react-papaparse'
+import React, { useState } from 'react'
+import { CSVReader } from 'react-papaparse'
 import Button from '@material-ui/core/Button';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
@@ -27,8 +27,8 @@ export default function CSVReader1 ({mode,files,setFiles}) {
     let toSave = [];
     let csv;
     var encodedUri;
-    let up = 0;
-    var file  = files[mode];
+
+
     if (mode==='admin') toSave.push(['Ids','Names','Emails']);
     if (mode==='committee') toSave.push(['Ids','Names','Initials']);
     if (mode==='country') toSave.push(['Ids','Names','Initials','Veto']);
@@ -50,7 +50,7 @@ const save = (e) =>{
     setFiles(newS);
     console.log('---------------------------')
     let packet;
-    if (mode=='admin') {
+    if (mode==='admin') {
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'email' : item.data[1] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'email' : item.data[1] }]);
@@ -59,28 +59,28 @@ const save = (e) =>{
             
     
     }
-    if (mode=='committee'){
+    if (mode==='committee'){
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'initials' : item.data[1] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'initials' : item.data[1] }]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] ])}});
             packet={"committees" : toSend};
     }
-    if (mode=='country'){
+    if (mode==='country'){
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'initials' : item.data[1] , 'veto' :'0'}])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'initials' : item.data[1] , 'veto' :'0'}]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] , '0'])}});
             packet={"countries" : toSend};
     }
-    if (mode=='dias') {
+    if (mode==='dias') {
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'email' : item.data[1] , 'title' : item.data[2], 'comitteeId' : item.data[3]}]);
                             toSave.push([`${i}`,  item.data[0] ,  item.data[1] , item.data[2], item.data[3]])}});
             packet={"dias" : toSend};
     }
-    if (mode=='delCr') {
+    if (mode==='delCr') {
         data.map((item,i)=>{ if (i!==0) {toSend.push([{'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] ,'countryId' : item.data[4] }])}});
         data.map((item,i)=>{ if (i!==0) {
                             toDisplay.push([{'ids':`${i}`, 'name' : item.data[0] , 'email' : item.data[1] , 'title' : item.data[2], 'comitteeId' : item.data[3] ,'countryId' : item.data[4]}]);

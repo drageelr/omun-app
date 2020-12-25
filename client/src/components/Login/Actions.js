@@ -7,3 +7,10 @@ export async function newlogin({email, password, userType}) {
     
     return user === undefined ? {name: "lumun", id: "lmnID" , Type: userType} : user; //!TODO: FIX LATER
 }
+
+export async function reset(packet) {
+    console.log("reset",packet);
+    const ids = await apiCaller( '/api/account/change-password', packet, 200, data => data);//api, body, successCode, dataReturner
+    
+    return ids === undefined ? ["-1"] : ids; 
+};
