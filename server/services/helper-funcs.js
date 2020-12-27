@@ -1,6 +1,7 @@
 'use strict'
 
 var crypto = require('crypto');
+var moment = require('moment');
 
 /*
 ------------------ CODE BODY --------------------
@@ -135,10 +136,9 @@ exports.compareLists = (list1, list2) => {
     return (count===list2.length) && (count===list1.length);
 }
 
-exports.createLog = (type, content) => {
-    try {
-        return "[" + type + "]: " + content;
-    } catch (e) {
-        console.log(e);
+exports.parseDate = (momentStr = undefined) => {
+    if (momentStr) {
+        return moment(moment.utc(momentStr)).local().format('YYYY-MM-DD HH:mm:ss');
     }
+    return moment().utc().format('YYYY-MM-DD HH:mm:ss');
 }

@@ -1,20 +1,25 @@
 'use strict'
 
-var { io } = require('../bin/www');
-var db = require('./mysql');
-var jwt = require('./jwt');
-var customError = require('../errors/errors');
+var { io } = require('../../bin/www');
+var db = require('../mysql');
+var jwt = require('../jwt');
+var customError = require('../../errors/errors');
+var hFuncs = require('../helper-funcs');
 var { errorHandler } = require('./socketIOerrorhandler');
-var hFuncs = require('./helper-funcs');
+var { validate } = require('./socketIOvalidator');
+var { validateAccess } = require('./socketIOaccessvalidator');
+var IOreqhandlers = require('./socketIOreqhandlers');
+const { namespaceUsers } = require('./socketIOusers');
 
-/**
- * '/committeeId': { 'type': {id: 'socketId'} }
- * "committeId" is an integer which denotes namespace
- * "type" is a string which denotes "admin", "dias" or "delegate"
- * "id" is an integer represents user's id in DB
- * "socketId" is a string that represents the unique id of the user in the connected namespace
- */
-const namespaceUsers = {};
+const reqEvents = {
+    // Chat Management
+    'del-chat-fetch|DEL': IOreqhandlers.handleDelChatFetchForDel,
+    'del-chat-fetch': IOreqhandlers.handleDelChatFetchForRest,
+    'dias-chat-fetch|DEL': IOreqhandlers.handleDiasChatFetchForDel,
+    'dias-chat-fetch|DIAS': IOreqhandlers.handleDiasChatFetchForDias,
+    'del-chat-send': IOreqhandlers.handleDelChatSend,
+    'dias-chat-send': IOreqhandlers.handleDiasChatSend
+};
 
 function sendStartInfo(socket) {
     try {
@@ -31,20 +36,22 @@ function sendStartInfo(socket) {
 
         let allDelegates = db.query('SELECT * FROM delegate WHERE committeeId = ' + user.committeeId);
 
+        let allDias = db.query('SELECT * FROM dias WHERE committeeId = ' + user.committeeId);
+
         let allCountries = db.query('SELECT * FROM country');
 
-        let reqNotifications = db.query('SELECT * FROM notification WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
+        // let reqNotifications = db.query('SELECT * FROM notification WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
 
-        let reqLogs = undefined;
+        // let reqLogs = undefined;
         let reqTopicQuery = 'SELECT * FROM topic WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND visible = 1';
         if (user.type != 'delegate') {
-            let reqLogs = await db.query('SELECT * FROM log WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
+            // reqLogs = await db.query('SELECT * FROM log WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
             reqTopicQuery = 'SELECT * FROM topic WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId;
         }
 
         let reqTopics = db.query(reqTopicQuery);
 
-        await Promise.all(reqSeats, allDelegates, allCountries, reqNotifications, reqTopics);
+        await Promise.all(reqSeats, allDelegates, allCountries, /*reqNotifications,*/ reqTopics, allDias);
 
         let committee = {
             id: reqCommittee[0].id,
@@ -61,7 +68,7 @@ function sendStartInfo(socket) {
 
         let seats = [];
         for (let i = 0; i < reqSeats.length; i++) {
-            seats.push(reqSeats[i], ['id', 'delegateId', 'placard']);
+            seats.push(hFuncs.duplicateObject(reqSeats[i], ['id', 'delegateId', 'placard']));
         }
 
         let delegates = [];
@@ -69,9 +76,14 @@ function sendStartInfo(socket) {
             delegates.push(hFuncs.duplicateObject(allDelegates, ['id', 'countryId']));
         }
 
+        let dias = [];
+        for (let i = 0; i < allDias.length; i++) {
+            dias.push(hFuncs.duplicateObject(allDias, ['id', 'name', 'title']));
+        }
+
         let countries = [];
         for (let i = 0; i < countries; i++) {
-            countries.push(allCountries, ['id', 'name', 'initials']);
+            countries.push(hFuncs.duplicateObject(allCountries, ['id', 'name', 'initials']));
         }
 
         let connectedDelegates = [];
@@ -84,53 +96,74 @@ function sendStartInfo(socket) {
         let conAdmins = Object.values(namespaceUsers[nsp.name].admin);
         for (let i = 0; i < conAdmins.length; i++) {
             let userDetails = nsp.sockets[conAdmins[i]].userObj;
-            connectedAdmins.push(userDetails, ['id', 'name']);
+            connectedAdmins.push(hFuncs.duplicateObject(userDetails, ['id', 'name']));
         }
 
         let connectedDias = [];
         let conDias = Object.values(namespaceUsers[nsp.name].dias);
         for (let i = 0; i < conDias.length; i++) {
             let userDetails = nsp.sockets[conDias[i]].userObj;
-            connectedDias.push(userDetails, ['id', 'name', 'title']);
+            connectedDias.push(hFuncs.duplicateObject(userDetails, ['id', 'name', 'title']));
         }
 
-        let notifications = [];
-        for (let i = 0; i < reqNotifications.length; i++) {
-            notifications.push(reqNotifications[i], ['id', 'message', 'timestamp']);
-        }
+        // let notifications = [];
+        // for (let i = 0; i < reqNotifications.length; i++) {
+        //     notifications.push(hFuncs.duplicateObject(reqNotifications[i], ['id', 'message', 'timestamp']));
+        // }
 
         let resObj = {
             committee: committee,
             session: session,
             seats: seats,
             delegates: delegates,
+            dias: dias,
             countries: countries,
             connectedDelegates: connectedDelegates,
             connectedAdmins: connectedAdmins,
             connectedDias: connectedDias,
-            notifications: notifications
+            // notifications: notifications
         }
 
-        let logs = [];
-        if (user.type != 'delegate') {
-            for (let i = 0; i < reqLogs.length; i++) {
-                logs.push(reqLogs[i], ['id', 'message', 'timestamp']);
-            }
-            resObj.logs = logs;
-        }
+        // let logs = [];
+        // if (user.type != 'delegate') {
+        //     for (let i = 0; i < reqLogs.length; i++) {
+        //         logs.push(reqLogs[i], ['id', 'message', 'timestamp']);
+        //     }
+        //     resObj.logs = logs;
+        // }
 
-        socket.emit('info-start', resObj);        
+        socket.emit('RES|info-start', resObj);
         
     } catch (err) {
         errorHandler(socket, err);
     }
 }
 
-function sendChatInfo(socket) {
-    try {
+function generateEventListener(socket, event) {
+    let tempFunc = async (params) => {
+        try {
+            let accErr = validateAccess(event, socket.userObj.type);
+            if (accErr) { throw accErr; }
 
-    } catch(err) {
-        errorHandler(socket, err);
+            let valErr = validate(event, params);
+            if (valErr) { throw valErr; }
+
+            let [ res, procErr ] = await reqEvents[event](socket, params, event);
+            if (procErr) { throw procErr; }
+
+            if (res) {
+                socket.emit('RES|' + event, res);
+            }
+        } catch (err) {
+            errorHandler(socket, err);
+        }
+    }
+    return tempFunc;
+}
+
+function attachEventListeners(socket) {
+    for (let e in reqEvents) {
+        socket.on('REQ|' + e, generateEventListener(socket, e));
     }
 }
 
@@ -178,7 +211,8 @@ function createNameSpace(committeeId) {
                 id: userObj.id,
                 name: reqUser[0].name,
                 committeeId: givenCommitteeId,
-                sessionId: reqSession[0].id
+                sessionId: reqSession[0].id,
+                nsp: "/" + givenCommitteeId
             };
 
             if (userObj.type == 'delegate') {
@@ -188,6 +222,11 @@ function createNameSpace(committeeId) {
             }
 
             sendStartInfo(socket);
+
+            attachEventListeners(socket);
+
+            socket.join(socket.userObj.committeeId + '|' + socket.userObj.type)
+
         } catch(err) {
             errorHandler(socket, err);
             socket.destroy();
