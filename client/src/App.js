@@ -27,7 +27,6 @@ function App() {
                 }/>
                 <Route exact path='/Create' component={Create}/>
                 <Route exact path='/ChangePassword' component={ResetPassword}/>
-                <Route exact path='/home' component={Home}/>
                 </div>
               </div>
             </Switch>
