@@ -30,7 +30,6 @@ function saveArrayCSV(csvArray, fname){
 }
 
 export default function CSVEditor ({mode,files,setFiles}) {
-  const [saveb, setSaveb] = useState(false)
   const [removeb, setRemoveb] = useState(false)
   const [loadc, setLoadc] = useState(false)
   const [status, setStatus] = useState('')
@@ -41,17 +40,15 @@ export default function CSVEditor ({mode,files,setFiles}) {
   let headers = [];
   let apiMode = {'admins': 'admin', 'countries': 'country', 'committees':'committee', 'delegates':'delegate', 'dias': 'dias'}
 
-
-  if (mode==='admins') headers = (['id','name','email']);
-  if (mode==='committees') headers = (['id','name','initials']);
-  if (mode==='countries') headers = (['id','name','initials','veto']);
-  if (mode==='dias') headers = (['id','name','email','title','comitteeId']);
-  if (mode==='delegates') headers = (['id','name','email','title','comitteeId', 'countryId']);
+  if (mode==='admins') toSave.push(['id','name','email']);
+  if (mode==='committees') toSave.push(['id','name','initials']);
+  if (mode==='countries') toSave.push(['id','name','initials','veto']);
+  if (mode==='dias') toSave.push(['id','name','email','title','comitteeId']);
+  if (mode==='delegates') toSave.push(['id','name','email','title','comitteeId', 'countryId']);
 
   React.useEffect(() => {
-    setDisplayData([]);
+    setDisplayData(toSave);
     setStatus([]);
-    setSaveb(false);
     setRemoveb(false);
     setLoadc(false);
   }, [mode]);
@@ -74,32 +71,31 @@ export default function CSVEditor ({mode,files,setFiles}) {
     setFiles(newS);
 
     let packet;
+    
+    const csvArray = data.slice(1) //without header
 
     if (mode==='admins') {
-      data.forEach((item,i)=>{ if (i!==0) {toSend.push({'name' : item.data[0] , 'email' : item.data[1] })}});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1] })});
     }
     else if (mode==='committees'){
-      data.forEach((item,i)=>{ if (i!==0) {toSend.push({'name' : item.data[0] , 'initials' : item.data[1] })}});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'initials' : item.data[1] })});
     }
     else if (mode==='countries'){
-      console.log(data);
-      data.forEach((item,i)=>{ if (i!==0) {toSend.push({'name' : item.data[0] , 'initials' : item.data[1] , 'veto' : data[2] === 1 ? true : false})}});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'initials' : item.data[1] , 'veto' : data[2] === 1 ? true : false})});
     }
     else if (mode==='dias') {
-      data.forEach((item,i)=>{ if (i!==0) {toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] })}});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] })});
     }
     else if (mode==='delegates') {
-      data.forEach((item,i)=>{ if (i!==0) {toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] ,'countryId' : item.data[4] })}});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] ,'countryId' : item.data[4] })});
     }
 
     packet={[mode]: toSend};
 
-    data.forEach((item,i)=> {
-      if (i!==0) {
-        let itemData = item.data;
-        itemData.unshift(i);
-        toSave.push(itemData);
-      }
+    csvArray.forEach((item,i)=> {
+      let itemData = item.data;
+      itemData.unshift(i);
+      toSave.push(itemData);
     });
 
     console.log(toSave);
@@ -113,9 +109,8 @@ export default function CSVEditor ({mode,files,setFiles}) {
       const ids = await send(packet,apiMode[mode]);
       setStatus("Creation successful.");
 
-      toSave.forEach((item, i) => { item[0] = ids[i]; })
+      toSave.slice(1).forEach((item, i) => { item[0] = ids[i]; })
       setDisplayData(toSave);
-      setSaveb(true);
     } 
     catch(e){
       console.error(e);
@@ -134,7 +129,6 @@ export default function CSVEditor ({mode,files,setFiles}) {
     delete newS[mode];
     setFiles(newS);
     setRemoveb(false);
-    setSaveb(false);
     setDisplayData([]);
   }
 
@@ -166,13 +160,13 @@ export default function CSVEditor ({mode,files,setFiles}) {
                 <table id="csvTable">
                   <thead>
                     <tr>
-                      {headers.map((header, index) => {
+                      {displayData[0] && displayData[0].map((header, index) => {
                         return <th key={index}>{header}</th>;
                       })}
                     </tr>
                   </thead>
                   <tbody>
-                    {displayData.map((row, i) => (
+                    {displayData.slice(1).map((row, i) => (
                       <tr key={i}>
                         {
                           row.map((item, j) =>  (
@@ -214,7 +208,6 @@ export default function CSVEditor ({mode,files,setFiles}) {
                     onClick={save}
                     color="primary"
                     size="small"
-                    disabled={!saveb}
                     className={classes.button}
                     startIcon={<SaveIcon />}
                 > Save
