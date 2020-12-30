@@ -18,6 +18,17 @@ const useStyles = makeStyles((theme) => ({
 const buttonRef = React.createRef()
 
 
+function saveArrayCSV(csvArray, fname){
+  const templateCSV = "data:text/csv;charset=utf-8," 
+  + csvArray.map(e => e.join(",")).join("\n")
+
+  let link = document.createElement("a")
+  link.setAttribute("href", encodeURI(templateCSV))
+  link.setAttribute("download", `${fname}.csv`)
+  document.body.appendChild(link)
+  link.click()
+}
+
 export default function CSVEditor ({mode,files,setFiles}) {
   const [saveb, setSaveb] = useState(false)
   const [removeb, setRemoveb] = useState(false)
@@ -26,12 +37,9 @@ export default function CSVEditor ({mode,files,setFiles}) {
   const [displayData, setDisplayData] = useState([])
 
   const classes = useStyles();
-  let toSend = [];
   let toSave = [];
   let headers = [];
-  let csv;
   let apiMode = {'admins': 'admin', 'countries': 'country', 'committees':'committee', 'delegates':'delegate', 'dias': 'dias'}
-  var encodedUri;
 
 
   if (mode==='admins') headers = (['id','name','email']);
@@ -48,12 +56,8 @@ export default function CSVEditor ({mode,files,setFiles}) {
     setLoadc(false);
   }, [mode]);
 
-  const save = (e) =>{
-    csv = "data:text/csv;charset=utf-8," + toSave.map(e => e.join(",")).join("\n");
-    encodedUri = encodeURI(csv);
-    setSaveb(true);
-    console.log(csv)
-    window.open(encodedUri);
+  const save = (e) => {
+    saveArrayCSV(displayData, mode);
   }
   
   const handleOpenDialog = (e) => {
@@ -64,10 +68,11 @@ export default function CSVEditor ({mode,files,setFiles}) {
   }
 
   const handleOnFileLoad = async (data) => {
+    let toSend = [];
     let newS = {...files};
     newS[mode]=data;
     setFiles(newS);
-    console.log('---------------------------')
+
     let packet;
 
     if (mode==='admins') {
@@ -110,6 +115,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
       toSave.forEach((item, i) => { item[0] = ids[i]; })
       setDisplayData(toSave);
+      setSaveb(true);
     } 
     catch(e){
       console.error(e);
@@ -227,7 +233,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
                 loading={loadc}
               />
 
-              {file && <div> {file.name} </div> }
+              {/* {file && <div> {file.name} </div> } */}
 
               { status !== '' && <div className="message"> {status} </div> }
 
