@@ -6,7 +6,7 @@ API Caller helper to refactor common API code that requires bearer tokens (all h
 @param {function} dataReturner data returning function, processes data to return it in a specific format
 */
 
-export default async function apiCaller(api, body, successCode, dataReturner) {
+export default async function apiCaller(api, body, successCode) {
   try {
     let req_init = {
       method: 'POST',
@@ -26,11 +26,14 @@ export default async function apiCaller(api, body, successCode, dataReturner) {
       const data = await res.json()
 
       if (data.statusCode !==successCode) {
-        throw new Error((data.err !== undefined) 
-        ? `${data.statusCode}: ${data.message} - ${JSON.stringify(data.err.details).replace(/[[]\{}"'\\]+/g, '').split(':').pop()}`
+        if (data.err) { // due to typos
+          data.error = data.err;
+        }
+        throw new Error((data.error !== undefined) 
+        ? `${data.statusCode}: ${data.message} - ${JSON.stringify(data.error.details).replace(/[[]\{}"'\\]+/g, '').split(':').pop()}`
         : `${data.statusCode}: ${data.message}`) 
       }
-      return dataReturner(data)
+      return data;
     }
     throw new Error(`${res.status}, ${res.statusText}`) 
   }

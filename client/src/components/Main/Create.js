@@ -1,8 +1,5 @@
 import React, {useState, useEffect, Component} from 'react'
-import CSVReader from './csv/CSVReader.js';
-import CSVReader1 from './csv/CSVReader1.js';
-import CSVReader2 from './csv/CSVReader2.js';
-import CSVReader3 from './csv/CSVReader3.js';
+import CSVEditor from './csv/CSVEditor.js';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ButtonGroup } from '@material-ui/core';
@@ -19,45 +16,27 @@ const useStyles = makeStyles((theme) => ({
 
 function Create({user}){
     const classes = useStyles();
-    const [crea, setCrea] = useState(0) // separateb files sessions
+    let modes = ['admins', 'dias', 'committees', 'countries', 'delegates']
+    const [cindex, setCIndex] = useState(0) // separateb files sessions
     const [files, setFiles] = useState({})
-    //localStorage.token
 
-    switch (crea) {
-        case 0:
-            return <><h5 style={{ marginTop:'10px'}}>Create Admins</h5><CSVReader mode='admin' files={files} setFiles={setFiles} style={{width:'50px'}}/>
-            <br></br>
-            <ButtonGroup fullWidth={true}>
-                <Button  href='/'> Back </Button>
-                <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
-            </ButtonGroup></>
-        case 1:
-            return<><h5 style={{ marginTop:'10px'}}>Create Dias</h5><CSVReader1 mode='dias'files={files} setFiles={setFiles}  /><br></br>
-            <ButtonGroup fullWidth={true}>
-                <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
-                <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
-            </ButtonGroup></>
-        case 2: 
-            return<><h5 style={{ marginTop:'10px'}}>Create Committees</h5><CSVReader2 files={files} setFiles={setFiles}  mode='committee'/><br></br>
-            <ButtonGroup fullWidth={true}>
-                <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
-                <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
-            </ButtonGroup></>
-        case 3: 
-            return<><h5 style={{ marginTop:'10px'}}>Create Countries</h5><CSVReader3 files={files} setFiles={setFiles} mode='contry'/><br></br>
-            <ButtonGroup fullWidth={true}>
-                <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
-                <Button  onClick={() => setCrea(crea + 1)}> Next </Button>
-            </ButtonGroup></>
-        case 4:
-            return<><h5 style={{ marginTop:'10px'}}>Create Delegates</h5><CSVReader1 files={files} setFiles={setFiles} mode='delegate'/><br></br>
-            <ButtonGroup fullWidth={true}>
-                <Button  onClick={() => setCrea(crea - 1)}> Back </Button>
-                <Button  onClick={() => setCrea(0)} href='/'> Next </Button>
-            </ButtonGroup></>
-        default:
-            break;
-    }
+    return (
+        <><h5 style={{ marginTop:'10px'}}>Create {modes[cindex][0].toUpperCase() + modes[cindex].substring(1)}</h5>
+        <CSVEditor mode={modes[cindex]} files={files} setFiles={setFiles} style={{width:'50%'}}/>
+        <br></br>
+        <ButtonGroup fullWidth={true}>
+            { 
+                cindex == 0 
+                ? <Button  href='/'> Back </Button>
+                : <Button  onClick={() => setCIndex(cindex - 1)}> Back </Button>
+            }
+            { 
+                cindex == 4
+                ? <Button  onClick={() => setCIndex(0)} href='/'> Next </Button>
+                : <Button  onClick={() => setCIndex(cindex + 1)}> Next </Button>
+            }
+        </ButtonGroup></>
+    )
 
 }
 export default Create;

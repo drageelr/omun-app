@@ -69,20 +69,20 @@ function Home({user}){
     const handleStart = async () => {
         setSuca(false);
         setLoada(true);
-        const resp = await start({comitteeId:SessionSt});
+        const res = await start({comitteeId:SessionSt});
         setLoada(false);
         setSuca(true);
     };
     const handleEnd = async () => {
         setSucb(false);
         setLoadb(true);
-        const resp = await end({comitteeId:SessionSt});
+        const res = await end({comitteeId:SessionSt});
         setLoadb(false);
         setSucb(true);
     };
     const handleJoin = async () => {
         setLoadc(true);
-        const resp = await join({comitteeId:SessionSt});
+        const res = await join({comitteeId:SessionSt});
         setLoadc(false);
         window.open("/main","_self");
     };

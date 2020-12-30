@@ -7,37 +7,6 @@ import { toggleTimerOn, toggleTimerOff ,newComittee,newSpeaker,newTopic, startTi
 let total_time;
 let final_time;
  
-//   const mapDispatchToProps = (dispatch)=>{
-//     let temp;
-//     return {
-//         onTimerButtonOn:()=>dispatch(toggleTimerOn()),
-//         onTimerButtonOff:()=>dispatch(toggleTimerOff()),
-//         newSpeakerC:()=>{
-//             let pay= prompt('enter');
-//             dispatch(newSpeaker(pay))
-//         },
-//         newTopicC:()=>{
-//             let pay= prompt('enter');
-//             dispatch(newTopic(pay))
-//         },
-//         newComitteeC:()=>{
-//             let pay= prompt('enter');
-//             dispatch(newComittee(pay))
-//         },
-//         promptTime:()=>{
-//             total_time=prompt('enter Time');
-//             dispatch(startTimer(total_time))
-//             temp=setInterval(()=>{dispatch(tickTimer());if(final_time<=0){return(clearInterval(temp))}},250)
-                
-//         },
-//         stopTime:()=>{
-//             clearInterval(temp)
-//             dispatch(stopTime)
-//         }
-//     }
-//   }
-
-
 
 function Notification ({timerKey,timerOn,speaker,topic,comittee,newSpeakerC,newComitteeC,newTopicC,promptTime,seconds}) {
 
