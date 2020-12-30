@@ -1,6 +1,5 @@
 'use strict'
 
-var { io } = require('../../bin/www');
 var db = require('../mysql');
 var jwt = require('../jwt');
 var customError = require('../../errors/errors');
@@ -46,8 +45,10 @@ const reqEvents = {
 };
 
 async function sendStartInfo(socket) {
-    try {
+    try {        
         let user = socket.userObj;
+        
+        var { io } = require('../../bin/www');
         let nsp = io.of("/" + committeeId);
 
         let reqCommittee = await db.query('SELECT * FROM committee WHERE id = ' + user.committeeId);
@@ -195,7 +196,7 @@ function attachEventListeners(socket) {
 
 function createNameSpace(committeeId) {
     try {
-        let namespaces = Object.keys(io.nsps);
+        let namespaces = Object.keys(namespaceUsers);
 
         if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
 
@@ -205,6 +206,7 @@ function createNameSpace(committeeId) {
 
         namespaceUsers["/" + committeeId] = {};
 
+        var { io } = require('../../bin/www');
         let nsp = io.of("/" + committeeId);
 
         nsp.on('connection', async socket => {
@@ -268,7 +270,7 @@ function createNameSpace(committeeId) {
 
 async function stopNameSpace(committeeId) {
     try {
-        let namespaces = Object.keys(io.nsps);
+        let namespaces = Object.keys(namespaceUsers);
 
         if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
 
@@ -278,6 +280,7 @@ async function stopNameSpace(committeeId) {
         }
         if (n == namespaces.length) { throw new customError.NotFoundError("no running session for this committee found"); }
 
+        var { io } = require('../../bin/www');
         let sockets = io.of("/" + committeeId).nsp;
 
         await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeId);
