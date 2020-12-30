@@ -54,5 +54,13 @@ router.post(
     accountController.changePassword
 );
 
+// API 2.7: Fetch Accounts
+router.post(
+    '/fetch-accounts',
+    validate(accountValidation.fetchAccounts, {keyByField: true}),
+    jwt.verfiyUser,
+    accountController.fetchAccounts
+);
+
 // Export router
 module.exports = router;

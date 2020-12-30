@@ -66,3 +66,11 @@ exports.changePassword = {
         newPassword: Joi.string().min(8).max(30).required()
     })
 }
+
+// API 2.7:
+exports.fetchAccounts = {
+    body: Joi.object({
+        accountType: Joi.string().max(10).required(),
+        attributes: Joi.array().items(Joi.string()).required()
+    })
+}

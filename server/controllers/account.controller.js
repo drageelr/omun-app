@@ -40,7 +40,7 @@ exports.createAdmin = async (req, res, next) => {
         let ids = [];
         for (let i = 0; i < params.admins.length; i++) {
             ids.push(result.insertId + i);
-            sendWelcomeEmail(admins[i].email, admins[i].name, admins[i].password);
+            sendWelcomeEmail(params.admins[i].email, params.admins[i].name, params.admins[i].password);
         }
 
         res.json({
@@ -200,6 +200,41 @@ exports.createDelegate = async (req, res, next) => {
         next(err);
     }
 }
+
+
+exports.fetchAccounts = async (req, res, next) => {
+    try {
+        let params = req.body;
+
+        if (params.user.type != "admin") { throw new customError.ForbiddenAccessError("you can't access this api"); }
+        
+        const accountTypes = ["delegate","admin","dias","country","committee"];
+        if (!accountTypes.includes(params.accountType)) { throw new customError.ValidationError("invalid account type"); }
+        
+        let queryStr = `SELECT ${params.attributes.join(',')} FROM ${params.accountType}`;
+        
+        let result = await db.query(queryStr);
+        
+        let tabulatedData = result.map((item, i) => {
+            let row = []
+            params.attributes.forEach((attr) => {
+                row.push(item[attr])
+            })
+            return row
+        })
+
+        res.json({
+            statusCode: 200,
+            statusName: httpStatus.getName(200),
+            message: `${params.accountType}(s) Fetched Successfully!`,
+            data: tabulatedData
+        });
+
+    } catch(err) {
+        next(err);
+    }
+}
+
 
 exports.changePassword = async (req, res, next) => {
     try {
