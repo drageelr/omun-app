@@ -29,7 +29,9 @@ exports.createCountry = {
         countries: Joi.array().items(Joi.object({
             name: Joi.string().max(100).required(),
             initials: Joi.string().max(20).required(),
-            veto: Joi.boolean().required()
+            veto: Joi.boolean().required(),
+            personality: Joi.bool(),
+            imageName: Joi.string().min(1).max(100)
         })).required()
     })
 };

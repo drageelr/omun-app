@@ -95,11 +95,17 @@ exports.createCountry = async (req, res, next) => {
 
         if (params.user.type != "admin") { throw new customError.ForbiddenAccessError("you can't access this api"); }
 
-        let queryStr = 'INSERT INTO country (name, initials, veto) VALUES ';
+        let queryStr = 'INSERT INTO country (name, initials, veto, personality, imageName) VALUES ';
         let valueStr = '';
         for (let i = 0; i < params.countries.length; i++) {
             if (valueStr != '') { valueStr += ', '; }
-            valueStr += '("' + params.countries[i].name + '", "' + params.countries[i].initials + '", ' + params.countries[i].veto + ')';
+            if (!params.countries[i].personality) { params.countries[i].personality = 0; }
+            valueStr += '("' + params.countries[i].name + '", "' + params.countries[i].initials + '", ' + params.countries[i].veto + ', ' + params.countries[i].personality + ', ';
+            if (!params.countries[i].imageName) {
+                valueStr += 'null)';
+            } else {
+                valueStr += '"' + params.countries[i].imageName + '")';
+            }
         }
 
         if (valueStr == '') { throw new customError.ValidationError("no data sent"); }
