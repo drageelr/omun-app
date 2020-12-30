@@ -59,7 +59,7 @@ exports.handleDelChatFetchForDel = async (socket, params, event) => {
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
             let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_del WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
+                + 'committeeId = ' + user.committeeId + ' AND '
                 + 'sessionId = ' + user.sessionId + ' AND '
                 + 'senderDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND '
                 + 'recipientDelegateId IN (' + user.id + ', ' + params.delegateId + ')'
@@ -100,7 +100,7 @@ exports.handleDelChatFetchForRest = async (socket, params, event) => {
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
             let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_del WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
+                + 'committeeId = ' + user.committeeId + ' AND '
                 + 'sessionId = ' + user.sessionId + ' AND '
                 + 'senderDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ') AND '
                 + 'recipientDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ')'
@@ -141,7 +141,7 @@ exports.handleDiasChatFetchForDel = async (socket, params, event) => {
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
             let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_dias WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
+                + 'committeeId = ' + user.committeeId + ' AND '
                 + 'sessionId = ' + user.sessionId + ' AND '
                 + 'delegateId = ' + user.id + ' AND '
                 + 'diasId = ' + params.diasId
@@ -181,7 +181,7 @@ exports.handleDiasChatFetchForDias = async (socket, params, event) => {
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
             let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_dias WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
+                + 'committeeId = ' + user.committeeId + ' AND '
                 + 'sessionId = ' + user.sessionId + ' AND '
                 + 'delegateId = ' + params.delegateId + ' AND '
                 + 'diasId = ' + user.id

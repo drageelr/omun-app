@@ -2,7 +2,7 @@
 
 /**
  * '/committeeId': { 'type': {id: 'socketId'} }
- * "committeId" is an integer which denotes namespace
+ * "committeeId" is an integer which denotes namespace
  * "type" is a string which denotes "admin", "dias" or "delegate"
  * "id" is an integer represents user's id in DB
  * "socketId" is a string that represents the unique id of the user in the connected namespace
