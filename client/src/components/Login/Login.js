@@ -4,7 +4,7 @@ import { newlogin } from './Actions'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { TextField } from 'formik-material-ui'
-import {Formik, Form, Field} from 'formik'
+import { Formik, Form, Field } from 'formik'
 import * as Yup from 'yup'
 import './Login.css'
 import { css } from "@emotion/core";
@@ -15,7 +15,6 @@ function Login({setIsLoggedIn, setUser}){
     const selectedBGStyle = {backgroundColor: "goldenrod", color:"white"}
     const normalBGStyle = {backgroundColor: "sienna", color:"white"}
     const [userType, setUserType] = React.useState("delegate")
-    const [loada, setLoada] = useState(false)
     const override = css`
     display: block;
     margin: 0 auto;
@@ -38,27 +37,30 @@ function Login({setIsLoggedIn, setUser}){
               .required('Required')
         })}
 
-        onSubmit={ async (values, { setSubmitting }) => {
-            setLoada(true)
+        onSubmit={ async (values, { setSubmitting, setStatus, setErrors }) => {
             console.log(values);
-            const user = await newlogin({email: values.email, password: values.password, userType:userType});
+            try {
+              const user = await newlogin({email: values.email, password: values.password, userType:userType});
+              console.log("User logged in", user);
+              setUser(user);
+              setIsLoggedIn(true);  
+            } catch (e) { // login fails
+              console.error(e);
+              setStatus({message: e});
+            }
             setSubmitting(false);
-            console.log("User logged in", user);
-            setUser(user);
-            setIsLoggedIn(true);
-            setLoada(false)
           }
         }
 
         >
-        {({submitForm, isSubmitting})=> (
+        {({isSubmitting, status})=> (
           
           <Form style={{textAlign:'center'}}>
     
             <h3>Sign In</h3>
 
             <div className="form-group" >
-                <ToggleButtonGroup size="medium" value={userType} exclusive>
+              <ToggleButtonGroup size="medium" value={userType} exclusive>
                 <ToggleButton 
                 value="delegate" 
                 onClick={()=>setUserType("delegate")}
@@ -77,40 +79,44 @@ function Login({setIsLoggedIn, setUser}){
                 style={userType==="admin" ? selectedBGStyle : normalBGStyle}>
                     Admin
                 </ToggleButton>
-                </ToggleButtonGroup>
+              </ToggleButtonGroup>
             </div>
 
             <div className="form-group">
-                <Field
-                  style = {{backgroundColor: 'white'}}
-                  component={TextField}
-                  variant="filled"
-                  margin="normal"
-                  required
-                  label="Email"
-                  name="email"
-                ></Field>
+              <Field
+                style = {{backgroundColor: 'white'}}
+                component={TextField}
+                variant="filled"
+                margin="normal"
+                required
+                label="Email"
+                name="email"
+              ></Field>
             </div>
 
             <div className='form-group'>
-                <Field
-                  style = {{backgroundColor: 'white'}}
-                  component={TextField}
-                  variant="filled"
-                  margin="normal"
-                  required
-                  label="Password"
-                  name="password"
-                  type="password"
-                > 
-                </Field>
+              <Field
+                style = {{backgroundColor: 'white'}}
+                component={TextField}
+                variant="filled"
+                margin="normal"
+                required
+                label="Password"
+                name="password"
+                type="password"
+              > 
+              </Field>
             </div>
             <Button type="submit" color="primary">
               <MoonLoader
-                    css={override}
-                    size={15}
-                    loading={loada}
+                  css={override}
+                  size={15}
+                  loading={isSubmitting}
                 /> Login</Button>
+
+            {status && status.message && (
+              <div className="message">{status.message}</div>
+            )}
           </Form>
         )}
       </Formik>

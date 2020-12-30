@@ -92,7 +92,7 @@ function Home({user}){
         border-color: grey;
     `;
     //localStorage.token
-    if (user.Type === 'admin')
+    if (user.type === 'admin')
     {
         return( 
             <div style={{textAlign:'center'}}>
@@ -110,7 +110,7 @@ function Home({user}){
                     value={SessionSt}
                     onChange={handleChangeSt}
                     >
-                    {sessions.map((value)=> <MenuItem value={value}>{value}</MenuItem>)}
+                    {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
                     </Select>
                 </FormControl>
                 <Button className={classes.button} onClick={handleStart}>
@@ -137,7 +137,7 @@ function Home({user}){
                     value={SessionEn}
                     onChange={handleChangeEn}
                     >
-                    {sessions.map((value)=> <MenuItem value={value}>{value}</MenuItem>)}
+                    {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
                     </Select>
                 </FormControl>
                 <Button className={classes.button} onClick={handleEnd}>
@@ -165,7 +165,7 @@ function Home({user}){
                     value={SessionJ}
                     onChange={handleChangeJ}
                     >
-                    {sessions.map((value)=> <MenuItem value={value}>{value}</MenuItem>)}
+                    {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
                     </Select>
                 </FormControl>
                 <Button className={classes.button} onClick={handleJoin}>
@@ -190,7 +190,7 @@ function Home({user}){
         )
     }
     
-    else if (user.Type==='dias')
+    else if (user.type==='dias')
     return( 
         <div style={{textAlign:'center'}}>
             <h3>Dias Portal</h3>
@@ -215,7 +215,7 @@ function Home({user}){
                     color={"red"}
                     loading={loadb}
                 />
-                { Sucb && <><br/><i>Session Stoped</i></>}
+                { Sucb && <><br/><i>Session Stopped</i></>}
             <br/>
             <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
             <FadeLoader
@@ -233,7 +233,7 @@ function Home({user}){
         </div>
     )
 
-    else if (user.Type==='delegate')
+    else if (user.type==='delegate')
     return( 
         <div style={{textAlign:'center'}}>
             <h3>Delegate Portal</h3>

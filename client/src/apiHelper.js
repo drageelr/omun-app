@@ -26,8 +26,8 @@ export default async function apiCaller(api, body, successCode, dataReturner) {
       const data = await res.json()
 
       if (data.statusCode !==successCode) {
-        throw new Error((data.error !== undefined) 
-        ? `${data.statusCode}: ${data.message} - ${JSON.stringify(data.error.details).replace(/[[]\{}"'\\]+/g, '').split(':').pop()}`
+        throw new Error((data.err !== undefined) 
+        ? `${data.statusCode}: ${data.message} - ${JSON.stringify(data.err.details).replace(/[[]\{}"'\\]+/g, '').split(':').pop()}`
         : `${data.statusCode}: ${data.message}`) 
       }
       return dataReturner(data)

@@ -4,21 +4,7 @@ import './Buttons.css'
 import {Card, CardBody } from 'reactstrap';
 import {leaveSeat , unRaise, raiseP} from '../VirtualAud/Actions';
 
-
 let plaqNotification;
-
-//   const mapDispatchToProps = (dispatch)=>{
-//     return {
-//         unSit:()=>dispatch(leaveSeat()),
-//         raise:()=>dispatch(raiseP()),
-//         unraise:()=>dispatch(unRaise()),
-//         // plaqHandle:(len)=>dispatch(newNotification(plaqNotification)) //Dispatching To Change Plaq State and then adding a new notification 
-
-//     }
-//   }
-
-
-
 
 const handleWindow=() =>{
     window.open('https://google.com')

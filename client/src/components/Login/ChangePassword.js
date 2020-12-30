@@ -1,6 +1,6 @@
 import React , {useState} from 'react'
 import './Login.css'
-import { reset } from './Actions'
+import { changePassword } from './Actions'
 import Button from '@material-ui/core/Button';
 import { ButtonGroup } from '@material-ui/core';
 import { TextField } from 'formik-material-ui'
@@ -9,9 +9,8 @@ import * as Yup from 'yup'
 import { css } from "@emotion/core";
 import FadeLoader from "react-spinners/FadeLoader";
 
-function ResetPassword(){
+function ChangePassword(){
     const [isSubmitting , setSubmitting ] = useState(false);
-    const [loadc, setLoadc] = useState(false)
     const override = css`
         display: block;
         margin: 0 auto;
@@ -35,17 +34,22 @@ function ResetPassword(){
               .required('Required')
         })}
 
-        onSubmit={ async (values) => {
+        onSubmit={ async (values, {setStatus, setSubmitting}) => {
             console.log(values);
-            setLoadc(true);
-            const user = await reset({oldPassword: values.old_pass, newPassword: values.new_pass});
-            setSubmitting(true);
-            setLoadc(false);
+            try {
+              await changePassword({oldPassword: values.old_pass, newPassword: values.new_pass});
+              setStatus({message: "Password changed successfully."});
+            }
+            catch(e) {
+              console.error(e);
+              setStatus({message: e});
+            }
+            setSubmitting(false);
           }
         }
 
         >
-        {({submitForm, isSubmitting})=> (
+        {({isSubmitting, status})=> (
           
           <Form style={{textAlign:'center'}}>
     
@@ -83,12 +87,17 @@ function ResetPassword(){
               width={2}
               radius={10}
               color={"red"}
-              loading={loadc}
+              loading={isSubmitting}
             />
+
             <ButtonGroup fullWidth={true} style={{marginTop:'20px'}}>
                 <Button  href="/" > Back </Button>
                 <Button type="submit"> Reset </Button>
             </ButtonGroup>
+
+            {status && status.message && (
+              <div className="message">{status.message}</div>
+            )}
           </Form>
         )}
       </Formik>
@@ -106,4 +115,4 @@ function ResetPassword(){
     }
 }
 
-export default ResetPassword
+export default ChangePassword
