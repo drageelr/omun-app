@@ -6,8 +6,8 @@ var config = require('../config/config').vars;
 var customError = require('../errors/errors');
 var db = require('./mysql');
 
-exports.signUser = (id, type, expiry) => {
-    return jwt.sign({_id: id, type: type}, config.key, {expiresIn: expiry});
+exports.signUser = (id, type, expiry="12h") => {
+    return jwt.sign({id: id, type: type}, config.key, {expiresIn: expiry});
 }
 
 function decodeToken(token) {
