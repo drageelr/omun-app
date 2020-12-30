@@ -5,7 +5,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { makeStyles } from '@material-ui/core/styles';
 import SaveIcon from '@material-ui/icons/Save';
-import {send} from '../Actions';
+import {send, fetch} from '../Actions';
 import { css } from "@emotion/core";
 import FadeLoader from "react-spinners/FadeLoader";
 import './CSVEditor.css'
@@ -42,14 +42,29 @@ export default function CSVEditor ({mode,files,setFiles}) {
   if (mode==='admins') toSave.push(['id','name','email']);
   if (mode==='committees') toSave.push(['id','name','initials']);
   if (mode==='countries') toSave.push(['id','name','initials','veto']);
-  if (mode==='dias') toSave.push(['id','name','email','title','comitteeId']);
-  if (mode==='delegates') toSave.push(['id','name','email','title','comitteeId', 'countryId']);
+  if (mode==='dias') toSave.push(['id','name','email','title','committeeId']);
+  if (mode==='delegates') toSave.push(['id','name','email','committeeId', 'countryId']);
+
+  async function callFetch() {
+    try{
+      const res = await fetch({attributes: toSave[0],accountType: apiMode[mode]});
+      toSave = toSave.concat(res)
+      setDisplayData(toSave);
+
+    } 
+    catch(e){
+      console.error(e);
+      setStatus(e); 
+    }
+  }
 
   React.useEffect(() => {
     setDisplayData(toSave);
     setStatus([]);
     setRemoveb(false);
     setLoadc(false);
+    callFetch()
+    
   }, [mode]);
 
   const save = (e) => {
@@ -83,10 +98,10 @@ export default function CSVEditor ({mode,files,setFiles}) {
       csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'initials' : item.data[1] , 'veto' : data[2] === 1 ? true : false})});
     }
     else if (mode==='dias') {
-      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] })});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'committeeId' : item.data[3] })});
     }
     else if (mode==='delegates') {
-      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'comitteeId' : item.data[3] ,'countryId' : item.data[4] })});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'committeeId' : item.data[2] ,'countryId' : item.data[3] })});
     }
 
     packet={[mode]: toSend};

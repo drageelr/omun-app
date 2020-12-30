@@ -8,7 +8,7 @@
     display: grid;
     grid-template-columns: 70% 30%; 
 }
-.Comittee-Name, .Current-Topic, .Speaker, .Time-Left{
+.committee-Name, .Current-Topic, .Speaker, .Time-Left{
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: 500%;
     font-size: 103%;

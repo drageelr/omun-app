@@ -24,9 +24,9 @@ export const newTopic = (pay)=>{
         payload:pay
     });
 }
-export const newComittee = (pay)=>{
+export const newcommittee = (pay)=>{
     return ({
-        type:'newComittee',
+        type:'newcommittee',
         payload:pay
     });
 }

@@ -69,20 +69,20 @@ function Home({user}){
     const handleStart = async () => {
         setSuca(false);
         setLoada(true);
-        const res = await start({comitteeId:SessionSt});
+        const res = await start({committeeId:SessionSt});
         setLoada(false);
         setSuca(true);
     };
     const handleEnd = async () => {
         setSucb(false);
         setLoadb(true);
-        const res = await end({comitteeId:SessionSt});
+        const res = await end({committeeId:SessionSt});
         setLoadb(false);
         setSucb(true);
     };
     const handleJoin = async () => {
         setLoadc(true);
-        const res = await join({comitteeId:SessionSt});
+        const res = await join({committeeId:SessionSt});
         setLoadc(false);
         window.open("/main","_self");
     };
@@ -100,7 +100,7 @@ function Home({user}){
                 <h6><i>Welcome {user.name}</i></h6>
                 
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">Comittee Id:</InputLabel>
+                    <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
                     <Select
                     labelId="demo-controlled-open-select-label"
                     id="demo-controlled-open-select"
@@ -127,7 +127,7 @@ function Home({user}){
                 { Suca && <><br/><i>Session Started</i></>}
                 <br/>
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">Comittee Id:</InputLabel>
+                    <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
                     <Select
                     labelId="demo-controlled-open-select-label"
                     id="demo-controlled-open-select"
@@ -155,7 +155,7 @@ function Home({user}){
                 { Sucb && <><br/><i>Session Stoped</i></>}
                 <br/>
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">Comittee Id:</InputLabel>
+                    <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
                     <Select
                     labelId="demo-controlled-open-select-label"
                     id="demo-controlled-open-select"

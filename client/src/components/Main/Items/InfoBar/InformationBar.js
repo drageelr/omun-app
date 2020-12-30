@@ -2,13 +2,13 @@ import React, {useState, useEffect} from 'react'
 import './InformationBar.css'
 import { Progress, Card, CardBody } from 'reactstrap';
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import { toggleTimerOn, toggleTimerOff ,newComittee,newSpeaker,newTopic, startTimer,tickTimer,stopTime} from './Actions';
+import { toggleTimerOn, toggleTimerOff ,newcommittee,newSpeaker,newTopic, startTimer,tickTimer,stopTime} from './Actions';
 
 let total_time;
 let final_time;
  
 
-function Notification ({timerKey,timerOn,speaker,topic,comittee,newSpeakerC,newComitteeC,newTopicC,promptTime,seconds}) {
+function Notification ({timerKey,timerOn,speaker,topic,committee,newSpeakerC,newcommitteeC,newTopicC,promptTime,seconds}) {
 
     let timePassed=seconds/(total_time*60)*100;
     final_time=timePassed
@@ -21,8 +21,8 @@ function Notification ({timerKey,timerOn,speaker,topic,comittee,newSpeakerC,newC
                         
                         <div >
                             {/* <CardText>  */}
-                            <h6 className="Comittee-Name" onClick={newComitteeC}><h5>Committee Name:</h5>
-                                <div id="comitteeName">{comittee}</div>
+                            <h6 className="committee-Name" onClick={newcommitteeC}><h5>Committee Name:</h5>
+                                <div id="committeeName">{committee}</div>
                             </h6> <hr></hr>
                             <h6 className="Current-Topic" onClick={newTopicC}><h5>Current Topic:</h5>
                             <div id="topic">{topic}</div>

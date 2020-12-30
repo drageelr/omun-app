@@ -9,6 +9,15 @@ export async function send(packet,mode) {
     return res.ids; 
 };
 
+export async function fetch(packet) {
+    const res = await apiCaller( '/api/account/fetch-accounts', packet, 200);//api, body, successCode, dataReturner
+    if (typeof(res)=="string"){ //error string
+        throw res;
+    }
+    return res.data; 
+};
+
+
 export async function start(packet) {
     console.log("start",packet);
     const res = await apiCaller( '/api/session/start', packet, 200);//api, body, successCode, dataReturner
