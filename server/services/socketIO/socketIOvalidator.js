@@ -190,12 +190,7 @@ const validations = {
             type: Boolean
         }
     }),
-    'topic-speaker-fetch': new Schema({
-        topicId: {
-            type: Number,
-            required: true
-        }
-    }),
+    'topic-speaker-fetch': undefined,
     'gsl-create': new Schema({
         delegateId: {
             type: Number,

@@ -5,7 +5,6 @@ var db = require('../mysql');
 var customError = require('../../errors/errors');
 var hFuncs = require('../helper-funcs');
 const { namespaceUsers, fetchSocketId } = require('./socketIOusers');
-const { param } = require('../../routes/auth.route');
 
 function emitToSocket(nspName, socketId, event, data = undefined) {
     let sockets = io.of(nspName).sockets;
@@ -543,18 +542,29 @@ exports.handleTopicFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let fetchFrom = params.lastMessageId;
+        let fetchFrom = params.lastTopicId;
         if (fetchFrom < 1) {
-            let maxTopicId = await db.query('SELECT MAX(id) FROM log WHERE '
-                + 'committeeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId
-            );
-            if (!maxLogId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxLogId[0]['MAX(id)']; }
+            fetchFrom = '(SELECT MAX(id) + 1 FROM topic WHERE committeeId = ' + user.committeeId;
         }
-        let fetchTill = fetchFrom - 10;
 
+        let selectQuery = 'SELECT id, delegateId, description, totalTime, speakerTime, visible, timestamp FROM (SELECT id, delegateId, description, totalTime, speakerTime, visible, timestamp FROM topic WHERE ';
+        let restQuery = 'committeeId = ' + user.committeeId + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
+        if (user.type == "delegate") {
+            restQuery = 'visible = 1 AND ' + restQuery;
+        }
 
+        let result = await db.query(selectQuery + restQuery);
+
+        let topics = [];
+        for (let i = 0; i < result.length; i++) {
+            topics.push(hFuncs.duplicateObject(topics[i], ['id', 'delegateId', 'description', 'totalTime', 'speakerTime', 'visible', 'timestamp']));
+        }
+
+        let res = {
+            topics: topics
+        };
+
+        return [res, undefined];
     } catch(err) {
         return [{}, undefined];
     }
@@ -653,7 +663,28 @@ exports.handleTopicSpeakerFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
+        let queryStr = 'SELECT id, delegateId, review, spokenTime, visible, timestamp FROM topic_speaker WHERE topicId IN (SELECT topicId FROM session WHERE id = ' + user.sessionId + ')';
+        let keys = ['id', 'delegateId', 'spokenTime', 'visible', 'timestamp'];
+
+        if (user.type == "delegate") {
+            queryStr += ' AND visible = 1';
+        } else {
+            keys.push('review');
+        }
+
+        let result = await db.query(queryStr);
+
+        let topicSpeakers = [];
         
+        for (let i = 0; i < result.length; i++) {
+            topicSpeakers.push(hFuncs.duplicateObject(result[i], keys));
+        }
+
+        let res = {
+            topicSpeakers: topicSpeakers
+        }
+
+        return [res, undefined];
     } catch(err) {
         return [{}, undefined];
     }
@@ -753,7 +784,27 @@ exports.handleGSLFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        
+        let queryStr = 'SELECT id, delegateId, review, spokenTime, visible, timestampAdded, timestampSpoken FROM gsl WHERE topicId IN (SELECT topicId FROM session WHERE id = ' + user.sessionId + ')';
+        let keys = ['id', 'delegateId', 'spokenTime', 'visible', 'timestampAdded', 'timestampSpoken'];
+
+        if (user.type == "delegate") {
+            queryStr += ' AND visible = 1';
+        } else {
+            keys.push('review');
+        }
+
+        let result = await db.query(queryStr);
+
+        let gsl = [];
+        for (let i = 0; i < result.length; i++) {
+            gsl.push(hFuncs.duplicateObject(result[i], keys));
+        }
+
+        let res = {
+            gsl: gsl
+        }
+
+        return [res, undefined];
     } catch(err) {
         return [{}, undefined];
     }
