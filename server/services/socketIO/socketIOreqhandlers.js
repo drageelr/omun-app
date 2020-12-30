@@ -273,7 +273,7 @@ exports.handleLogFetch = async (socket, params, event) => {
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM log)'; }
         
-        let result = await db.querydb.query('SELECT id, message, timestamp FROM (SELECT id, message, timestamp FROM log WHERE '
+        let result = await db.query('SELECT id, message, timestamp FROM (SELECT id, message, timestamp FROM log WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
             + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
@@ -301,7 +301,7 @@ exports.handleNotificationFetch = async (socket, params, event) => {
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM notification)'; }
         
-        let result = await db.querydb.query('SELECT id, diasId, message, timestamp FROM (SELECT id, diasId, message, timestamp FROM notification WHERE '
+        let result = await db.query('SELECT id, diasId, message, timestamp FROM (SELECT id, diasId, message, timestamp FROM notification WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
             + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
