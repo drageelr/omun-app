@@ -197,6 +197,7 @@ function attachEventListeners(socket) {
 function createNameSpace(committeeId) {
     try {
         let namespaces = Object.keys(namespaceUsers);
+        console.log(namespaces);
 
         if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
 
@@ -205,7 +206,8 @@ function createNameSpace(committeeId) {
         }
 
         namespaceUsers["/" + committeeId] = {};
-
+        console.log(Object.keys(namespaceUsers));
+        
         var { io } = require('../../bin/www');
         let nsp = io.of("/" + committeeId);
 
@@ -271,7 +273,10 @@ function createNameSpace(committeeId) {
 async function stopNameSpace(committeeId) {
     try {
         let namespaces = Object.keys(namespaceUsers);
+        console.log(namespaces);
 
+        let committeeIdNum = committeeId;
+        
         if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
 
         let n = 0;
@@ -283,7 +288,7 @@ async function stopNameSpace(committeeId) {
         var { io } = require('../../bin/www');
         let sockets = io.of("/" + committeeId).nsp;
 
-        await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeId);
+        await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeIdNum);
 
         for (let s of sockets) {
             s.disconnect(true)
