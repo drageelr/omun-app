@@ -10,6 +10,8 @@ var db = require('./services/mysql');
 
 var authRouter = require('./routes/auth.route');
 var accountRouter = require('./routes/account.route');
+var sessionRouter = require('./routes/session.route');
+
 
 var app = express();
 
@@ -20,6 +22,8 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
 app.use('/api/account', accountRouter);
+app.use('/api/session', sessionRouter);
+
 
 app.use(errorHandler);
 

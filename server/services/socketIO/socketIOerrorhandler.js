@@ -1,6 +1,6 @@
 'use strict'
 
-var customError = require('../errors/errors');
+var customError = require('../../errors/errors');
 
 function errorHandler(socket, err) {
     if (err instanceof customError.AuthenticationError ||

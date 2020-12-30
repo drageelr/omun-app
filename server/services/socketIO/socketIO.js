@@ -45,7 +45,7 @@ const reqEvents = {
     'session-edit': IOreqhandlers.handleSessionEdit
 };
 
-function sendStartInfo(socket) {
+async function sendStartInfo(socket) {
     try {
         let user = socket.userObj;
         let nsp = io.of("/" + committeeId);
