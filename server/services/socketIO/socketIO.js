@@ -87,6 +87,8 @@ function sendStartInfo(socket) {
             id: reqSession[0].id,
             topicId: reqSession[0].topicId,
             speakerId: reqSession[0].speakerId,
+            speakerTime: reqSession[0].speakerTime,
+            topicTime: reqSession[0].topicTime,
             type: reqSession[0].type
         }
 

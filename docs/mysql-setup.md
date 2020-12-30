@@ -227,6 +227,8 @@ CREATE TABLE `session` (
   `committeeId` int NOT NULL,
   `topicId` int DEFAULT NULL,
   `speakerId` int DEFAULT NULL,
+  `speakerTime` int NOT NULL DEFAULT '0',
+  `topicTime` int NOT NULL DEFAULT '0',
   `active` tinyint NOT NULL DEFAULT '0',
   `type` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`,`committeeId`),
