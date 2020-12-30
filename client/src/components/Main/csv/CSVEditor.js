@@ -37,7 +37,6 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
   const classes = useStyles();
   let toSave = [];
-  let headers = [];
   let apiMode = {'admins': 'admin', 'countries': 'country', 'committees':'committee', 'delegates':'delegate', 'dias': 'dias'}
 
   if (mode==='admins') toSave.push(['id','name','email']);
@@ -65,11 +64,11 @@ export default function CSVEditor ({mode,files,setFiles}) {
   }
 
   const handleOnFileLoad = async (data) => {
+    setLoadc(true);
     let toSend = [];
     let newS = {...files};
     newS[mode]=data;
     setFiles(newS);
-
     let packet;
     
     const csvArray = data.slice(1) //without header
@@ -100,10 +99,8 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
     console.log(toSave);
     setDisplayData(toSave);
-
     setRemoveb(true);
     
-    setLoadc(true);
     
     try{
       const ids = await send(packet,apiMode[mode]);
@@ -129,7 +126,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
     delete newS[mode];
     setFiles(newS);
     setRemoveb(false);
-    setDisplayData([]);
+    setDisplayData([displayData[0]]);
   }
 
   const handleRemoveFile = (e) =>  {
