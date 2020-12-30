@@ -2,7 +2,6 @@
 
 var { ValidationError } = require('../../errors/errors');
 var Schema = require('validate');
-const { string } = require('@hapi/joi');
 
 const validations = {
     // Chat Management
@@ -91,6 +90,22 @@ const validations = {
             type: String,
             required: true,
             length: { min: 1, max: 250 }
+        }
+    }),
+
+    // Seat Management
+    'seat-sit': new Schema({
+        seatId: {
+            type: Number,
+            required: true,
+            size: { min: 1, max: 50 }
+        }
+    }),
+    'seat-unsit': undefined,
+    'seat-placard': new Schema({
+        placard: {
+            type: Boolean,
+            required: true
         }
     })
 }

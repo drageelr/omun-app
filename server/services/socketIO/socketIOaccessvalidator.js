@@ -14,8 +14,12 @@ const eventAccess = {
     // Log & Notification Management
     'log-fetch': ["admin", "dias"],
     'notif-fetch': ["admin", "dias", "delegate"],
-    'notif-send': ["admin", "dias"]
+    'notif-send': ["dias"],
 
+    // Seat Management
+    'seat-sit': ["delegate"],
+    'seat-unsit': ["delegate"],
+    'seat-placard': ["delegate"]
 };
 
 exports.validateAccess = (event, type) => {

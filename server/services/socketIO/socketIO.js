@@ -18,7 +18,17 @@ const reqEvents = {
     'dias-chat-fetch|DEL': IOreqhandlers.handleDiasChatFetchForDel,
     'dias-chat-fetch|DIAS': IOreqhandlers.handleDiasChatFetchForDias,
     'del-chat-send': IOreqhandlers.handleDelChatSend,
-    'dias-chat-send': IOreqhandlers.handleDiasChatSend
+    'dias-chat-send': IOreqhandlers.handleDiasChatSend,
+
+    // Log & Notification Management
+    'log-fetch': IOreqhandlers.handleLogFetch,
+    'notif-fetch': IOreqhandlers.handleNotificationFetch,
+    'notif-send': IOreqhandlers.handleNotificationSend,
+
+    // Seat Management
+    'seat-sit': IOreqhandlers.handleSeatSit,
+    'seat-unsit': IOreqhandlers.handleSeatUnSit,
+    'seat-placard': IOreqhandlers.handleSeatPlacard
 };
 
 function sendStartInfo(socket) {
