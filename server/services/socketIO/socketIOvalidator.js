@@ -107,6 +107,128 @@ const validations = {
             type: Boolean,
             required: true
         }
+    }),
+
+    // Topic & GSL Management
+    'topic-create': new Schema({
+        delegateId: {
+            type: Number,
+            required: true
+        },
+        description: {
+            type: String,
+            required: true,
+            length: { min: 0, max: 250 }
+        },
+        totalTime: {
+            type: Number,
+            required: true
+        },
+        speakerTime: {
+            type: Number,
+            required: true
+        }
+    }),
+    'topic-edit': new Schema({
+        topicId: {
+            type: Number,
+            required: true
+        },
+        delegateId: {
+            type: Number,
+        },
+        description: {
+            type: String,
+            length: { min: 0, max: 250 }
+        },
+        totalTime: {
+            type: Number,
+        },
+        speakerTime: {
+            type: Number,
+        },
+        visible: {
+            type: Boolean
+        }
+    }),
+    'topic-fetch': new Schema({
+        lastTopicId: {
+            type: Number,
+            required: true
+        }
+    }),
+    'topic-speaker-create': new Schema({
+        topicId: {
+            type: Number,
+            required: true
+        },
+        delegateId: {
+            type: Number,
+            required: true
+        },
+    }),
+    'topic-speaker-edit': new Schema({
+        topicSpeakerId: {
+            type: Number,
+            required: true
+        },
+        topicId: {
+            type: Number,
+            required: true
+        },
+        delegateId: {
+            type: Number
+        },
+        review: {
+            type: String,
+            length: { min: 0, max: 500 }
+        },
+        spokenTime: {
+            type: Number
+        },
+        visible: {
+            type: Boolean
+        }
+    }),
+    'topic-speaker-fetch': new Schema({
+        topicId: {
+            type: Number,
+            required: true
+        }
+    }),
+    'gsl-create': new Schema({
+        delegateId: {
+            type: Number,
+            required: true
+        }
+    }),
+    'gsl-edit': new Schema({
+        gslId: {
+            type: Number,
+            required: true
+        },
+        delegateId: {
+            type: Number
+        },
+        review: {
+            type: String,
+            length: { min: 0, max: 500 }
+        },
+        spokenTime: {
+            type: Number
+        },
+        visible: {
+            type: Boolean
+        },
+        timestampSpoken: {
+            type: Boolean
+        }
+    }),
+    'gsl-fetch': new Schema({
+        lastGSLId: {
+            type: Number,
+            required: true
+        }
     })
 }
 

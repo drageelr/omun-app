@@ -28,7 +28,18 @@ const reqEvents = {
     // Seat Management
     'seat-sit': IOreqhandlers.handleSeatSit,
     'seat-unsit': IOreqhandlers.handleSeatUnSit,
-    'seat-placard': IOreqhandlers.handleSeatPlacard
+    'seat-placard': IOreqhandlers.handleSeatPlacard,
+
+    // MOD & GSL Management
+    'topic-create': IOreqhandlers.handleTopicCreate,
+    'topic-edit': IOreqhandlers.handleTopicEdit,
+    'topic-fetch': IOreqhandlers.handleTopicFetch,
+    'topic-speaker-create': IOreqhandlers.handleTopicSpeakerCreate,
+    'topic-speaker-edit': IOreqhandlers.handleTopicSpeakerEdit,
+    'topic-speaker-fetch': IOreqhandlers.handleTopicSpeakerFetch,
+    'gsl-create': IOreqhandlers.handleGSLCreate,
+    'gsl-edit': IOreqhandlers.handleGSLEdit,
+    'gsl-fetch': IOreqhandlers.handleGSLFetch
 };
 
 function sendStartInfo(socket) {

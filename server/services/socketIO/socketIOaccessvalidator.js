@@ -19,7 +19,18 @@ const eventAccess = {
     // Seat Management
     'seat-sit': ["delegate"],
     'seat-unsit': ["delegate"],
-    'seat-placard': ["delegate"]
+    'seat-placard': ["delegate"],
+
+    // Topic & GSL Management
+    'topic-create': ["dias"],
+    'topic-edit': ["dias"],
+    'topic-fetch': ["admin", "dias", "delegate"],
+    'topic-speaker-create': ["dias"],
+    'topic-speaker-edit': ["dias"],
+    'topic-speaker-fetch': ["admin", "dias", "delegate"],
+    'gsl-create': ["dias"],
+    'gsl-edit': ["dias"],
+    'gsl-fetch': ["admin", "dias", "delegate"],
 };
 
 exports.validateAccess = (event, type) => {
