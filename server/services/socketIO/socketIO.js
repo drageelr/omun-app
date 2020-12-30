@@ -290,8 +290,9 @@ async function stopNameSpace(committeeId) {
 
         await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeIdNum);
 
-        for (let s of sockets) {
-            s.disconnect(true)
+        let sKeys = Object.keys(sockets);
+        for (let i = 0; i < sKeys.length; i++) {
+            sockets[sKeys[i]].disconnect(true);
         }
 
         namespaceUsers["/" + committeeId] = {};
