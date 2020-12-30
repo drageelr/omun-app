@@ -18,7 +18,7 @@
 |-|----|-----------|-----|------------|--------------|-------------------------|------|
 |1|Create Admins|Create Admins in Bulk|`/api/account/create/admin`|`{admins*: [name*: String.max(50), email*: String.max(50)]}`|POST|`{ids: [Number]}`|`Admin`|
 |2|Create Committee|Create Committees in Bulk|`/api/account/create/committee`|`{committees*: [{name*: String.max(100), initials*: String.max(20)}]}`|POST|`{ids: [Number]}`|`Admin`|
-|3|Create Countries|Create Countries in Bulk|`/api/account/create/country`|`{{countries*: [{name*: String.max(100), initials*: String.max(20), veto*: Boolean}]}}`|POST|`{ids: [Number]}`|`Admin`|
+|3|Create Countries|Create Countries in Bulk|`/api/account/create/country`|`{{countries*: [{name*: String.max(100), initials*: String.max(20), veto*: Boolean, personality: Boolean, imageName: String.min(1).max(100)}]}}`|POST|`{ids: [Number]}`|`Admin`|
 |4|Create Dias|Create Dias in Bulk|`/api/account/create/dias`|`{dias*: [name*: String.max(50), email*: String.max(50), title*: String.max(10), committeeId*: Number]}`|POST|`{ids: [Number]}`|`Admin`|
 |5|Create Delegates|Create Delegates in Bulk|`/api/account/create/delegate`|`{delegates*: [name*: String.max(50), email*: String.max(50), title*: String.max(10), committeeId*: Number, countryId*: Number]}`|POST|`{ids: [Number]}`|`Admin`|
 |6|Change Password|Change password for Admin/Dias/Delegate|`/api/account/change-password`|`{oldPassword*: String.min(8).max(30), newPassword: String.min(8).max(30)}`|POST|`{}`|`Admin`, `Dias`, `Delegate`|
