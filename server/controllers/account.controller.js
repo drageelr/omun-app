@@ -135,12 +135,12 @@ exports.createDias = async (req, res, next) => {
 
         if (params.user.type != "admin") { throw new customError.ForbiddenAccessError("you can't access this api"); }
 
-        let queryStr = 'INSERT INTO dias (name, email, password, committeeId) VALUES ';
+        let queryStr = 'INSERT INTO dias (name, email, title, password, committeeId) VALUES ';
         let valueStr = '';
         for (let i = 0; i < params.dias.length; i++) {
             if (valueStr != '') { valueStr += ', '; }
             params.dias[i].password = genPass()
-            valueStr += '("' + params.dias[i].name + '", "' + params.dias[i].email + '", "' + hFuncs.hash(params.dias[i].password) + '", ' + params.dias[i].committeeId + ')';
+            valueStr += '("' + params.dias[i].name + '", "' + params.dias[i].email +  '", "' + params.dias[i].title + '", "' + hFuncs.hash(params.dias[i].password) + '", ' + params.dias[i].committeeId + ')';
         }
 
         if (valueStr == '') { throw new customError.ValidationError("no data sent"); }
@@ -150,7 +150,7 @@ exports.createDias = async (req, res, next) => {
         let ids = [];
         for (let i = 0; i < params.dias.length; i++) {
             ids.push(result.insertId + i);
-            sendWelcomeEmail(dias[i].email, dias[i].name, dias[i].password);
+            sendWelcomeEmail(params.dias[i].email, params.dias[i].name, params.dias[i].password);
         }
 
         res.json({
@@ -186,7 +186,7 @@ exports.createDelegate = async (req, res, next) => {
         let ids = [];
         for (let i = 0; i < params.delegates.length; i++) {
             ids.push(result.insertId + i);
-            sendWelcomeEmail(delegates[i].email, delegates[i].name, delegates[i].password);
+            sendWelcomeEmail(params.delegates[i].email, params.delegates[i].name, params.delegates[i].password);
         }
 
         res.json({

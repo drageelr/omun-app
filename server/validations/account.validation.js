@@ -42,7 +42,8 @@ exports.createDias = {
         dias: Joi.array().items(Joi.object({
             name: Joi.string().max(50).required(),
             email: Joi.string().email().max(50).required(),
-            committeId: Joi.number().required()
+            title: Joi.string().max(10).required(),
+            committeeId: Joi.number().required()
         })).required()
     })
 };
@@ -53,7 +54,7 @@ exports.createDelegate = {
         delegates: Joi.array().items(Joi.object({
             name: Joi.string().max(50).required(),
             email: Joi.string().email().max(50).required(),
-            committeId: Joi.number().required(),
+            committeeId: Joi.number().required(),
             countryId: Joi.number().required()
         })).required()
     })

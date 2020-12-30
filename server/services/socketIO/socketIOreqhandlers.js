@@ -58,8 +58,20 @@ exports.handleDelChatFetchForDel = async (socket, params, event) => {
         let user = socket.userObj;
         
         let fetchFrom = params.lastMessageId;
+<<<<<<< HEAD
         if (fetchFrom < 1) { 
             fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_del WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND senderDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND recipientDelegateId IN (' + user.id + ', ' + params.delegateId + '))'; 
+=======
+        if (fetchFrom < 1) {
+            let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_del WHERE '
+                + 'committeeId = ' + user.committeeId + ' AND '
+                + 'sessionId = ' + user.sessionId + ' AND '
+                + 'senderDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND '
+                + 'recipientDelegateId IN (' + user.id + ', ' + params.delegateId + ')'
+            );
+            if (!maxMsgId[0]['MAX(id)']) { fetchFrom = 0; }
+            else { fetchFrom = maxMsgId[0]['MAX(id)']; }
+>>>>>>> 270cab60c17700a5b65d1feba98767940c55b3de
         }
 
         let result = await db.query('SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM (SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM chat_message_del_del WHERE '
