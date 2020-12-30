@@ -56,25 +56,18 @@ async function generateAndBroadcastLog(committeeId, sessionId, message, timestam
 exports.handleDelChatFetchForDel = async (socket, params, event) => {
     try {
         let user = socket.userObj;
+        
         let fetchFrom = params.lastMessageId;
-        if (fetchFrom < 1) {
-            let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_del WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId + ' AND '
-                + 'senderDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND '
-                + 'recipientDelegateId IN (' + user.id + ', ' + params.delegateId + ')'
-            );
-            if (!maxMsgId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxMsgId[0]['MAX(id)']; }
+        if (fetchFrom < 1) { 
+            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_del WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND senderDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND recipientDelegateId IN (' + user.id + ', ' + params.delegateId + '))'; 
         }
-        let fetchTill = fetchFrom - 10;
-        let result = await db.query('SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM chat_message_del_del WHERE '
+
+        let result = await db.query('SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM (SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM chat_message_del_del WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
             + 'senderDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND '
             + 'recipientDelegateId IN (' + user.id + ', ' + params.delegateId + ') AND '
-            + 'id < ' + fetchFrom + ' AND '
-            + 'id > ' + fetchTill + ' ORDER BY id ASC'
+            + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
         );
         
         let chat = [];
@@ -97,25 +90,18 @@ exports.handleDelChatFetchForDel = async (socket, params, event) => {
 exports.handleDelChatFetchForRest = async (socket, params, event) => {
     try {
         let user = socket.userObj;
+        
         let fetchFrom = params.lastMessageId;
-        if (fetchFrom < 1) {
-            let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_del WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId + ' AND '
-                + 'senderDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ') AND '
-                + 'recipientDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ')'
-            );
-            if (!maxMsgId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxMsgId[0]['MAX(id)']; }
+        if (fetchFrom < 1) { 
+            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_del WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND senderDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ') AND recipientDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + '))'; 
         }
-        let fetchTill = fetchFrom - 10;
-        let result = await db.query('SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM chat_message_del_del WHERE '
+
+        let result = await db.query('SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM (SELECT id, senderDelegateId, recipientDelegateId, message, timestamp FROM chat_message_del_del WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
             + 'senderDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ') AND '
             + 'recipientDelegateId IN (' + params.delegate1Id + ', ' + params.delegate2Id + ') AND '
-            + 'id < ' + fetchFrom + ' AND '
-            + 'id > ' + fetchTill + ' ORDER BY id ASC'
+            + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
         );
         
         let chat = [];
@@ -138,25 +124,18 @@ exports.handleDelChatFetchForRest = async (socket, params, event) => {
 exports.handleDiasChatFetchForDel = async (socket, params, event) => {
     try {
         let user = socket.userObj;
+
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
-            let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_dias WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId + ' AND '
-                + 'delegateId = ' + user.id + ' AND '
-                + 'diasId = ' + params.diasId
-            );
-            if (!maxMsgId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxMsgId[0]['MAX(id)']; }
+            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_dias WHERE committeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND delegateId = ' + user.id + ' AND diasId = ' + params.diasId + ')';
         }
-        let fetchTill = fetchFrom - 10;
-        let result = await db.query('SELECT id, delegateId, diasId, message, diasSent, timestamp FROM chat_message_del_dias WHERE '
+
+        let result = await db.query('SELECT id, delegateId, diasId, message, diasSent, timestamp FROM (SELECT id, delegateId, diasId, message, diasSent, timestamp FROM chat_message_del_dias WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
             + 'delegateId = ' + user.id + ' AND '
             + 'diasId = ' + params.diasId + ' AND '
-            + 'id < ' + fetchFrom + ' AND '
-            + 'id > ' + fetchTill + ' ORDER BY id ASC'
+            + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
         );
         
         let chat = [];
@@ -178,25 +157,18 @@ exports.handleDiasChatFetchForDel = async (socket, params, event) => {
 exports.handleDiasChatFetchForDias = async (socket, params, event) => {
     try {
         let user = socket.userObj;
+
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
-            let maxMsgId = await db.query('SELECT MAX(id) FROM chat_message_del_dias WHERE '
-                + 'committeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId + ' AND '
-                + 'delegateId = ' + params.delegateId + ' AND '
-                + 'diasId = ' + user.id
-            );
-            if (!maxMsgId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxMsgId[0]['MAX(id)']; }
+            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_dias WHERE committeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND delegateId = ' + params.delegateId + ' AND diasId = ' + user.id + ')';
         }
-        let fetchTill = fetchFrom - 10;
-        let result = await db.query('SELECT id, delegateId, diasId, message, diasSent, timestamp FROM chat_message_del_dias WHERE '
+
+        let result = await db.query('SELECT id, delegateId, diasId, message, diasSent, timestamp FROM (SELECT id, delegateId, diasId, message, diasSent, timestamp FROM chat_message_del_dias WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
             + 'delegateId = ' + params.delegateId + ' AND '
             + 'diasId = ' + user.id + ' AND '
-            + 'id < ' + fetchFrom + ' AND '
-            + 'id > ' + fetchTill + ' ORDER BY id ASC'
+            + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
         );
         
         let chat = [];
@@ -287,21 +259,12 @@ exports.handleLogFetch = async (socket, params, event) => {
         let user = socket.userObj;
 
         let fetchFrom = params.lastMessageId;
-        if (fetchFrom < 1) {
-            let maxLogId = await db.query('SELECT MAX(id) FROM log WHERE '
-                + 'committeeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId
-            );
-            if (!maxLogId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxLogId[0]['MAX(id)']; }
-        }
-        let fetchTill = fetchFrom - 10;
+        if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM log)'; }
         
-        let result = await db.querydb.query('SELECT id, message, timestamp FROM log WHERE '
+        let result = await db.querydb.query('SELECT id, message, timestamp FROM (SELECT id, message, timestamp FROM log WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
-            + 'id < ' + fetchFrom + ' AND '
-            + 'id > ' + fetchTill + ' ORDER BY id ASC'
+            + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
         );
 
         let logs = [];
@@ -324,21 +287,12 @@ exports.handleNotificationFetch = async (socket, params, event) => {
         let user = socket.userObj;
 
         let fetchFrom = params.lastMessageId;
-        if (fetchFrom < 1) {
-            let maxNotifId = await db.query('SELECT MAX(id) FROM notification WHERE '
-                + 'committeeId = ' + user.committeeId + ' AND '
-                + 'sessionId = ' + user.sessionId
-            );
-            if (!maxNotifId[0]['MAX(id)']) { fetchFrom = 0; }
-            else { fetchFrom = maxNotifId[0]['MAX(id)']; }
-        }
-        let fetchTill = fetchFrom - 10;
+        if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM notification)'; }
         
-        let result = await db.querydb.query('SELECT id, diasId, message, timestamp FROM notification WHERE '
+        let result = await db.querydb.query('SELECT id, diasId, message, timestamp FROM (SELECT id, diasId, message, timestamp FROM notification WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'sessionId = ' + user.sessionId + ' AND '
-            + 'id < ' + fetchFrom + ' AND '
-            + 'id > ' + fetchTill + ' ORDER BY id ASC'
+            + 'id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
         );
 
         let notifications = [];
@@ -589,7 +543,18 @@ exports.handleTopicFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        
+        let fetchFrom = params.lastMessageId;
+        if (fetchFrom < 1) {
+            let maxTopicId = await db.query('SELECT MAX(id) FROM log WHERE '
+                + 'committeeId = ' + user.committeeId + ' AND '
+                + 'sessionId = ' + user.sessionId
+            );
+            if (!maxLogId[0]['MAX(id)']) { fetchFrom = 0; }
+            else { fetchFrom = maxLogId[0]['MAX(id)']; }
+        }
+        let fetchTill = fetchFrom - 10;
+
+
     } catch(err) {
         return [{}, undefined];
     }
@@ -793,6 +758,8 @@ exports.handleGSLFetch = async (socket, params, event) => {
         return [{}, undefined];
     }
 }
+
+// Session Management
 
 exports.handleSessionEdit = async (socket, params, event) => {
     try {
