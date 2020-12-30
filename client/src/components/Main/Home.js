@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import $ from 'jquery'
-import {start , end , join } from './Actions';
+import {start , end , join } from '../Create/Actions';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -95,97 +95,99 @@ function Home({user}){
     if (user.type === 'admin')
     {
         return( 
-            <div style={{textAlign:'center'}}>
-                <h3>Admin Portal</h3>
-                <h6><i>Welcome {user.name}</i></h6>
-                
-                <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
-                    <Select
-                    labelId="demo-controlled-open-select-label"
-                    id="demo-controlled-open-select"
-                    open={openSt}
-                    onClose={handleCloseSt}
-                    onOpen={handleOpenSt}
-                    value={SessionSt}
-                    onChange={handleChangeSt}
-                    >
-                    {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <Button className={classes.button} onClick={handleStart}>
-                    Start
-                </Button>
-                <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    color={"red"}
-                    loading={loada}
-                />
-                { Suca && <><br/><i>Session Started</i></>}
-                <br/>
-                <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
-                    <Select
-                    labelId="demo-controlled-open-select-label"
-                    id="demo-controlled-open-select"
-                    open={openEn}
-                    onClose={handleCloseEn}
-                    onOpen={handleOpenEn}
-                    value={SessionEn}
-                    onChange={handleChangeEn}
-                    >
-                    {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <Button className={classes.button} onClick={handleEnd}>
-                    Stop
-                </Button>
-                <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    margin={1}
-                    color={"red"}
-                    loading={loadb}
-                />
-                { Sucb && <><br/><i>Session Stoped</i></>}
-                <br/>
-                <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
-                    <Select
-                    labelId="demo-controlled-open-select-label"
-                    id="demo-controlled-open-select"
-                    open={openJ}
-                    onClose={handleCloseJ}
-                    onOpen={handleOpenJ}
-                    value={SessionJ}
-                    onChange={handleChangeJ}
-                    >
-                    {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <Button className={classes.button} onClick={handleJoin}>
-                    Join
-                </Button>
-                <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    margin={1}
-                    color={"red"}
-                    loading={loadc}
-                />
-                <br/>
-                <Button color="primary" href="/Create">Create Entries</Button>
-                <br/>
-                <Button color="primary" href="/ChangePassword">Change Password</Button>
-                <br/>
-                <Button color="secondary" href="/">Signout</Button>
+            <div className="auth-inner">
+                <div style={{textAlign:'center'}}>
+                    <h3>Admin Portal</h3>
+                    <h6><i>Welcome {user.name}</i></h6>
+                    
+                    <FormControl className={classes.formControl}>
+                        <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
+                        <Select
+                        labelId="demo-controlled-open-select-label"
+                        id="demo-controlled-open-select"
+                        open={openSt}
+                        onClose={handleCloseSt}
+                        onOpen={handleOpenSt}
+                        value={SessionSt}
+                        onChange={handleChangeSt}
+                        >
+                        {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <Button className={classes.button} onClick={handleStart}>
+                        Start
+                    </Button>
+                    <FadeLoader
+                        css={override}
+                        height={13}
+                        width={2}
+                        radius={10}
+                        color={"red"}
+                        loading={loada}
+                    />
+                    { Suca && <><br/><i>Session Started</i></>}
+                    <br/>
+                    <FormControl className={classes.formControl}>
+                        <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
+                        <Select
+                        labelId="demo-controlled-open-select-label"
+                        id="demo-controlled-open-select"
+                        open={openEn}
+                        onClose={handleCloseEn}
+                        onOpen={handleOpenEn}
+                        value={SessionEn}
+                        onChange={handleChangeEn}
+                        >
+                        {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <Button className={classes.button} onClick={handleEnd}>
+                        Stop
+                    </Button>
+                    <FadeLoader
+                        css={override}
+                        height={13}
+                        width={2}
+                        radius={10}
+                        margin={1}
+                        color={"red"}
+                        loading={loadb}
+                    />
+                    { Sucb && <><br/><i>Session Stoped</i></>}
+                    <br/>
+                    <FormControl className={classes.formControl}>
+                        <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
+                        <Select
+                        labelId="demo-controlled-open-select-label"
+                        id="demo-controlled-open-select"
+                        open={openJ}
+                        onClose={handleCloseJ}
+                        onOpen={handleOpenJ}
+                        value={SessionJ}
+                        onChange={handleChangeJ}
+                        >
+                        {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <Button className={classes.button} onClick={handleJoin}>
+                        Join
+                    </Button>
+                    <FadeLoader
+                        css={override}
+                        height={13}
+                        width={2}
+                        radius={10}
+                        margin={1}
+                        color={"red"}
+                        loading={loadc}
+                    />
+                    <br/>
+                    <Button color="primary" href="/Create">Create Entries</Button>
+                    <br/>
+                    <Button color="primary" href="/ChangePassword">Change Password</Button>
+                    <br/>
+                    <Button color="secondary" href="/">Signout</Button>
+                </div>
             </div>
         )
     }

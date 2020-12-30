@@ -21,6 +21,7 @@ function Login({setIsLoggedIn, setUser}){
     border-color: grey;
 `;
     return (
+      <div className="auth-inner">
         <Formik
         validateOnChange={false} validateOnBlur={true}
         
@@ -120,7 +121,7 @@ function Login({setIsLoggedIn, setUser}){
           </Form>
         )}
       </Formik>
-            
+      </div>
     );
 }
 

@@ -6,7 +6,8 @@ import ChangePassword from './components/Login/ChangePassword'
 import MainScreen from './components/Main/MainScreen';
 import Home from './components/Main/Home';
 import './App.css';
-import Create from './components/Main/Create';
+import Create from './components/Create/Create';
+
 
 
 function App() {
@@ -16,20 +17,18 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <div className="auth-wrapper">
             <Switch>
               <Route exact path='/main' component={MainScreen}/>
-              <div className="auth-wrapper">
-                <div className="auth-inner">
                 <Route exact path='/' component={ 
                   isLoggedIn ?                           
-                  () => <Home user={user} />: 
-                  () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
+                  () => <Home user={user} />
+                  : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                 }/>
                 <Route exact path='/Create' component={Create}/>
                 <Route exact path='/ChangePassword' component={ChangePassword}/>
-                </div>
-              </div>
             </Switch>
+        </div>
       </div>
     </Router>
   );

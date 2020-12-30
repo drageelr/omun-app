@@ -5,10 +5,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { makeStyles } from '@material-ui/core/styles';
 import SaveIcon from '@material-ui/icons/Save';
-import {send, fetch} from '../Actions';
+import {send, fetch} from './Actions';
 import { css } from "@emotion/core";
 import FadeLoader from "react-spinners/FadeLoader";
-import './CSVEditor.css'
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -30,7 +29,6 @@ function saveArrayCSV(csvArray, fname){
 }
 
 export default function CSVEditor ({mode,files,setFiles}) {
-  const [removeb, setRemoveb] = useState(false)
   const [loadc, setLoadc] = useState(false)
   const [status, setStatus] = useState('')
   const [displayData, setDisplayData] = useState([])
@@ -61,7 +59,6 @@ export default function CSVEditor ({mode,files,setFiles}) {
   React.useEffect(() => {
     setDisplayData(toSave);
     setStatus([]);
-    setRemoveb(false);
     setLoadc(false);
     callFetch()
     
@@ -106,6 +103,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
     packet={[mode]: toSend};
 
+    toSave = displayData;
     csvArray.forEach((item,i)=> {
       let itemData = item.data;
       itemData.unshift(i);
@@ -114,14 +112,14 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
     console.log(toSave);
     setDisplayData(toSave);
-    setRemoveb(true);
     
     
     try{
       const ids = await send(packet,apiMode[mode]);
       setStatus("Creation successful.");
-
-      toSave.slice(1).forEach((item, i) => { item[0] = ids[i]; })
+      
+      const prevElems = toSave.length-ids.length; //to append ids from that point onwards
+      toSave.slice(prevElems).forEach((item, i) => { item[0] = ids[i]; })
       setDisplayData(toSave);
     } 
     catch(e){
@@ -134,21 +132,6 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
   const handleOnError = (err, file, inputElem, reason) => {
     alert(err)
-  }
-
-  const handleOnRemoveFile = (data) => {
-    let newS = {...files};
-    delete newS[mode];
-    setFiles(newS);
-    setRemoveb(false);
-    setDisplayData([displayData[0]]);
-  }
-
-  const handleRemoveFile = (e) =>  {
-    // Note that the ref is set async, so it might be null at some point
-    if (buttonRef.current) {
-      buttonRef.current.removeFile(e)
-    }
   }
 
   const override = css`
@@ -165,30 +148,33 @@ export default function CSVEditor ({mode,files,setFiles}) {
           onError={handleOnError}
           noClick
           Drag
-          onRemoveFile={handleOnRemoveFile}
         >
           {({ file }) => (
             <div>
-                <table id="csvTable">
-                  <thead>
-                    <tr>
-                      {displayData[0] && displayData[0].map((header, index) => {
-                        return <th key={index}>{header}</th>;
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayData.slice(1).map((row, i) => (
-                      <tr key={i}>
-                        {
-                          row.map((item, j) =>  (
-                            <td key={j}>{item}</td>
-                          ))
-                        }
+              <div id="table-wrapper">
+                <div id="table-scroll">
+                  <table id="csvTable">
+                    <thead>
+                      <tr>
+                        {displayData[0] && displayData[0].map((header, index) => {
+                          return <th key={index}>{header}</th>;
+                        })}
                       </tr>
-                    ))}
-                  </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {displayData.slice(1).map((row, i) => (
+                        <tr key={i}>
+                          {
+                            row.map((item, j) =>  (
+                              <td key={j}>{item}</td>
+                            ))
+                          }
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <aside
               style={{
                 display: 'flex',
@@ -206,16 +192,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
                 > Upload
                 </Button>
             
-                <Button
-                  onClick={handleRemoveFile}
-                  color="secondary"
-                  size="small"
-                  disabled={!removeb}
-                  className={classes.button}
-                  startIcon={<DeleteIcon />}
-                > Remove
-                </Button>
-                
+               
                 <Button
                     onClick={save}
                     color="primary"

@@ -29,7 +29,7 @@ body, html, .App, #root, .auth-wrapper {
   text-align: left;
 }
 
-.auth-inner {
+.auth-inner, .create-inner {
   width: 400px;
   margin: auto;
   background: #ffffff;
