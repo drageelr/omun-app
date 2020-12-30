@@ -229,6 +229,26 @@ const validations = {
             type: Number,
             required: true
         }
+    }),
+
+    // Session Management
+    'session-edit': new Schema({
+        topicId: {
+            type: Number
+        },
+        speakerId: {
+            type: Number
+        },
+        sessionTime: {
+            type: Number
+        },
+        topicTime: {
+            type: Number
+        },
+        type: {
+            type: String,
+            length: { min: 0, max: 10 }
+        }
     })
 }
 

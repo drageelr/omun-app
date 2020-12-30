@@ -748,7 +748,7 @@ exports.handleGSLEdit = async (socket, params, event) => {
             params.timestampSpoken = hFuncs.parseDate();
         }
 
-        const keys = ['delegateId', 'review', 'spokenTime', 'visible', 'timeStampSpoken'];
+        const keys = ['delegateId', 'review', 'spokenTime', 'visible', 'timestampSpoken'];
         const kType = [0, 1, 0, 0, 1];
         let updateQueryStr = 'UPDATE gsl SET ';
         let whereQueryStr = ' WHERE id = ' + params.topicSpeakerId  + ' AND topicId = ' + params.topicId;
@@ -791,5 +791,52 @@ exports.handleGSLFetch = async (socket, params, event) => {
         
     } catch(err) {
         return [{}, undefined];
+    }
+}
+
+exports.handleSessionEdit = async (socket, params, event) => {
+    try {
+        let user = socket.userObj;
+
+        if (params.speakerId !== undefined) {
+            let reqDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.speakerId + ' AND committeeId = ' + params.committeeId);
+            if (!reqDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
+        }
+
+        let res = {};
+
+        const keys = ['topicId', 'speakerId', 'speakerTime', 'topicTime', 'type'];
+        const kType = [0, 0, 0, 0, 1];
+        let updateQueryStr = 'UPDATE session SET ';
+        let whereQueryStr = ' WHERE id = ' + user.sessionId  + ' AND committeeId = ' + user.committeeId;
+        for (let i = 0; i < keys.length; i++) {
+            if (params[keys[i]] !== undefined) {
+                res[keys[i]] = params[keys[i]];
+                if (updateQueryStr != 'UPDATE session SET ') { updateQueryStr += ' AND '; }
+                updateQueryStr += keys[i] + ' = ';
+                if (kType[i]) { updateQueryStr += '"'; }
+                updateQueryStr += params[keys[i]];
+                if (kType[i]) { updateQueryStr += '"'; }
+            }
+        }
+
+        if (updateQueryStr == 'UPDATE session SET ') { throw new customError.ValidationError("please specify fields to edit"); }
+
+        let timestampAltered = hFuncs.parseDate();
+
+        let result = await db.query(updateQueryStr + whereQueryStr);
+
+        if (!result.changedRows) { throw new customError.NotFoundError("unexpected error"); }
+
+        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+
+        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|SESSION|: {diasId: ' + user.diasId + '} edited the session', timestampAltered);
+        if (logErr) { throw logErr; }
+
+        return [undefined, undefined];
+    } catch(err) {
+        return [{}, err];
     }
 }

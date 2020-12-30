@@ -31,6 +31,9 @@ const eventAccess = {
     'gsl-create': ["dias"],
     'gsl-edit': ["dias"],
     'gsl-fetch': ["admin", "dias", "delegate"],
+
+    // Session Management
+    'session-edit': ["dias"]
 };
 
 exports.validateAccess = (event, type) => {

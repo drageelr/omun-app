@@ -39,7 +39,10 @@ const reqEvents = {
     'topic-speaker-fetch': IOreqhandlers.handleTopicSpeakerFetch,
     'gsl-create': IOreqhandlers.handleGSLCreate,
     'gsl-edit': IOreqhandlers.handleGSLEdit,
-    'gsl-fetch': IOreqhandlers.handleGSLFetch
+    'gsl-fetch': IOreqhandlers.handleGSLFetch,
+
+    // Session Management
+    'session-edit': IOreqhandlers.handleSessionEdit
 };
 
 function sendStartInfo(socket) {
@@ -189,72 +192,105 @@ function attachEventListeners(socket) {
 }
 
 function createNameSpace(committeeId) {
-    let namespaces = Object.keys(io.nsps);
+    try {
+        let namespaces = Object.keys(io.nsps);
 
-    if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
+        if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
 
-    for (let i = 0; i < namespaces.length; i++) {
-        if (namespaces[i] == committeeId) { return; }
-    }
-
-    namespaceUsers["/" + committeeId] = {};
-
-    let nsp = io.of("/" + committeeId);
-
-    nsp.on('connection', async socket => {
-        try {
-            let token = socket.handshake.query.token;
-            if (!token) { throw new customError.AuthenticationError("no token supplied"); }
-
-            let userObj = jwt.decodeToken(token);
-            if (userObj.err) { throw new customError.AuthenticationError("invalid token"); }
-
-            let reqUser = await db.query('SELECT * FROM ' + userObj.type + ' WHERE id = ' + userObj.type + ' AND active = 1');
-            if (!reqUser.length) { throw new customError.AuthenticationError("account inactive or deleted"); }
-
-            let givenCommitteeId = parseInt(nsp.name.split('/')[1]);
-
-            let reqSession = await db.query('SELECT * FROM session WHERE committeeId = ' + givenCommitteeId + ' AND active = 1');
-            if (!reqSession.length) { throw new customError.ValidationError("session not running or invalid committee"); }
-
-            if (userObj.type != 'admin') {
-                if (reqUser[0].committeeId != givenCommitteeId) { throw new customError.ForbiddenAccessError("you cannot connect with this committee"); }
-            }
-
-            if(!namespaceUsers[nsp.name][userObj.type]) { namespaceUsers[nsp.name][userObj.type] = {}; }
-            let userIdsKey = Object.keys(namespaceUsers[nsp.name][userObj.type])
-            for (let i = 0; i < userIdsKey.length; i++) {
-                if (userObj.id == userIdsKey[i]) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
-            }
-
-            socket.userObj = {
-                type: userObj.type,
-                id: userObj.id,
-                name: reqUser[0].name,
-                committeeId: givenCommitteeId,
-                sessionId: reqSession[0].id,
-                nsp: "/" + givenCommitteeId
-            };
-
-            if (userObj.type == 'delegate') {
-                socket.userObj.countryId = reqUser[0].countryId;
-            } else if (userObj.type == 'dias') {
-                socket.userObj.title = reqUser[0].title;
-            }
-
-            sendStartInfo(socket);
-
-            attachEventListeners(socket);
-
-            socket.join(socket.userObj.committeeId + '|' + socket.userObj.type)
-
-        } catch(err) {
-            errorHandler(socket, err);
-            socket.destroy();
+        for (let i = 0; i < namespaces.length; i++) {
+            if (namespaces[i] == "/" + committeeId) { throw new customError.DuplicateResourceError("committee session already in progress"); }
         }
-    });
+
+        namespaceUsers["/" + committeeId] = {};
+
+        let nsp = io.of("/" + committeeId);
+
+        nsp.on('connection', async socket => {
+            try {
+                let token = socket.handshake.query.token;
+                if (!token) { throw new customError.AuthenticationError("no token supplied"); }
+
+                let userObj = jwt.decodeToken(token);
+                if (userObj.err) { throw new customError.AuthenticationError("invalid token"); }
+
+                let reqUser = await db.query('SELECT * FROM ' + userObj.type + ' WHERE id = ' + userObj.type + ' AND active = 1');
+                if (!reqUser.length) { throw new customError.AuthenticationError("account inactive or deleted"); }
+
+                let givenCommitteeId = parseInt(nsp.name.split('/')[1]);
+
+                let reqSession = await db.query('SELECT * FROM session WHERE committeeId = ' + givenCommitteeId + ' AND active = 1');
+                if (!reqSession.length) { throw new customError.ValidationError("session not running or invalid committee"); }
+
+                if (userObj.type != 'admin') {
+                    if (reqUser[0].committeeId != givenCommitteeId) { throw new customError.ForbiddenAccessError("you cannot connect with this committee"); }
+                }
+
+                if(!namespaceUsers[nsp.name][userObj.type]) { namespaceUsers[nsp.name][userObj.type] = {}; }
+                let userIdsKey = Object.keys(namespaceUsers[nsp.name][userObj.type])
+                for (let i = 0; i < userIdsKey.length; i++) {
+                    if (userObj.id == userIdsKey[i]) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
+                }
+
+                socket.userObj = {
+                    type: userObj.type,
+                    id: userObj.id,
+                    name: reqUser[0].name,
+                    committeeId: givenCommitteeId,
+                    sessionId: reqSession[0].id,
+                    nsp: "/" + givenCommitteeId
+                };
+
+                if (userObj.type == 'delegate') {
+                    socket.userObj.countryId = reqUser[0].countryId;
+                } else if (userObj.type == 'dias') {
+                    socket.userObj.title = reqUser[0].title;
+                }
+
+                sendStartInfo(socket);
+
+                attachEventListeners(socket);
+
+                socket.join(socket.userObj.committeeId + '|' + socket.userObj.type)
+
+            } catch(err) {
+                errorHandler(socket, err);
+                socket.destroy();
+            }
+        });
+
+        return undefined;
+    } catch(err) {
+        return err;
+    }
 }
 
-function stopNameSpace(committeeId) {
+async function stopNameSpace(committeeId) {
+    try {
+        let namespaces = Object.keys(io.nsps);
 
+        if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
+
+        let n = 0;
+        for ( ; n < namespaces.length; n++) {
+            if (namespaces[n] == "/" + committeeId) { break; }
+        }
+        if (n == namespaces.length) { throw new customError.NotFoundError("no running session for this committee found"); }
+
+        let sockets = io.of("/" + committeeId).nsp;
+
+        await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeId);
+
+        for (let s of sockets) {
+            s.disconnect(true)
+        }
+
+        namespaceUsers["/" + committeeId] = {};
+
+        return undefined;
+    } catch(err) {
+        return err;
+    }
 }
+
+module.exports.createNameSpace = createNameSpace;
+module.exports.stopNameSpace = stopNameSpace;
