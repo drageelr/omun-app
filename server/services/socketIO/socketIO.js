@@ -295,7 +295,7 @@ async function stopNameSpace(committeeId) {
             sockets[sKeys[i]].disconnect(true);
         }
 
-        namespaceUsers["/" + committeeId] = {};
+        delete namespaceUsers["/" + committeeId];
 
         return undefined;
     } catch(err) {
