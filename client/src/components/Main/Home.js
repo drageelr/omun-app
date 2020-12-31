@@ -117,7 +117,7 @@ function Home({user}){
     };
 
     const handleJoin = async () => {
-        
+        localStorage.committeeId = SessionJ;
         window.open("/main","_self");
     };
 
@@ -260,6 +260,7 @@ function Home({user}){
     return( 
         <div className="auth-inner">
             <div style={{textAlign:'center'}}>
+                
             {   
                 (user.type === 'admin') ? 
                 <AdminPortal/> : 

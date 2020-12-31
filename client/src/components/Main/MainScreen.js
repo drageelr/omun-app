@@ -14,18 +14,14 @@ function MainScreen(){
     let [messages, setMessages] = useState([]);
     
     React.useEffect(()=>{
-        socket = io(window.serverURI);
-        socket.on('msg', addPartnerMsg);
+        const {committeeId, token} = localStorage;
+        console.log(window.serverURI+`/${committeeId}?token=${token}`)
+        socket = io(window.serverURI+`/${committeeId}?token=${token}`);
+        socket.on('RES|info-start', infoStart);
     }, []);
 
-    function addPartnerMsg(msg) { //whenever a msg is recieved by the client
-        // write the partner's message to the list
-        let messagesAll = [...messagesAll, {
-            "text": msg.content,
-            "id": messages.length+1,
-            "sender": { "name": "Stranger", "uid": "user2"},
-        }]
-        setMessages(messagesAll);
+    function infoStart(res) { 
+        console.log(res);
     }
 
       
