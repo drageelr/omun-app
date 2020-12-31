@@ -18,16 +18,22 @@ exports.login = async (req, res, next) => {
         if (!reqUser[0].active) { throw new customError.AuthenticationError("account not active"); }
 
         let token = jwt.signUser(reqUser[0].id, rParams.type);
+        
+        let user = {
+            id: reqUser[0].id,
+            name: reqUser[0].name
+        };
+
+        if (rParams.type == 'dias' || rParams.type == 'delegate') {
+            user.committeeId = reqUser[0].committeeId;
+        }
 
         res.json({
             statusCode: 200,
             statusName: httpStatus.getName(200),
             message: "Login Successful!",
             token: token,
-            user: {
-                id: reqUser[0].id,
-                name: reqUser[0].name
-            }
+            user 
         });
 
     } catch(err) {

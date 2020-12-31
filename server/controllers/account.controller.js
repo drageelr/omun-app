@@ -140,6 +140,7 @@ exports.createDias = async (req, res, next) => {
         for (let i = 0; i < params.dias.length; i++) {
             if (valueStr != '') { valueStr += ', '; }
             params.dias[i].password = genPass()
+            console.log("dias", params.dias[i].email, params.dias[i].password);
             valueStr += '("' + params.dias[i].name + '", "' + params.dias[i].email +  '", "' + params.dias[i].title + '", "' + hFuncs.hash(params.dias[i].password) + '", ' + params.dias[i].committeeId + ')';
         }
 
@@ -176,6 +177,7 @@ exports.createDelegate = async (req, res, next) => {
         for (let i = 0; i < params.delegates.length; i++) {
             if (valueStr != '') { valueStr += ', '; }
             params.delegates[i].password = genPass()
+            console.log("delegate", params.delegates[i].email, params.delegates[i].password);
             valueStr += '("' + params.delegates[i].name + '", "' + params.delegates[i].email + '", "' + hFuncs.hash(params.delegates[i].password) + '", ' + params.delegates[i].committeeId + ', ' + params.delegates[i].countryId + ')';
         }
 
