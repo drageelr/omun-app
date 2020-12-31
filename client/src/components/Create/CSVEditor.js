@@ -39,7 +39,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
   if (mode==='admins') toSave.push(['id','name','email']);
   if (mode==='committees') toSave.push(['id','name','initials']);
-  if (mode==='countries') toSave.push(['id','name','initials','veto']);
+  if (mode==='countries') toSave.push(['id','name','initials','veto','personality','imageName']);
   if (mode==='dias') toSave.push(['id','name','email','title','committeeId']);
   if (mode==='delegates') toSave.push(['id','name','email','committeeId', 'countryId']);
 
@@ -92,7 +92,7 @@ export default function CSVEditor ({mode,files,setFiles}) {
       csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'initials' : item.data[1] })});
     }
     else if (mode==='countries'){
-      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'initials' : item.data[1] , 'veto' : data[2] === 1 ? true : false})});
+      csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'initials' : item.data[1] , 'veto' : item.data[2] === '1' ? true : false, 'personality' : item.data[3] === '1' ? true : false, 'imageName' : item.data[4]})});
     }
     else if (mode==='dias') {
       csvArray.forEach((item,i)=>{ toSend.push({'name' : item.data[0] , 'email' : item.data[1], 'title' : item.data[2], 'committeeId' : item.data[3] })});

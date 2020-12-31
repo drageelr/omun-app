@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
 
 function Create({user}){
     const classes = useStyles();
-    let modes = ['admins', 'dias', 'committees', 'countries', 'delegates']
+    let modes = ['admins', 'countries', 'committees', 'dias', 'delegates']
     const [cindex, setCIndex] = useState(0) // separateb files sessions
     const [files, setFiles] = useState({})
 

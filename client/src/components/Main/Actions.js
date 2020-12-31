@@ -6,7 +6,6 @@ export async function start(packet) {
     if (typeof(res)=="string"){ //error string
         throw res;
     }
-    return res; 
 };
 
 export async function end(packet) {
@@ -15,7 +14,6 @@ export async function end(packet) {
     if (typeof(res)=="string"){ //error string
         throw res;
     }
-    return res; 
 };
 
 export async function fetchCommittees() {

@@ -28,14 +28,13 @@ function Home({user}){
     const [openEn, setOpenEn] = useState(false);
     const [SessionJ, setSessionJ] = useState('0');
     const [openJ, setOpenJ] = useState(false);
-    const [loada, setLoada] = useState(false)
-    const [loadb, setLoadb] = useState(false)
-    const [loadc, setLoadc] = useState(false)
-    const [status, setStatus] = useState('')
+    const [loada, setLoada] = useState(false);
+    const [loadb, setLoadb] = useState(false);
+    const [status, setStatus] = useState('');
     const [sessions , setSessions] =useState([]);
     const [committeeIds , setCommitteeIds] =useState({});
 
-    async function callFetch() {
+    async function fetchCommitteesForAdmin() {
         try{
             const initialIdMap = await fetchCommittees();
             console.log(initialIdMap);
@@ -49,7 +48,15 @@ function Home({user}){
     }
     
     React.useEffect(() => {
-        callFetch()
+        let selfCommitteeId = user.committeeId;
+        setSessionSt(selfCommitteeId);
+        setSessionEn(selfCommitteeId);
+        setSessionJ(selfCommitteeId);
+
+        if (user.type == "admin") {
+            fetchCommitteesForAdmin();
+        }
+            
     }, []);
 
 
@@ -86,7 +93,7 @@ function Home({user}){
     const handleStart = async () => {
         setLoada(true);
         try{
-            const res = await start({committeeId: SessionSt});
+            await start({committeeId: SessionSt});
             setStatus("Session started.");
         } 
         catch(e){
@@ -99,7 +106,7 @@ function Home({user}){
     const handleEnd = async () => {
         setLoadb(true);
         try{
-            const res = await end({committeeId: SessionEn});
+            await end({committeeId: SessionEn});
             setStatus("Session ended.");
         } 
         catch(e){
@@ -110,16 +117,7 @@ function Home({user}){
     };
 
     const handleJoin = async () => {
-        setLoadc(true);
-        try{
-            // const res = await join({committeeId: SessionJ});
-            setStatus("Session joined.");
-        } 
-        catch(e){
-            console.error(e);
-            setStatus(e); 
-        }
-        setLoadc(false);
+        
         window.open("/main","_self");
     };
 
@@ -129,110 +127,94 @@ function Home({user}){
         border-color: grey;
     `;
 
-    if (user.type === 'admin')
-    {
-        return( 
-            <div className="auth-inner">
-                <div style={{textAlign:'center'}}>
-                    <h3>Admin Portal</h3>
-                    <h6><i>Welcome {user.name}</i></h6>
-                    
-                    <FormControl className={classes.formControl}>
-                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
-                        <Select
-                        labelId="demo-controlled-open-select-label"
-                        id="demo-controlled-open-select"
-                        open={openSt}
-                        onClose={handleCloseSt}
-                        onOpen={handleOpenSt}
-                        value={SessionSt}
-                        onChange={handleChangeSt}
-                        >
-                        { 
-                            sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>) //value is ID
-                        } 
-                        </Select>
-                    </FormControl>
-                    <Button className={classes.button} onClick={handleStart}>
-                        Start
-                    </Button>
-                    <FadeLoader
-                        css={override}
-                        height={13}
-                        width={2}
-                        radius={10}
-                        color={"red"}
-                        loading={loada}
-                    />
-                    <br/>
-                    <FormControl className={classes.formControl}>
-                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
-                        <Select
-                        labelId="demo-controlled-open-select-label"
-                        id="demo-controlled-open-select"
-                        open={openEn}
-                        onClose={handleCloseEn}
-                        onOpen={handleOpenEn}
-                        value={SessionEn}
-                        onChange={handleChangeEn}
-                        >
-                        {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
-                        </Select>
-                    </FormControl>
-                    <Button className={classes.button} onClick={handleEnd}>
-                        Stop
-                    </Button>
-                    <FadeLoader
-                        css={override}
-                        height={13}
-                        width={2}
-                        radius={10}
-                        margin={1}
-                        color={"red"}
-                        loading={loadb}
-                    />
-                    <br/>
-                    <FormControl className={classes.formControl}>
-                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
-                        <Select
-                        labelId="demo-controlled-open-select-label"
-                        id="demo-controlled-open-select"
-                        open={openJ}
-                        onClose={handleCloseJ}
-                        onOpen={handleOpenJ}
-                        value={SessionJ}
-                        onChange={handleChangeJ}
-                        >
-                        {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
-                        </Select>
-                    </FormControl>
-                    <Button className={classes.button} onClick={handleJoin}>
-                        Join
-                    </Button>
-                    <FadeLoader
-                        css={override}
-                        height={13}
-                        width={2}
-                        radius={10}
-                        margin={1}
-                        color={"red"}
-                        loading={loadc}
-                    />
-                    <br/>
-                    <Button color="primary" href="/Create">Create Entries</Button>
-                    <br/>
-                    <Button color="primary" href="/ChangePassword">Change Password</Button>
-                    <br/>
-                    <Button color="secondary" href="/">Signout</Button>
-                </div>
-                { status !== '' && <div className="message"> {status} </div> }
-            </div>
-        )
+    function AdminPortal() {
+        return <div>
+            <h3>Admin Portal</h3>
+            <h6><i>Welcome {user.name}</i></h6>
+            
+            <FormControl className={classes.formControl}>
+                <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
+                <Select
+                labelId="demo-controlled-open-select-label"
+                id="demo-controlled-open-select"
+                open={openSt}
+                onClose={handleCloseSt}
+                onOpen={handleOpenSt}
+                value={SessionSt}
+                onChange={handleChangeSt}
+                >
+                { 
+                    sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>) //value is ID
+                } 
+                </Select>
+            </FormControl>
+            <Button className={classes.button} onClick={handleStart}>
+                Start
+            </Button>
+            <FadeLoader
+                css={override}
+                height={13}
+                width={2}
+                radius={10}
+                color={"red"}
+                loading={loada}
+            />
+            <br/>
+            <FormControl className={classes.formControl}>
+                <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
+                <Select
+                labelId="demo-controlled-open-select-label"
+                id="demo-controlled-open-select"
+                open={openEn}
+                onClose={handleCloseEn}
+                onOpen={handleOpenEn}
+                value={SessionEn}
+                onChange={handleChangeEn}
+                >
+                {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
+                </Select>
+            </FormControl>
+            <Button className={classes.button} onClick={handleEnd}>
+                Stop
+            </Button>
+            <FadeLoader
+                css={override}
+                height={13}
+                width={2}
+                radius={10}
+                margin={1}
+                color={"red"}
+                loading={loadb}
+            />
+            <br/>
+            <FormControl className={classes.formControl}>
+                <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
+                <Select
+                labelId="demo-controlled-open-select-label"
+                id="demo-controlled-open-select"
+                open={openJ}
+                onClose={handleCloseJ}
+                onOpen={handleOpenJ}
+                value={SessionJ}
+                onChange={handleChangeJ}
+                >
+                {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
+                </Select>
+            </FormControl>
+            <Button className={classes.button} onClick={handleJoin}>
+                Join
+            </Button>
+            <br/>
+            <Button color="primary" href="/Create">Create Entries</Button>
+            <br/>
+            <Button color="primary" href="/ChangePassword">Change Password</Button>
+            <br/>
+            <Button color="secondary" href="/">Signout</Button>
+        </div>
     }
-    
-    else if (user.type==='dias')
-    return( 
-        <div style={{textAlign:'center'}}>
+
+    function DiasPortal() {
+        return <div>
             <h3>Dias Portal</h3>
             
             <Button color="default" onClick={handleStart}>Start Your Session</Button>
@@ -256,41 +238,43 @@ function Home({user}){
                 />
             <br/>
             <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
-            <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    color={"red"}
-                    loading={loadc}
-                />
-            <br/>
+
             <Button color="primary" href="/ChangePassword">Change Password</Button>
             <br/>
             <Button color="secondary" href="/">Signout</Button>
         </div>
-    )
+    }
 
-    else if (user.type==='delegate')
-    return( 
-        <div style={{textAlign:'center'}}>
+    function DelegatePortal() {
+        return <div >
             <h3>Delegate Portal</h3>
             <h6><i>Welcome {user.name}</i></h6>
             <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
-            <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    color={"red"}
-                    loading={loadc}
-                />
             <br/>
             <Button color="primary" href="/ChangePassword">Change Password</Button>
             <br/>
             <Button color="secondary" href="/">Signout</Button>
         </div>
-    );
+    }
+
+    return( 
+        <div className="auth-inner">
+            <div style={{textAlign:'center'}}>
+            {   
+                (user.type === 'admin') ? 
+                <AdminPortal/> : 
+                (user.type === 'dias') ? 
+                <DiasPortal/> : 
+                <DelegatePortal/>
+            }
+            </div>
+                { status !== '' && <div className="message"> {status} </div> }
+            </div>
+
+    )
+
+    
+   
 }
 
 export default Home
