@@ -1,10 +1,5 @@
 name,email,committeeId,countryId
-<<<<<<< Updated upstream
-Hamza Farooq,21100197@lums.edu.pk,1,9
-Tester,21100130@lums.edu.pk,1,10
-=======
 Hamza Farooq,21100197@lums.edu.pk,1,1
 Tester,21100130@lums.edu.pk,1,2
 Hammad Nasir,hammadn99@gmail.com,2,1
 Hammad Lums,22100278@lums.edu.pk,2,2
->>>>>>> Stashed changes
