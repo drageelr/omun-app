@@ -1,172 +1,122 @@
 import React, { useState, useEffect } from 'react';
-import {Alert, Card, CardHeader,CardText} from 'reactstrap';
-import './MessageBox.css'
-import UserList from './UserList';
-import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-import TextField from '@material-ui/core/TextField';
+// import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import {Card, Paper, List} from '@material-ui/core'
+import { Formik, Form, Field } from 'formik'
+import { TextField } from 'formik-material-ui'
+import SendIcon from '@material-ui/icons/Send';
+import Timestamp from 'react-timestamp';
 
-function TabPanel(props) {
-    const { children, value, index, ...other } = props;
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`vertical-tabpanel-${index}`}
-        aria-labelledby={`vertical-tab-${index}`}
-        {...other}
-      >
-        {value === index && (
-          <Box p={3}>
-            <Typography>{children}</Typography>
-          </Box>
-        )}
-      </div>
-    );
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
+    display: 'flex',
+    height: '40vh',
+    width: '49vw'
+  },
+  tabs: {
+    borderRight: `1px solid ${theme.palette.divider}`,
+  },
+  chatPaper: {
+    overflow:'auto',
+    height: '28vh',
+    width: '39vw'
+  },
+  msgPaper: {
+    padding: 2, 
+    borderRadius: 3, 
+    margin: 8, 
+    width: '30vw',
+    backgroundColor: theme.palette.primary.main,
+    color: 'white'
+  },
+  msgPaperYours: {
+    padding: 2, 
+    borderRadius: 3, 
+    margin: 8,
+    marginRight: 12, 
+    float: 'right',
+    width: '30vw',
+    backgroundColor: 'whitesmoke',
+    color: '#111111'
+  },
+  sendBar: {
+    display: 'flex', 
+    flexDirection: 'row', 
+    padding: 10
   }
-  
-  TabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.any.isRequired,
-    value: PropTypes.any.isRequired,
+}));
+
+
+
+export default function MessageBox() {
+  const classes = useStyles();
+  const [countrySelected, setCountrySelected] = React.useState(0);
+    
+  const chatMsgs = [{id: 2, text: "Hi! What's up?", timestamp:Date.now()}, {id: 1, text: "Nothing much.", timestamp:Date.now()}]
+  const countriesOnline = ["Pakistan" , "India" , "Bangladesh" , "Iran" , "China"];
+
+  const handleChange = (event, newValue) => {
+    setCountrySelected(newValue);
   };
-  
-  function a11yProps(index) {
-    return {
-      id: `vertical-tab-${index}`,
-      'aria-controls': `vertical-tabpanel-${index}`,
-    };
-  }
-  
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      flexGrow: 1,
-      backgroundColor: theme.palette.background.paper,
-      display: 'flex',
-      height: 224,
-    },
-    tabs: {
-      borderRight: `1px solid ${theme.palette.divider}`,
-    },
-  }));
-  
-  export default function VerticalTabs() {
-    const classes = useStyles();
-    const [value, setValue] = React.useState(0);
-  
-    const handleChange = (event, newValue) => {
-      setValue(newValue);
-    };
-  
-    return (
-      <div className={classes.root}>
-        <Tabs
-          orientation="vertical"
-          variant="scrollable"
-          value={value}
-          onChange={handleChange}
-          aria-label="Vertical tabs example"
-          className={classes.tabs}
-          style={{width:'220px'}}
-        >
-            {["Pakistan" , "India" , "Bangladesh" , "Iran" , "China"].map((item,i)=>{
-                return <Tab label={item} {...a11yProps(i)}  />
-            })}
-          {/* <Tab label="Item One" {...a11yProps(0)} />
-          <Tab label="Item Two" {...a11yProps(1)} />
-          <Tab label="Item Three" {...a11yProps(2)} />
-          <Tab label="Item Four" {...a11yProps(3)} />
-          <Tab label="Item Five" {...a11yProps(4)} />
-          <Tab label="Item Six" {...a11yProps(5)} />
-          <Tab label="Item Seven" {...a11yProps(6)} /> */}
-        </Tabs>
-        {["Pakistan" , "India" , "Bangladesh" , "Iran" , "China"].map((item,i)=>{
-                return ( <TabPanel value={value} index={i}>
-                    <form className={classes.root} noValidate autoComplete="off" action={`/${item}`} style={{height:'10px' , position:'fixed' , bottom:'110px'}}>
-                    <TextField id="outlined-basic" label="Message" variant="outlined" style={{width:'430px'}} />
-                    <Button variant="outlined" color="primary" style={{height:'55px', marginLeft:'15px'}} onClick={() => { alert(`${item} `) }} >Send</Button>
-                    </form>
-                    </TabPanel>
+
+  return (
+    <Card className={classes.root}>
+      <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
+        value={countrySelected} 
+        onChange={handleChange} 
+        className={classes.tabs} >
+        {countriesOnline.map((item,i)=> <Tab label={item} key={i}/> )}
+      </Tabs>
+      
+      <Formik
+        validateOnChange={false} validateOnBlur={true}
+        initialValues={{newMsg: ''}}
+        validate={values => {
+          const errors = {}
+          if (values.newMsg.length > 100) {
+            errors.newMsg = 'Please do not exceed 100 characters.'
+          }
+          return errors
+        }}
+        onSubmit={(values) => {
+
+        }}
+      >
+        {({ submitForm}) => (
+          <Form>
+            <Box border={1} borderColor="grey.400" className={classes.chatPaper}>
+              <List>
+                {
+                  chatMsgs.map((msg, index) => {
+                    return (
+                    <Paper key={index} className={msg.id == 1 ? classes.msgPaperYours : classes.msgPaper} >
+                      <Typography style={{margin: 5, fontWeight: 500}}>
+                        {msg.text}
+                      </Typography>
+                      <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>
+                        <Timestamp relative date={new Date(msg.timestamp)}/>
+                      </Typography>
+                    </Paper>
                     )
-            })}
-        {/* <TabPanel value={value} index={0}>
-        <form className={classes.root} noValidate autoComplete="off">
-            <TextField id="standard-basic" label="Standard" />
-        </form>
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          Item Two
-        </TabPanel>
-        <TabPanel value={value} index={2}>
-          Item Three
-        </TabPanel> */}
-      </div>
-    );
+                  })
+                }
+              </List>
+            </Box>
+            <List className={classes.sendBar}>
+              <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" label={`Send chat message to ${countrySelected}`}/>
+              <Button alignRight variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
 
+            </List>
+          </Form>
+        )}
+      </Formik>
+    </Card>
+  );
 }
-
-// function MessageBox({message, onMessageSend,tempToList}) {
-
-//     const press=(e)=>{
-//         if(tempToList.length===0){
-//             alert('Please select countrie(s) to send message to');
-//         }
-//         else {
-//             let message = e.target.value;
-//             e.target.value='';
-//             onMessageSend(`\"${message}\" -> ${tempToList.toString()}`);
-//         }
-//     }
-
-//     return ( 
-//         <div>
-//             <Card style={{height:'32vh',overflowY: "hidden"}} className={'whole'}>
-//                 <CardHeader id="head">Chits</CardHeader>
-                
-//                 <div id="container">
-
-//                     <aside id="sidebar" >
-//                         <UserList/>
-//                     </aside>
-
-//                     <section id="main">
-
-//                         <section id="messages-list" >
-//                         {message && 
-//                             message.map((item,i)=>{
-//                                 return <Alert color="dark" className={'all'} style={{margin:'auto', paddingRight:'5px'}} key={i}>{item}</Alert>
-//                             })
-//                         }
-//                         </section>
-
-                        
-                    // </section>
-                    // <footer id="footer">
-                    //     <input required id="Message"  placeholder={'Message'}
-                    //             onKeyPress={(e) => {
-                    //             if (e.key === 'Enter') {
-                    //             press(e)
-                    //             }
-                    //         }}
-                    //     /> To: 
-                    //         <input required id='Country' placeholder={tempToList && (tempToList.length>0)?tempToList:'Countries'}
-                    //             onKeyPress={(e) => {
-                    //             // if (e.key === 'Enter') {
-                    //             // onMessageSend(e)
-                    //             // }
-                    //         }}
-                    //     /> Enter to send
-
-                    // </footer>
-//                 </div>
-//             </Card>
-//         </div> 
-//     );
-// }
- 
-// export default MessageBox;

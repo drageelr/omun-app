@@ -1,28 +1,26 @@
 import React from 'react';
-import {Card, CardBody, CardHeader, CardText } from 'reactstrap';
-import {newNotification} from './Actions'
 import './Notification.css'
-import { Alert } from 'reactstrap';
+import { Card, CardContent, CardHeader, List, ListItem, ListItemText} from '@material-ui/core';
 
+function Notification({addNotification,showNotification}) {      
+    let notifications = ["Dias 1 just joined.", "Delegate is preparing to speak."];
 
-function Notification({addNotification,showNotification}) {
-         
     return ( 
-        <div >
-            <Card className="NotifBody" style={{height:"22vh"}} >
-                <CardHeader className="NotifHeader" >Notification</CardHeader>
-                <CardBody className="NotifcardBody" onClick={addNotification} style={{overflowY: "scroll"}}>
-                <CardText>
+        <Card className="NotifBody" style={{backgroundColor: "#111111"}}>
+            <CardHeader titleTypographyProps={{variant:'h6' }} className="NotifHeader" title="Notifications"/>
+            <CardContent className="NotifcardBody" onClick={addNotification} style={{overflowY: "scroll"}}>
+                <List>
                 {
-                    showNotification && 
-                    showNotification.map((item,i)=>{
-                        return <Alert color="danger" className="Notif-Text" key={i}>{item}</Alert>
-                    })
-                }
-                </CardText>
-                </CardBody>
-            </Card>
-        </div>
+                    notifications && 
+                    notifications.map((item,i)=> (
+                        <ListItem className="Notif-Text" key={i} dense>
+                            <ListItemText primary={item} />
+                        </ListItem>
+                    ))
+                }  
+                </List>
+            </CardContent>
+        </Card>
     );
 }
  

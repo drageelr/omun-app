@@ -5,9 +5,19 @@ import Login from './components/Login/Login'
 import ChangePassword from './components/Login/ChangePassword'
 import MainScreen from './components/Main/MainScreen';
 import Home from './components/Main/Home';
-import './App.css';
 import Create from './components/Create/Create';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core'
 
+const appTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#aa2e25',
+    },
+    secondary: {
+      main: '#ffcf33',
+    },
+  }
+})
 
 
 function App() {
@@ -15,21 +25,24 @@ function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')))
   console.log('u',user);
   return (
+    
     <Router>
-      <div className="App">
-        <div className="auth-wrapper">
-            <Switch>
-              <Route exact path='/main' component={MainScreen}/>
-                <Route exact path='/' component={ 
-                  user ?                           
-                  () => <Home user={user} />
-                  : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
-                }/>
-                <Route exact path='/Create' component={Create}/>
-                <Route exact path='/ChangePassword' component={ChangePassword}/>
-            </Switch>
+      <ThemeProvider theme={appTheme}>
+        <div className="App">
+          <div className="auth-wrapper">
+              <Switch>
+                <Route exact path='/main' component={MainScreen}/>
+                  <Route exact path='/' component={ 
+                    user ?                           
+                    () => <Home user={user} />
+                    : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
+                  }/>
+                  <Route exact path='/Create' component={Create}/>
+                  <Route exact path='/ChangePassword' component={ChangePassword}/>
+              </Switch>
+          </div>
         </div>
-      </div>
+      </ThemeProvider>
     </Router>
   );
 }

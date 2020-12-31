@@ -1,28 +1,16 @@
-.InfoContainer{
-     /*background:#EECD86; */
-    background-image: url('https://image.shutterstock.com/image-vector/abstract-dark-teal-background-blurred-260nw-1031628868.jpg'); 
-    background-repeat: no-repeat;
-    background-size: cover;
-}
-.flex-container-Notifications{
-    display: grid;
-    grid-template-columns: 70% 30%; 
+
+.sessionDetails{
+    flex-direction: column;
+    align-items: flex-start;
 }
 .committee-Name, .Current-Topic, .Speaker, .Time-Left{
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: 500%;
     font-size: 103%;
     padding-left: 0.5%;
     padding-bottom: 1%;
 }
 
-.Progress-Bar{
-    width: 100%;
-    align-self: center;
-}
-
 .time-left-topic, .time-left-speaker {
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: 110%;
     font-weight: 500;
     padding: 2%;

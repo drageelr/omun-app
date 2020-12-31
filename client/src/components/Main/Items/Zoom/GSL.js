@@ -1,8 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import {addToList,removeFromList} from './Actions'
-import './Gsl.css'
 
-function Gsl({tempToList, placement}) {
+export default function GSL({tempToList, placement}) {
     const toggle=(e)=>{
         (tempToList && tempToList.includes(e.target.id)) ? removeFromList(e.target.id) : addToList(e.target.id);
     }
@@ -24,5 +23,3 @@ function Gsl({tempToList, placement}) {
         </div>
     )
 }
-
-export default Gsl;

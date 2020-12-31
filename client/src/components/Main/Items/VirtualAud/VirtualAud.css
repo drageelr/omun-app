@@ -1,4 +1,4 @@
-.bodyM{
+.redBG{
     background-image: url('https://cdn.hipwallpaper.com/i/82/47/i1Iyn9.jpg');
 }
 
@@ -8,13 +8,13 @@
     grid-template-columns: repeat(10,1fr);
     grid-template-rows: repeat(7,1fr);
     grid-gap: 3%;
-    overflow-y: scroll;
+    height: 30vh;
 }
 
 
 .item{
     height: 5vh;
-    width: 5.5vh;
+    width: 3.3vw;
     border: 3.5px solid #E2AC26;
     color: white; 
     font-size: small;
