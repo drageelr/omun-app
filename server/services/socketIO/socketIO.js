@@ -286,7 +286,7 @@ async function stopNameSpace(committeeId) {
         if (n == namespaces.length) { throw new customError.NotFoundError("no running session for this committee found"); }
 
         var { io } = require('../../bin/www');
-        let sockets = io.of("/" + committeeId).nsp;
+        let sockets = io.of("/" + committeeId).sockets;
 
         await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeIdNum);
 
