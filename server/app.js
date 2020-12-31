@@ -5,6 +5,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 var { errorHandler } = require('./errors/errorhandler')
 var db = require('./services/mysql');
 
@@ -19,6 +20,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
 
 app.use('/api/auth', authRouter);
 app.use('/api/account', accountRouter);
@@ -29,5 +31,6 @@ app.use(errorHandler);
 
 db.con.connect();
 db.defaultAdmin();
+db.sessionTerminator();
 
 module.exports = app;

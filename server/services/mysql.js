@@ -34,3 +34,8 @@ module.exports.defaultAdmin = async () => {
     await query('INSERT INTO admin (name, email, password) VALUES ("Default Admin", "admin@omunapp.com", "' + hFuncs.hash("Test12345") + '")');
     console.log("Default Admin Created: admin@omunapp.com Test12345");
 }
+
+module.exports.sessionTerminator = async () => {
+    let query = util.promisify(con.query).bind(con);
+    await query('UPDATE session SET active = 0 WHERE id != 0');
+}

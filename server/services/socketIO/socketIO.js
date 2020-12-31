@@ -9,6 +9,7 @@ var { validate } = require('./socketIOvalidator');
 var { validateAccess } = require('./socketIOaccessvalidator');
 var IOreqhandlers = require('./socketIOreqhandlers');
 const { namespaceUsers } = require('./socketIOusers');
+const { all } = require('../../app');
 
 const reqEvents = {
     // Chat Management
@@ -49,7 +50,7 @@ async function sendStartInfo(socket) {
         let user = socket.userObj;
         
         var { io } = require('../../bin/www');
-        let nsp = io.of("/" + committeeId);
+        let nsp = io.of("/" + user.committeeId);
 
         let reqCommittee = await db.query('SELECT * FROM committee WHERE id = ' + user.committeeId);
         if (!reqCommittee.length) { throw new customError.NotFoundError("committee not found"); }
@@ -57,26 +58,18 @@ async function sendStartInfo(socket) {
         let reqSession = await db.query('SELECT * FROM session WHERE committeeId = ' + user.committeeId + ' AND active = 1 AND id = ' + user.sessionId);
         if (!reqSession.length) { throw new customError.NotFoundError("active session not found"); }
 
-        let reqSeats = db.query('SELECT * FROM seat WHERE committeeId = ' + user.committeeId + 'ORDER BY id');
+        let reqSeats = await db.query('SELECT * FROM seat WHERE committeeId = ' + user.committeeId + ' ORDER BY id');
 
-        let allDelegates = db.query('SELECT * FROM delegate WHERE committeeId = ' + user.committeeId);
+        let allDelegates = await db.query('SELECT * FROM delegate WHERE committeeId = ' + user.committeeId);
 
-        let allDias = db.query('SELECT * FROM dias WHERE committeeId = ' + user.committeeId);
+        let allDias = await db.query('SELECT * FROM dias WHERE committeeId = ' + user.committeeId);
 
-        let allCountries = db.query('SELECT * FROM country');
+        let allCountries = await db.query('SELECT * FROM country');
 
         // let reqNotifications = db.query('SELECT * FROM notification WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
 
-        // let reqLogs = undefined;
-        let reqTopicQuery = 'SELECT * FROM topic WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND visible = 1';
-        if (user.type != 'delegate') {
-            // reqLogs = await db.query('SELECT * FROM log WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
-            reqTopicQuery = 'SELECT * FROM topic WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId;
-        }
 
-        let reqTopics = db.query(reqTopicQuery);
-
-        await Promise.all(reqSeats, allDelegates, allCountries, /*reqNotifications,*/ reqTopics, allDias);
+        // await Promise.all([reqSeats, allDelegates, allCountries, /*reqNotifications,*/ allDias]);
 
         let committee = {
             id: reqCommittee[0].id,
@@ -100,38 +93,50 @@ async function sendStartInfo(socket) {
 
         let delegates = [];
         for (let i = 0; i < allDelegates.length; i++) {
-            delegates.push(hFuncs.duplicateObject(allDelegates, ['id', 'countryId']));
+            delegates.push(hFuncs.duplicateObject(allDelegates[i], ['id', 'countryId']));
         }
 
         let dias = [];
         for (let i = 0; i < allDias.length; i++) {
-            dias.push(hFuncs.duplicateObject(allDias, ['id', 'name', 'title']));
+            dias.push(hFuncs.duplicateObject(allDias[i], ['id', 'name', 'title']));
         }
 
         let countries = [];
-        for (let i = 0; i < countries; i++) {
-            countries.push(hFuncs.duplicateObject(allCountries, ['id', 'name', 'initials']));
+        for (let i = 0; i < allCountries.length; i++) {
+            countries.push(hFuncs.duplicateObject(allCountries[i], ['id', 'name', 'initials']));
         }
 
         let connectedDelegates = [];
-        let conDel = Object.keys(namespaceUsers[nsp.name].delegate);
+        let conDel = [];
+        if (namespaceUsers[nsp.name].delegate){
+            conDel = Object.keys(namespaceUsers[nsp.name].delegate);
+        }
+
         for (let i = 0; i < conDel.length; i++) {
             connectedDelegates.push(conDel[i]);
         }
 
         let connectedAdmins = [];
-        let conAdmins = Object.values(namespaceUsers[nsp.name].admin);
+        let conAdmins = [];
+        if (namespaceUsers[nsp.name].admin) {
+            conAdmins = Object.values(namespaceUsers[nsp.name].admin);
+        }
+        
         for (let i = 0; i < conAdmins.length; i++) {
-            let userDetails = nsp.sockets[conAdmins[i]].userObj;
+            let userDetails = nsp.sockets.get(conAdmins[i]).userObj;
             connectedAdmins.push(hFuncs.duplicateObject(userDetails, ['id', 'name']));
         }
 
         let connectedDias = [];
-        let conDias = Object.values(namespaceUsers[nsp.name].dias);
-        for (let i = 0; i < conDias.length; i++) {
-            let userDetails = nsp.sockets[conDias[i]].userObj;
-            connectedDias.push(hFuncs.duplicateObject(userDetails, ['id', 'name', 'title']));
+        let conDias = [];
+        if (namespaceUsers[nsp.name].dias) {
+            conDias = Object.keys(namespaceUsers[nsp.name].dias);
         }
+        
+        for (let i = 0; i < conDias.length; i++) {
+            connectedDias.push(conDias[i]);
+        }
+
 
         // let notifications = [];
         // for (let i = 0; i < reqNotifications.length; i++) {
@@ -158,7 +163,6 @@ async function sendStartInfo(socket) {
         //     }
         //     resObj.logs = logs;
         // }
-
         socket.emit('RES|info-start', resObj);
         
     } catch (err) {
@@ -197,16 +201,12 @@ function attachEventListeners(socket) {
 function createNameSpace(committeeId) {
     try {
         let namespaces = Object.keys(namespaceUsers);
-        console.log(namespaces);
-
-        if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
 
         for (let i = 0; i < namespaces.length; i++) {
             if (namespaces[i] == "/" + committeeId) { throw new customError.DuplicateResourceError("committee session already in progress"); }
         }
 
         namespaceUsers["/" + committeeId] = {};
-        console.log(Object.keys(namespaceUsers));
         
         var { io } = require('../../bin/www');
         let nsp = io.of("/" + committeeId);
@@ -219,7 +219,7 @@ function createNameSpace(committeeId) {
                 let userObj = jwt.decodeToken(token);
                 if (userObj.err) { throw new customError.AuthenticationError("invalid token"); }
 
-                let reqUser = await db.query('SELECT * FROM ' + userObj.type + ' WHERE id = ' + userObj.type + ' AND active = 1');
+                let reqUser = await db.query('SELECT * FROM ' + userObj.type + ' WHERE id = ' + userObj.id + ' AND active = 1');
                 if (!reqUser.length) { throw new customError.AuthenticationError("account inactive or deleted"); }
 
                 let givenCommitteeId = parseInt(nsp.name.split('/')[1]);
@@ -232,11 +232,14 @@ function createNameSpace(committeeId) {
                 }
 
                 if(!namespaceUsers[nsp.name][userObj.type]) { namespaceUsers[nsp.name][userObj.type] = {}; }
+                
                 let userIdsKey = Object.keys(namespaceUsers[nsp.name][userObj.type])
                 for (let i = 0; i < userIdsKey.length; i++) {
                     if (userObj.id == userIdsKey[i]) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
                 }
-
+                
+                namespaceUsers[nsp.name][userObj.type][userObj.id] = socket.id;
+                
                 socket.userObj = {
                     type: userObj.type,
                     id: userObj.id,
@@ -252,7 +255,7 @@ function createNameSpace(committeeId) {
                     socket.userObj.title = reqUser[0].title;
                 }
 
-                sendStartInfo(socket);
+                await sendStartInfo(socket);
 
                 attachEventListeners(socket);
 
@@ -273,12 +276,7 @@ function createNameSpace(committeeId) {
 async function stopNameSpace(committeeId) {
     try {
         let namespaces = Object.keys(namespaceUsers);
-        console.log(namespaces);
-
-        let committeeIdNum = committeeId;
         
-        if (typeof committeeId != 'string') { committeeId = toString(committeeId); }
-
         let n = 0;
         for ( ; n < namespaces.length; n++) {
             if (namespaces[n] == "/" + committeeId) { break; }
@@ -288,7 +286,7 @@ async function stopNameSpace(committeeId) {
         var { io } = require('../../bin/www');
         let sockets = io.of("/" + committeeId).sockets;
 
-        await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeIdNum);
+        await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeId);
 
         let sKeys = Object.keys(sockets);
         for (let i = 0; i < sKeys.length; i++) {
