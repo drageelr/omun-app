@@ -389,7 +389,7 @@ CREATE TABLE `seat` (
   `id` int NOT NULL,
   `committeeId` int NOT NULL,
   `delegateId` int DEFAULT NULL,
-  `placard` tinyint NOT NULL,
+  `placard` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`,`committeeId`),
   KEY `COMMITTEE` (`committeeId`),
   KEY `DELEGATE` (`delegateId`),
@@ -569,4 +569,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-12-31  5:23:43
+-- Dump completed on 2020-12-31  5:25:36
