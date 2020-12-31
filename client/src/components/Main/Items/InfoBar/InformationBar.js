@@ -2,9 +2,16 @@ import React, {useState, useEffect} from 'react'
 import './InformationBar.css'
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { Card, CardContent, List, ListItem } from '@material-ui/core';
+import EdiText from 'react-editext'
 
-function Notification ({speaker,topic,committee,newSpeakerC,newcommitteeC,newTopicC}) {
-    let duration=30; //seconds
+function Notification ({speaker,committee,newSpeakerC,newcommitteeC,newTopicC}) {
+    const [topic, setTopic] = useState('')
+    const [duration, setDuration] = useState(0)
+
+    function handleTopicChange(v) {
+        setTopic(v);
+    }
+
 
     return(
         <div >
@@ -12,25 +19,25 @@ function Notification ({speaker,topic,committee,newSpeakerC,newcommitteeC,newTop
                 <CardContent style={{color: "#FFFFFF"}}>
                     <List style={{ display: 'flex', flexDirection: 'row', padding: 0 }}>
                         <ListItem alignItems='flex-start' className="sessionDetails">
-                            <h6 onClick={newcommitteeC}><h5>Committee Name:</h5>
-                                <div id="committeeName">{committee}</div>
+                            <h6 onClick={newcommitteeC}><h5>Committee Name:</h5> 
+                                {committee}
                             </h6>
                             <hr></hr>
                             <h6 onClick={newTopicC}><h5>Current Topic:</h5>
-                                <div id="topic">{topic}</div>
+                                <EdiText showButtonsOnHover type="text" value={topic} onSave={handleTopicChange} />
                             </h6>
                             <hr></hr>
                             <h6 onClick={newSpeakerC}><h6>Speaker:</h6>
-                                <div id="speaker" >{speaker}</div>
+                                {speaker}
                             </h6>
                         </ListItem>
                         <ListItem className="sessionDetails">
-                            <h6>Time Left (Speaker)</h6>
+                            <h6>Time Left (Speaker)</h6> 
                             <CountdownCircleTimer
-                                // isPlaying
+                                isPlaying
                                 size={100}
                                 duration={duration}
-                                initialRemainingTime={30}
+                                initialRemainingTime={0}
                                 colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
                             >
                                 {({ remainingTime }) => remainingTime}
