@@ -103,15 +103,12 @@ export default function CSVEditor ({mode,files,setFiles}) {
 
     packet={[mode]: toSend};
 
-    toSave = displayData;
+    let toSave = displayData.map(arr => arr.slice());
     csvArray.forEach((item,i)=> {
       let itemData = item.data;
       itemData.unshift(i);
       toSave.push(itemData);
     });
-
-    console.log(toSave);
-    setDisplayData(toSave);
     
     
     try{
