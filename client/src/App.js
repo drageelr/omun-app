@@ -22,10 +22,9 @@ const appTheme = createMuiTheme({
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')))
-  console.log('u',user);
-  return (
-    
+  const [user, setUser] = useState({})
+
+  return (    
     <Router>
       <ThemeProvider theme={appTheme}>
         <div className="App">
@@ -33,7 +32,7 @@ function App() {
               <Switch>
                 <Route exact path='/main' component={MainScreen}/>
                   <Route exact path='/' component={ 
-                    user ?                           
+                    isLoggedIn ?                           
                     () => <Home user={user} />
                     : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                   }/>

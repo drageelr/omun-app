@@ -13,7 +13,7 @@ export default async function apiCaller(api, body, successCode) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.token}`, 
+        'Authorization': `Bearer ${sessionStorage.token}`, 
       },
     }
     // if body is an empty object, do not include it
@@ -21,7 +21,7 @@ export default async function apiCaller(api, body, successCode) {
       req_init['body'] = JSON.stringify(body)
     }
     
-    const res = await fetch(api, req_init)
+    const res = await fetch(window.serverURI + api, req_init)
     if (res.ok) {
       const data = await res.json()
 

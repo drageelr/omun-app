@@ -18,7 +18,7 @@ function MainScreen(){
     let tempSocket = {};
 
     React.useEffect(()=>{
-        const {committeeId, token} = localStorage;
+        const {committeeId, token} = sessionStorage;
         console.log(window.serverURI+`/${committeeId}?token=${token}`)
         socket = io(window.serverURI+`/${committeeId}?token=${token}`);
         tempSocket = socket;

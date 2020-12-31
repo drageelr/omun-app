@@ -6,9 +6,9 @@ export async function newlogin({email, password, userType}) {
         throw res;
     }
     const {token, user} = res;
-    localStorage.token = token; // set token to localStorage
+    sessionStorage.token = token; // set token to sessionStorage
     var toRet= {...user, type: userType};
-    localStorage.setItem('user',JSON.stringify(toRet)) ;
+    sessionStorage.setItem('user',JSON.stringify(toRet)) ;
     return toRet
 }
 

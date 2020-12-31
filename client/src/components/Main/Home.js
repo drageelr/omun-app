@@ -117,7 +117,7 @@ function Home({user}){
     };
 
     const handleJoin = async () => {
-        localStorage.committeeId = SessionJ;
+        sessionStorage.committeeId = SessionJ;
         window.open("/main","_self");
     };
 
@@ -128,7 +128,7 @@ function Home({user}){
     `;
 
     const handleSignout = () => {
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
         window.open("/","_self");
     }
 
