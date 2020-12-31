@@ -7,7 +7,9 @@ export async function newlogin({email, password, userType}) {
     }
     const {token, user} = res;
     localStorage.token = token; // set token to localStorage
-    return {...user, type: userType};
+    var toRet= {...user, type: userType};
+    localStorage.setItem('user',JSON.stringify(toRet)) ;
+    return toRet
 }
 
 export async function changePassword(packet) {

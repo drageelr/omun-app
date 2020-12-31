@@ -127,6 +127,11 @@ function Home({user}){
         border-color: grey;
     `;
 
+    const handleSignout = () => {
+        localStorage.removeItem('user');
+        window.open("/","_self");
+    }
+
     function AdminPortal() {
         return <div>
             <h3>Admin Portal</h3>
@@ -209,7 +214,7 @@ function Home({user}){
             <br/>
             <Button color="primary" href="/ChangePassword">Change Password</Button>
             <br/>
-            <Button color="secondary" href="/">Signout</Button>
+            <Button color="secondary" onClick={handleSignout}>Signout</Button>
         </div>
     }
 
@@ -241,7 +246,7 @@ function Home({user}){
 
             <Button color="primary" href="/ChangePassword">Change Password</Button>
             <br/>
-            <Button color="secondary" href="/">Signout</Button>
+            <Button color="secondary" onClick={handleSignout}>Signout</Button>
         </div>
     }
 
@@ -253,7 +258,7 @@ function Home({user}){
             <br/>
             <Button color="primary" href="/ChangePassword">Change Password</Button>
             <br/>
-            <Button color="secondary" href="/">Signout</Button>
+            <Button color="secondary" onClick={handleSignout}>Signout</Button>
         </div>
     }
 

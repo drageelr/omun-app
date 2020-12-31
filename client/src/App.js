@@ -12,8 +12,8 @@ import Create from './components/Create/Create';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState({})
-  console.log(user);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')))
+  console.log('u',user);
   return (
     <Router>
       <div className="App">
@@ -21,7 +21,7 @@ function App() {
             <Switch>
               <Route exact path='/main' component={MainScreen}/>
                 <Route exact path='/' component={ 
-                  isLoggedIn ?                           
+                  user ?                           
                   () => <Home user={user} />
                   : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser}/>
                 }/>
