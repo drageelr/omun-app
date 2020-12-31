@@ -1,14 +1,14 @@
 'use strict'
 
-var { io } = require('../../bin/www');
 var db = require('../mysql');
 var customError = require('../../errors/errors');
 var hFuncs = require('../helper-funcs');
 const { namespaceUsers, fetchSocketId } = require('./socketIOusers');
 
 function emitToSocket(nspName, socketId, event, data = undefined) {
+    var { io } = require('../../bin/www');
     let sockets = io.of(nspName).sockets;
-    let socket = sockets[socketId];
+    let socket = sockets.get(socketId);
     let resEvent = "RES|" + event;
     if (socket) {
         if (data) {
@@ -19,16 +19,17 @@ function emitToSocket(nspName, socketId, event, data = undefined) {
     }
 }
 
-function broadcastToRoom(room, event, data = undefined) {
+function broadcastToRoom(nsp, room, event, data = undefined) {
     let resEvent = "RES|" + event;
+    var { io } = require('../../bin/www');
     if (data) {
-        io.of(room).emit(resEvent, data);
+        io.of(nsp).to(room).emit(resEvent, data);
     } else {
-        io.of(room).emit(resEvent);
+        io.of(nsp).to(room).emit(resEvent);
     }
 }
 
-async function generateAndBroadcastLog(committeeId, sessionId, message, timestamp) {
+async function generateAndBroadcastLog(nsp, committeeId, sessionId, message, timestamp) {
     try {
         let resLog = {
             message: message,
@@ -41,8 +42,8 @@ async function generateAndBroadcastLog(committeeId, sessionId, message, timestam
 
         resLog.id = resultLog.insertId;
 
-        broadcastToRoom(committeeId + '|' + "admin", 'log-send', resLog);
-        broadcastToRoom(committeeId + '|' + "dias", 'log-send', resLog);
+        broadcastToRoom(nsp, committeeId + '|' + "admin", 'log-send', resLog);
+        broadcastToRoom(nsp, committeeId + '|' + "dias", 'log-send', resLog);
 
         return undefined;
     } catch(err) {
@@ -126,7 +127,7 @@ exports.handleDiasChatFetchForDel = async (socket, params, event) => {
 
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
-            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_dias WHERE committeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND delegateId = ' + user.id + ' AND diasId = ' + params.diasId + ')';
+            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_dias WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND delegateId = ' + user.id + ' AND diasId = ' + params.diasId + ')';
         }
 
         let result = await db.query('SELECT id, delegateId, diasId, message, diasSent, timestamp FROM (SELECT id, delegateId, diasId, message, diasSent, timestamp FROM chat_message_del_dias WHERE '
@@ -159,7 +160,7 @@ exports.handleDiasChatFetchForDias = async (socket, params, event) => {
 
         let fetchFrom = params.lastMessageId;
         if (fetchFrom < 1) {
-            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_dias WHERE committeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND delegateId = ' + params.delegateId + ' AND diasId = ' + user.id + ')';
+            fetchFrom = '(SELECT MAX(id) + 1 FROM chat_message_del_dias WHERE committeeId = ' + user.committeeId + ' AND sessionId = ' + user.sessionId + ' AND delegateId = ' + params.delegateId + ' AND diasId = ' + user.id + ')';
         }
 
         let result = await db.query('SELECT id, delegateId, diasId, message, diasSent, timestamp FROM (SELECT id, delegateId, diasId, message, diasSent, timestamp FROM chat_message_del_dias WHERE '
@@ -190,13 +191,13 @@ exports.handleDelChatSend = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let recipDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.delegateId + ' committeeId = ' + user.committeeId);
+        let recipDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + user.committeeId);
         if (!recipDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
 
         let timestampCreated = hFuncs.parseDate();
 
         let result = await db.query('INSERT INTO chat_message_del_del (committeeId, sessionId, senderDelegateId, recipientDelegateId, message, timestamp) VALUES ('
-            + user.committeeId + ', ' + user.sessionId + ', ' + user.id, + ', ' + params.delegateId + ', "' + params.message + '", "' + timestampCreated + '")'
+            + user.committeeId + ', ' + user.sessionId + ', ' + user.id + ', ' + params.delegateId + ', "' + params.message + '", "' + timestampCreated + '")'
         );
 
         let res = {
@@ -209,13 +210,13 @@ exports.handleDelChatSend = async (socket, params, event) => {
 
         emitToSocket(user.nsp, fetchSocketId(user.nsp, "delegate", params.delegateId), event, res);
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res);
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
 
         return [res, undefined];
 
     } catch(err) {
-        retrun [{}, err];
+        return [{}, err];
     }
 }
 
@@ -232,13 +233,13 @@ exports.handleDiasChatSend = async (socket, params, event) => {
         }
 
         let recpUserType = "delegate";
-        if (user.type == "delegate") { res.delegateId = user.id; res.diasId = params.userId; resdiasSent = 0; recpUserType = "dias"; }
+        if (user.type == "delegate") { res.delegateId = user.id; res.diasId = params.userId; res.diasSent = 0; recpUserType = "dias"; }
 
-        let recipUser = await db.query('SELECT id FROM ' + recpUserType + ' WHERE id = ' + params.userId + ' committeeId = ' + user.committeeId);
+        let recipUser = await db.query('SELECT id FROM ' + recpUserType + ' WHERE id = ' + params.userId + ' AND committeeId = ' + user.committeeId);
         if (!recipUser.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
 
         let result = await db.query('INSERT INTO chat_message_del_dias (committeeId, sessionId, diasId, delegateId, message, timestamp) VALUES ('
-            + user.committeeId + ', ' + user.sessionId + ', ' + res.diasId, + ', ' + res.delegateId + ', "' + res.message + '", "' + res.timestamp + '")'
+            + user.committeeId + ', ' + user.sessionId + ', ' + res.diasId + ', ' + res.delegateId + ', "' + res.message + '", "' + res.timestamp + '")'
         );
 
         res.id = result.insertId;
@@ -247,7 +248,7 @@ exports.handleDiasChatSend = async (socket, params, event) => {
 
         return [res, undefined];
     } catch(err) {
-        retrun [{}, err];
+        return [{}, err];
     }
 }
 
@@ -277,7 +278,7 @@ exports.handleLogFetch = async (socket, params, event) => {
 
         return [res, undefined];
     } catch(err) {
-        retrun [{}, err];
+        return [{}, err];
     }
 }
 
@@ -305,7 +306,7 @@ exports.handleNotificationFetch = async (socket, params, event) => {
 
         return [res, undefined];
     } catch(err) {
-        retrun [{}, err];
+        return [{}, err];
     }
 }
 
@@ -325,9 +326,9 @@ exports.handleNotificationSend = async (socket, params, event) => {
         
         res.id = result.insertId;
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res);
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res);
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
         return [undefined, undefined];
     } catch(err) {
@@ -365,11 +366,11 @@ exports.handleSeatSit = async (socket, params, event) => {
             placard: 0
         }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res);
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res);
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} sat in {seatId: ' + params.seatId + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} sat in {seatId: ' + params.seatId + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return[undefined, undefined];
@@ -404,7 +405,7 @@ exports.handleSeatUnSit = async (socket, params, event) => {
             placard: 0
         }
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} left seat {seatId: ' + params.seatId + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} left seat {seatId: ' + params.seatId + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return[undefined, undefined];
@@ -439,11 +440,11 @@ exports.handleSeatPlacard = async (socket, params, event) => {
             placard: params.placard
         }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res);
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res);
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} changed placard status to {placard: ' + res.placard + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} changed placard status to {placard: ' + res.placard + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return[undefined, undefined];
@@ -476,11 +477,11 @@ exports.handleTopicCreate = async (socket, params, event) => {
             timestamp: timestampCreated
         }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} created {topicId: ' + res.id + '}', timestampCreated);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} created {topicId: ' + res.id + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -525,11 +526,11 @@ exports.handleTopicEdit = async (socket, params, event) => {
 
         if (!result.changedRows) { throw new customError.NotFoundError("topic does not exist"); }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} edited {topicId: ' + res.id + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} edited {topicId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -596,11 +597,11 @@ exports.handleTopicSpeakerCreate = async (socket, params, event) => {
             timestamp: timestampCreated
         }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} created {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampCreated);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} created {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -646,11 +647,11 @@ exports.handleTopicSpeakerEdit = async (socket, params, event) => {
 
         if (!result.changedRows) { throw new customError.NotFoundError("topic or topic_speaker does not exist"); }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} edited {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} edited {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -713,11 +714,11 @@ exports.handleGSLCreate = async (socket, params, event) => {
             timestampSpoken: null
         }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} added {gslId: ' + res.id + '}', timestampCreated);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} added {gslId: ' + res.id + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -767,11 +768,11 @@ exports.handleGSLEdit = async (socket, params, event) => {
 
         if (!result.changedRows) { throw new customError.NotFoundError("gsl does not exist"); }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} edited {gslId: ' + res.id + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.diasId + '} edited {gslId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -846,11 +847,11 @@ exports.handleSessionEdit = async (socket, params, event) => {
 
         if (!result.changedRows) { throw new customError.NotFoundError("unexpected error"); }
 
-        broadcastToRoom(user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.committeeId, user.sessionId, '|SESSION|: {diasId: ' + user.diasId + '} edited the session', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|SESSION|: {diasId: ' + user.diasId + '} edited the session', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];

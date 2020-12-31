@@ -9,7 +9,6 @@ var { validate } = require('./socketIOvalidator');
 var { validateAccess } = require('./socketIOaccessvalidator');
 var IOreqhandlers = require('./socketIOreqhandlers');
 const { namespaceUsers } = require('./socketIOusers');
-const { all } = require('../../app');
 
 const reqEvents = {
     // Chat Management
@@ -213,6 +212,18 @@ function createNameSpace(committeeId) {
 
         nsp.on('connection', async socket => {
             try {
+                socket.on('disconnect', (reason) => {
+                    if (namespaceUsers["/" + committeeId]) {
+                        let user = socket.userObj;
+                        if (user) {
+                            if (namespaceUsers["/" + committeeId][user.type]) {
+                                delete namespaceUsers["/" + committeeId][user.type][user.id];
+                            }
+                        }
+                    }
+                    console.log(socket.id, "DISCONNECTED:", reason);
+                });
+
                 let token = socket.handshake.query.token;
                 if (!token) { throw new customError.AuthenticationError("no token supplied"); }
 
@@ -263,7 +274,7 @@ function createNameSpace(committeeId) {
 
             } catch(err) {
                 errorHandler(socket, err);
-                socket.destroy();
+                socket.disconnect(true);
             }
         });
 
