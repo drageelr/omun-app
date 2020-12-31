@@ -158,6 +158,7 @@ DELIMITER ;;
 	SET @x = 0;
     WHILE @x < 50 DO
 		INSERT INTO seat (committeeId) VALUES (NEW.id);
+        SET @x = @x + 1;
     END WHILE;
 END */;;
 DELIMITER ;
@@ -569,4 +570,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-12-31  5:25:36
+-- Dump completed on 2020-12-31  5:43:00
