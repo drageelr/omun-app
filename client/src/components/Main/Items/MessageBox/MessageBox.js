@@ -110,7 +110,7 @@ export default function MessageBox() {
               </List>
             </Box>
             <List className={classes.sendBar}>
-              <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" label={`Send chat message to ${countrySelected}`}/>
+              <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" label={`Send chat message to ${countriesOnline[countrySelected]}`}/>
               <Button alignRight variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
 
             </List>
