@@ -1,3 +1,17 @@
-.cardBody{
-    overflow-y: auto;
+.Notif-Text{
+    border-spacing: 0.1%;
+    font-family: 'Franklin Gothic Light', 'Arial Narrow', Arial, sans-serif;
+}
+
+.NotifcardBody, .NotifBody{
+    
+    background-image: url('https://us.123rf.com/450wm/golubovy/golubovy1906/golubovy190600623/124623692-dust-and-scratches-design-gray-art-background-abstract-pattern-layer-copy-space-.jpg?ver=6%27);');
+    
+}
+
+.NotifHeader{
+    background-color:#ca292965;
+    color: rgb(248, 190, 190);
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 120%;
 }

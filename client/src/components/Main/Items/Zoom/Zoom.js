@@ -1,23 +1,40 @@
 import React,{Component} from 'react';
 import './Zoom.css'
+import { Tabs, Tab, TabPanel, TabList } from 'react-web-tabs';
 import {Card, CardBody, CardHeader, CardImg,} from 'reactstrap';
+import logo from './logo/lumun-logo.png'
+import 'react-web-tabs/dist/react-web-tabs.css';
+import Gsl from './Gsl';
 
-
-class Zoom extends Component {
-    render() { 
-        return (  
+function Zoom() {
+    return (  
         <div>
-            <Card style={{height:"52vh",overflowY:"hidden"}}>
-                <CardHeader>
-                    Zoom Screen
-                </CardHeader>
+            <Card style={{height:"48vh",overflowY:"hidden"}}>
                 <CardBody>
-                        <CardImg className="Image" src="https://i.pcmag.com/imagery/reviews/05fRE6utWAtXmByTrwqgdcU-9.1569481702.fit_scale.size_1028x578.jpg" alt = 'Zoom Image'/>
+                <Tabs
+                    defaultTab="two"
+                    onChange={(tabId) => { console.log(tabId) }}
+                >
+                    <TabList>
+                    <Tab tabFor="one">Topics</Tab>
+                    <Tab tabFor="two">GSL</Tab>
+                    <Tab tabFor="three">RSL</Tab>
+                    </TabList>
+                    <TabPanel tabId="one">
+                    <p>Tab 1 content</p>
+                    </TabPanel>
+                    <TabPanel tabId="two">
+                        <Gsl></Gsl>
+                    </TabPanel>
+                    <TabPanel tabId="three">
+                    <p>Tab 3 content</p>
+                    </TabPanel>
+                </Tabs>
+                        {/* <CardImg className="Image" src={logo} alt = 'Logo'/> */}
                 </CardBody>
             </Card>
         </div>
-        );
-    }
+    );
 }
  
 export default Zoom;

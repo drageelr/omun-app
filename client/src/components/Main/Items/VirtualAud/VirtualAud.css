@@ -1,23 +1,26 @@
+.bodyM{
+    background-image: url('https://cdn.hipwallpaper.com/i/82/47/i1Iyn9.jpg');
+}
+
+
 .innerGrid{
     display: grid;
     grid-template-columns: repeat(10,1fr);
     grid-template-rows: repeat(7,1fr);
-    grid-gap: 3.5%;
+    grid-gap: 3%;
     overflow-y: scroll;
 }
 
 
 .item{
-    height: 4.5vh;
-    width: 5vh;
-    border: 3px solid lightcoral;
-}
-
-.occupied{
-    border-color:  darkblue;
+    height: 5vh;
+    width: 5.5vh;
+    border: 3.5px solid #E2AC26;
+    color: white; 
+    font-size: small;
+    text-align: center;
 }
 
 .raised{
-    border-color: goldenrod;
-    border-style: double;
+    border-color:black;
 }

@@ -4,8 +4,7 @@
   box-sizing: border-box;
 }
 body {
-  background: rgb(225,171,39);
-  background: linear-gradient(90deg, rgba(225,171,39,1) 0%, rgba(164,65,60,1) 100%);
+  background-image: url('https://cdn.hipwallpaper.com/i/82/47/i1Iyn9.jpg');
   min-height: 100vh;
   display: flex;
   font-weight: 400;
@@ -30,7 +29,7 @@ body, html, .App, #root, .auth-wrapper {
   text-align: left;
 }
 
-.auth-inner {
+.auth-inner, .create-inner {
   width: 400px;
   margin: auto;
   background: #ffffff;
@@ -67,4 +66,8 @@ body, html, .App, #root, .auth-wrapper {
 
 .forgot-password a {
   color: #167bff;
+}
+
+.message {
+  color: red;
 }

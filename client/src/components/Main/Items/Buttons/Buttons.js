@@ -2,54 +2,44 @@ import React, {Component} from 'react'
 import {Button} from 'reactstrap'
 import './Buttons.css'
 import {Card, CardBody } from 'reactstrap';
-import {connect} from 'react-redux';
-import {leaveSeat, raiseP , unRaise} from '../VirtualAud/Actions';
+import {leaveSeat , unRaise, raiseP} from '../VirtualAud/Actions';
 
+let plaqNotification;
 
-const mapStateToProps = (state)=>{
-    return {
-      seated:state.virAud.seated,
-      placement:state.virAud.placement,
-      raised:state.virAud.raised
-    }
-  }
-
-  const mapDispatchToProps = (dispatch)=>{
-    return {
-        unSit:()=>dispatch(leaveSeat()),
-        raise:()=>dispatch(raiseP()),
-        unraise:()=>dispatch(unRaise())
-    }
-  }
-
-
-const handleClick = () =>{
-    console.log('Clicked')
+const handleWindow=() =>{
+    window.open('https://google.com')
 }
 
 
-class Buttons extends Component {
-    render(){
-        const { seated,  unSit} = this.props;
-        const leave =()=>{
-            (seated)? unSit():alert('You are not sitting');
-        }
-        return(
-        <div>
-            <Card style={{height:'16vh'}}>
-                <CardBody>
-                <div className="button-container" style={{overflow:'auto'}}>
-                    <Button onClick={handleClick} className="P" color="primary">R/UR Plaq</Button>
-                    <Button onClick={handleClick} color="secondary">Upload/View W.P</Button>
-                    <Button onClick={handleClick} color="success">View GSL</Button>
-                    <Button onClick={handleClick} color="warning">Join B</Button>
-                    {(seated)?<Button onClick={leave} color="danger">Leave Seat</Button>:<Button  style={{border:'0.1vh solid black',backgroundColor:'white',color:'black'}}>Not Seated</Button>}
-                    
-                </div>
-                </CardBody>
-            </Card>
-        </div>
-        )
+function Buttons ({ seated,  unSit, raise, unraise , raised}) {
+    const leave =()=>{
+        (seated)? unSit():alert('You are not sitting');
     }
+    const lower=()=>{
+        (seated)?unraise():alert('You are not sitting');
+        // plaqHandle('Lowered');
+    }
+    const Up=()=>{
+        (seated)?raise():alert('You are not sitting');
+        // plaqHandle('Raised');
+    }
+    // / Checking if Plaq is lowered or Raised
+    
+    return(
+    <div>
+        <Card style={{height:'16vh', backgroundColor:'#2D2B36', border:'0px'}}>
+            
+            <div className="button-container" style={{overflow:'auto'}}>
+                {(raised)?<Button size="lg" onClick={lower} style={{border:'0.1vh solid black',backgroundColor:'white',color:'black'}}>Lower</Button>:<Button size="lg" color={'danger'} onClick={Up}>raise</Button>}
+                <Button size="lg" onClick={handleWindow} className="Upload" color="secondary">Upload</Button>
+                <Button size="lg" onClick={handleWindow} className="WorkingPaper" color="info">View Working Papers</Button>
+                <Button size="lg" onClick={handleWindow} className="GSL" color="success">View GSL</Button>
+                {(seated)?<Button size="lg" onClick={leave} color="danger">Leave Seat</Button>:<Button size="lg" style={{border:'0.1vh solid black',backgroundColor:'white',color:'black'}}>Not Seated</Button>}
+                
+            </div>
+            
+        </Card>
+    </div>
+    )
 }
-export default connect(mapStateToProps,mapDispatchToProps)(Buttons);
+export default Buttons;

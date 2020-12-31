@@ -1,13 +1,19 @@
-
+.InfoContainer{
+     /*background:#EECD86; */
+    background-image: url('https://image.shutterstock.com/image-vector/abstract-dark-teal-background-blurred-260nw-1031628868.jpg'); 
+    background-repeat: no-repeat;
+    background-size: cover;
+}
 .flex-container-Notifications{
     display: grid;
     grid-template-columns: 70% 30%; 
 }
-.Comittee-Name, .Current-Topic, .Speaker, .Time-Left{
+.committee-Name, .Current-Topic, .Speaker, .Time-Left{
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: 500%;
-    font-size: 105%;
-    padding-left: 3px;
+    font-size: 103%;
+    padding-left: 0.5%;
+    padding-bottom: 1%;
 }
 
 .Progress-Bar{
@@ -16,6 +22,25 @@
 }
 
 .time-left-topic, .time-left-speaker {
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 110%;
     font-weight: 500;
+    padding: 2%;
+}
+
+hr{
+    width: 50%;
+    margin: 0;
+}
+
+.last{
+    background-color: #6e242434;
+    border-radius: 50px;
+    padding-right: 5%;
+    padding-left: 5%;
+    padding-top: 2%;
+}
+
+.timer{
+    color:black;
 }

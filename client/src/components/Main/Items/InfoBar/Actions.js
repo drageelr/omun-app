@@ -24,9 +24,9 @@ export const newTopic = (pay)=>{
         payload:pay
     });
 }
-export const newComittee = (pay)=>{
+export const newcommittee = (pay)=>{
     return ({
-        type:'newComittee',
+        type:'newcommittee',
         payload:pay
     });
 }
@@ -38,4 +38,25 @@ export const requestAPI = (dispatch , url)=>{
     .then(response=> response.json())
     .then(data=>dispatch({type:'apiSuccess', payload:data}))
     .catch(error=>dispatch({type:'apiFail' , payload:error}))
+}
+
+
+export const startTimer=(payload) =>{
+    return({
+        type:"START_TIMER",
+        start_time:payload*60,
+        seconds:payload*60,
+    })
+}
+
+export const tickTimer= () =>{
+    return({
+        type:'TICK'
+    })
+}
+
+export const stopTime=()=>{
+    return({
+        type:'STOP_TIMER'
+    })
 }
