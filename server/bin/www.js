@@ -24,7 +24,9 @@ var io = require('socket.io')(server, {
   cors: {
     origin: "*",
     credentials: true
-  }
+  },
+  pingTimeout: 40000,
+  pingInterval: 60000
 });
 
 /**

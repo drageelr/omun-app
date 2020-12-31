@@ -60,7 +60,7 @@ const validations = {
             length: { min: 1, max: 250 }
         }
     }),
-    'del-chat-send': new Schema({
+    'dias-chat-send': new Schema({
         userId: {
             type: Number,
             required: true
