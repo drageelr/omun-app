@@ -1,6 +1,5 @@
 import React, {useState} from 'react'
-import $ from 'jquery'
-import {start , end , join } from '../Create/Actions';
+import {start , end , fetchCommittees } from './Actions';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -18,8 +17,8 @@ const useStyles = makeStyles((theme) => ({
     formControl: {
       margin: theme.spacing(1),
       minWidth: 120,
-    },
-  }));
+    }
+}));
 
 function Home({user}){
     const classes = useStyles();
@@ -32,9 +31,27 @@ function Home({user}){
     const [loada, setLoada] = useState(false)
     const [loadb, setLoadb] = useState(false)
     const [loadc, setLoadc] = useState(false)
-    const [Suca, setSuca] = useState(false)
-    const [Sucb, setSucb] = useState(false)
-    const [sessions , setSessions] =useState(['1','2','3','4','5']);
+    const [status, setStatus] = useState('')
+    const [sessions , setSessions] =useState([]);
+    const [committeeIds , setCommitteeIds] =useState({});
+
+    async function callFetch() {
+        try{
+            const initialIdMap = await fetchCommittees();
+            console.log(initialIdMap);
+            setSessions(Object.keys(initialIdMap)); //keys will give initials
+            setCommitteeIds(initialIdMap);
+        } 
+        catch(e){
+            console.error(e);
+            setStatus(e); 
+        }
+    }
+    
+    React.useEffect(() => {
+        callFetch()
+    }, []);
+
 
     const handleChangeSt = (event) => {
         setSessionSt(event.target.value);
@@ -67,31 +84,51 @@ function Home({user}){
     };
 
     const handleStart = async () => {
-        setSuca(false);
         setLoada(true);
-        const res = await start({committeeId:SessionSt});
+        try{
+            const res = await start({committeeId: SessionSt});
+            setStatus("Session started.");
+        } 
+        catch(e){
+            console.error(e);
+            setStatus(e); 
+        }
+        
         setLoada(false);
-        setSuca(true);
     };
     const handleEnd = async () => {
-        setSucb(false);
         setLoadb(true);
-        const res = await end({committeeId:SessionSt});
+        try{
+            const res = await end({committeeId: SessionEn});
+            setStatus("Session ended.");
+        } 
+        catch(e){
+            console.error(e);
+            setStatus(e); 
+        }
         setLoadb(false);
-        setSucb(true);
     };
+
     const handleJoin = async () => {
         setLoadc(true);
-        const res = await join({committeeId:SessionSt});
+        try{
+            // const res = await join({committeeId: SessionJ});
+            setStatus("Session joined.");
+        } 
+        catch(e){
+            console.error(e);
+            setStatus(e); 
+        }
         setLoadc(false);
         window.open("/main","_self");
     };
+
     const override = css`
         display: block;
         margin: 0 auto;
         border-color: grey;
     `;
-    //localStorage.token
+
     if (user.type === 'admin')
     {
         return( 
@@ -101,7 +138,7 @@ function Home({user}){
                     <h6><i>Welcome {user.name}</i></h6>
                     
                     <FormControl className={classes.formControl}>
-                        <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
+                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
                         <Select
                         labelId="demo-controlled-open-select-label"
                         id="demo-controlled-open-select"
@@ -111,7 +148,9 @@ function Home({user}){
                         value={SessionSt}
                         onChange={handleChangeSt}
                         >
-                        {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
+                        { 
+                            sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>) //value is ID
+                        } 
                         </Select>
                     </FormControl>
                     <Button className={classes.button} onClick={handleStart}>
@@ -125,10 +164,9 @@ function Home({user}){
                         color={"red"}
                         loading={loada}
                     />
-                    { Suca && <><br/><i>Session Started</i></>}
                     <br/>
                     <FormControl className={classes.formControl}>
-                        <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
+                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
                         <Select
                         labelId="demo-controlled-open-select-label"
                         id="demo-controlled-open-select"
@@ -138,7 +176,7 @@ function Home({user}){
                         value={SessionEn}
                         onChange={handleChangeEn}
                         >
-                        {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
+                        {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
                         </Select>
                     </FormControl>
                     <Button className={classes.button} onClick={handleEnd}>
@@ -153,10 +191,9 @@ function Home({user}){
                         color={"red"}
                         loading={loadb}
                     />
-                    { Sucb && <><br/><i>Session Stoped</i></>}
                     <br/>
                     <FormControl className={classes.formControl}>
-                        <InputLabel id="demo-controlled-open-select-label">committee Id:</InputLabel>
+                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
                         <Select
                         labelId="demo-controlled-open-select-label"
                         id="demo-controlled-open-select"
@@ -166,7 +203,7 @@ function Home({user}){
                         value={SessionJ}
                         onChange={handleChangeJ}
                         >
-                        {sessions.map((value, index)=> <MenuItem key={index} value={value}>{value}</MenuItem>)}
+                        {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
                         </Select>
                     </FormControl>
                     <Button className={classes.button} onClick={handleJoin}>
@@ -188,6 +225,7 @@ function Home({user}){
                     <br/>
                     <Button color="secondary" href="/">Signout</Button>
                 </div>
+                { status !== '' && <div className="message"> {status} </div> }
             </div>
         )
     }
@@ -206,7 +244,6 @@ function Home({user}){
                     color={"red"}
                     loading={loada}
                 />
-                { Suca && <><br/><i>Session Started</i></>}
             <br/>
             <Button color="default" onClick={handleEnd} >Stop Your Session</Button>
             <FadeLoader
@@ -217,7 +254,6 @@ function Home({user}){
                     color={"red"}
                     loading={loadb}
                 />
-                { Sucb && <><br/><i>Session Stopped</i></>}
             <br/>
             <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
             <FadeLoader

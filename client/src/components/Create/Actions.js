@@ -16,24 +16,3 @@ export async function fetch(packet) {
     }
     return res.data; 
 };
-
-
-export async function start(packet) {
-    console.log("start",packet);
-    const res = await apiCaller( '/api/session/start', packet, 200);//api, body, successCode, dataReturner
-    
-    return res === undefined ? ["-1"] : res; 
-};
-
-export async function end(packet) {
-    console.log("end",packet);
-    const res = await apiCaller( '/api/session/stop', packet, 200);//api, body, successCode, dataReturner
-    
-    return res === undefined ? ["-1"] : res; 
-};
-
-export async function join(packet) {
-    console.log("join",packet);
-    const res = await apiCaller( '/api/session/join', packet, 200);//api, body, successCode, dataReturner
-    return res === undefined ? ["-1"] : res; 
-};
