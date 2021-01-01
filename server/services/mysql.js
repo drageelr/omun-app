@@ -38,4 +38,5 @@ module.exports.defaultAdmin = async () => {
 module.exports.sessionTerminator = async () => {
     let query = util.promisify(con.query).bind(con);
     await query('UPDATE session SET active = 0 WHERE id != 0');
+    await query('UPDATE seat SET placard = 0, delegateId = null WHERE id != 0');
 }

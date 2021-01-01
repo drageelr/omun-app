@@ -48,6 +48,9 @@ function MainScreen(){
         socket.on('RES|notif-send', resNotifSend); // Recieved By: ["admin", "dias", "delegate"]
 
         // Seat Management
+        socket.on('RES|seat-sit', resSeatSit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|seat-unsit', resSeatUnsit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|seat-placard', resSeatPlacard); // Recieved By: ["admin", "dias", "delegate"]
 
         // MOD & GSL Management
 
@@ -73,6 +76,9 @@ function MainScreen(){
         tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
 
         // Seat Management
+        tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
+        tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
+        tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
 
         // MOD & GSL Management
 
@@ -310,6 +316,52 @@ function MainScreen(){
         console.log('RES|notif-send:', res);
     }
 
+    function resSeatSit(res) {
+         /**
+         * When recieved set the seat (specified by "id") values:
+         * "delegateId:" given "delegateId"
+         * "placard": false
+         */
+
+        /**
+         * res = {
+         *      id: Number.min(1).max(50),
+         *      delegateId: Number
+         * }
+         */
+
+        console.log('RES|seat-sit:', res);
+    }
+
+    function resSeatUnsit(res) {
+        /**
+         * When recieved set the seat (specified by "id") values:
+         * "delegateId:" null
+         * "placard": false
+         */
+
+        /**
+         * res = {
+         *      id: Number.min(1).max(50)
+         * }
+         */
+        console.log('RES|seat-unsit:', res);
+    }
+
+    function resSeatPlacard(res) {
+        /**
+         * When recieved set the seat (specified by "id") placard value to given "placard"
+         */
+
+        /**
+         * res = {
+         *      id: Number.min(1).max(50),
+         *      placard: Boolean
+         * }
+         */
+        console.log('RES|seat-placard:', res);
+    }
+
     function getDelChatFetchDel() {
         /**
          * This function is used to fetch last 10 messages of this delegate's chat with target delegate
@@ -445,6 +497,40 @@ function MainScreen(){
         let req = {
             // message to send "String.min(1).max(250)"
             message: "Hello Committee!"
+        };
+
+        return req;
+    }
+
+    function getSeatSit() {
+        /**
+         * Emit this when delegate wants to sit somewhere
+         */
+
+        let req = {
+            // Number.min(1).max(50)
+            seatId: 1
+        };
+
+        return req;
+    }
+
+    function getSeatUnsit() {
+        /**
+         * Called by delegate when they press on leave seat
+         */
+
+        return {};
+    }
+
+    function getSeatPlacard() {
+        /**
+         * Just called to toggle placard value (either true or false)
+         */
+
+        let req = {
+            // raise -> true | lower -> false
+            placard: true
         };
 
         return req;
