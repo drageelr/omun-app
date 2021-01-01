@@ -43,6 +43,7 @@ function MainScreen(){
 
         // Log & Notification Management
         socket.on('RES|log-fetch', resLogFetch); // Recieved By: ["admin", "dias"]
+        socket.on('RES|log-send', resLogSend); // Recieved By: ["admin", "dias"]
         socket.on('RES|notif-fetch', resNotifFetch); // Recieved By: ["admin", "dias", "delegate"]
         socket.on('RES|notif-send', resNotifSend); // Recieved By: ["admin", "dias", "delegate"]
 
@@ -254,6 +255,22 @@ function MainScreen(){
          * }
          */
         console.log('RES|log-fetch:', res)
+    }
+
+    function resLogSend(res) {
+        /**
+         * This is received by every admin and/or dias present in the committee
+         * Just append the logs at the end
+         */
+
+        /**
+         * res = {
+         *      id: Number,
+         *      message: String.min(1).max(500),
+         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|log-send:', res);
     }
 
     function resNotifFetch(res) {
