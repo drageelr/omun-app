@@ -42,6 +42,9 @@ function MainScreen(){
         socket.on('RES|dias-chat-send', resDiasChatSend); // Recieved By: ["dias", "delegate"]
 
         // Log & Notification Management
+        socket.on('RES|log-fetch', resLogFetch); // Recieved By: ["admin", "dias"]
+        socket.on('RES|notif-fetch', resNotifFetch); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|notif-send', resNotifSend); // Recieved By: ["admin", "dias", "delegate"]
 
         // Seat Management
 
@@ -64,6 +67,9 @@ function MainScreen(){
         tempEmission.push({event: 'REQ|dias-chat-send', req: getDiasChatSend()}); // Access: ["dias", "delegate"]
 
         // Log & Notification Management
+        tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
+        tempEmission.push({event: 'REQ|notif-fetch', req: getNotifFetch()}); // Access: ["admin", "dias", "delegate"]
+        tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
 
         // Seat Management
 
@@ -232,6 +238,61 @@ function MainScreen(){
         console.log('RES|dias-chat-send:', res);
     }
 
+    function resLogFetch(res) {
+        /**
+         * When this is received you have to append the array
+         * use the "id" to check where to append (usually it will be in the start)
+         */
+
+        /**
+         * res = {
+         *      logs: [{
+         *          id: Number,
+         *          message: String.min(1).max(500),
+         *          timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         *      }]
+         * }
+         */
+        console.log('RES|log-fetch:', res)
+    }
+
+    function resNotifFetch(res) {
+        /**
+         * When this is received you have to append the array
+         * use the "id" to check where to append (usually it will be in the start)
+         * use "diasId" to get their name to be displayed with the notification
+         */
+
+        /**
+         * res = {
+         *      notifications: [{
+         *          id: Number,
+         *          diasId: Number,
+         *          message: String.min(1).max(500),
+         *          timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         *      }]
+         * }
+         */
+        console.log('RES|notif-fetch:', res)
+    }
+
+    function resNotifSend(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just append the notification at the end
+         */
+
+        /**
+         * res = {
+         *      id: Number,
+         *      diasId: Number,
+         *      message: String.min(1).max(500),
+         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|notif-send:', res);
+    }
+
     function getDelChatFetchDel() {
         /**
          * This function is used to fetch last 10 messages of this delegate's chat with target delegate
@@ -325,6 +386,48 @@ function MainScreen(){
             userId: 2,
             // message to send "String.min(1).max(250)"
             message: "Hello Bro!"
+        };
+
+        return req;
+    }
+
+    function getLogFetch() {
+        /**
+         * This function is used to fetch last 10 logs
+         * This event is supposed to be emitted when the loading sign is clicked in the log box
+         */
+
+        let req = {
+            // id of the oldest log (if no log then send 0)
+            lastLogId: 0
+        };
+
+        return req;
+    }
+
+    function getNotifFetch() {
+        /**
+         * This function is used to fetch last 10 notifications
+         * This event is supposed to be emitted when the loading sign is clicked in the notifications box
+         */
+
+        let req = {
+            // id of the oldest log (if no log then send 0)
+            lastNotifId: 0
+        };
+
+        return req;
+    }
+
+    function getNotifSend() {
+        /**
+         * This function is used to send notification
+         * This event is supposed to be emitted when the send button is pressed on the notification box
+         */
+        
+        let req = {
+            // message to send "String.min(1).max(250)"
+            message: "Hello Committee!"
         };
 
         return req;

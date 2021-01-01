@@ -258,7 +258,7 @@ exports.handleLogFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let fetchFrom = params.lastMessageId;
+        let fetchFrom = params.lastLogId;
         if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM log)'; }
         
         let result = await db.query('SELECT id, message, timestamp FROM (SELECT id, message, timestamp FROM log WHERE '
@@ -286,7 +286,7 @@ exports.handleNotificationFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let fetchFrom = params.lastMessageId;
+        let fetchFrom = params.lastNotifId;
         if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM notification)'; }
         
         let result = await db.query('SELECT id, diasId, message, timestamp FROM (SELECT id, diasId, message, timestamp FROM notification WHERE '
