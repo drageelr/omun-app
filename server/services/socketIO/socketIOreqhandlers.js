@@ -258,7 +258,7 @@ exports.handleLogFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let fetchFrom = params.lastMessageId;
+        let fetchFrom = params.lastLogId;
         if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM log)'; }
         
         let result = await db.query('SELECT id, message, timestamp FROM (SELECT id, message, timestamp FROM log WHERE '
@@ -286,7 +286,7 @@ exports.handleNotificationFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let fetchFrom = params.lastMessageId;
+        let fetchFrom = params.lastNotifId;
         if (fetchFrom < 1) { fetchFrom = '(SELECT MAX(id) + 1 FROM notification)'; }
         
         let result = await db.query('SELECT id, diasId, message, timestamp FROM (SELECT id, diasId, message, timestamp FROM notification WHERE '
@@ -343,34 +343,32 @@ exports.handleSeatSit = async (socket, params, event) => {
         let user = socket.userObj;
 
         let reqSitting = await db.query('SELECT id FROM seat WHERE '
-            + 'id = ' + params.seatId + ' AND '
-            + 'committeeId = ' + params.committeeId + ' AND '
-            + 'delegateId = ' + params.delegateId
+            + 'committeeId = ' + user.committeeId + ' AND '
+            + 'delegateId = ' + user.id
         );
 
         if (reqSitting.length) { throw new customError.DuplicateResourceError("you are already sitting on another seat"); }
 
         let timestampAltered = hFuncs.parseDate();
 
-        let result = await db.query('UPDATE seat SET delegateId = ' + user.id + ' AND placard = 0 WHERE '
+        let result = await db.query('UPDATE seat SET delegateId = ' + user.id + ', placard = 0 WHERE '
             + 'id = ' + params.seatId + ' AND '
-            + 'committeeId = ' + params.committeeId + ' AND '
-            + 'delegateId = null'
+            + 'committeeId = ' + user.committeeId + ' AND '
+            + 'delegateId IS null'
         ); 
 
         if (!result.changedRows) { throw new customError.DuplicateResourceError("someone is sitting in that seat"); }
 
         let res = {
             id: params.seatId,
-            delegateId: params.delegateId,
-            placard: 0
+            delegateId: user.id
         }
 
         broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} sat in {seatId: ' + params.seatId + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + user.id + '} sat in {seatId: ' + params.seatId + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return[undefined, undefined];
@@ -385,27 +383,30 @@ exports.handleSeatUnSit = async (socket, params, event) => {
 
         let timestampAltered = hFuncs.parseDate();
 
-        let result = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE '
-            + 'committeeId = ' + params.committeeId + ' AND '
-            + 'delegateId = ' + user.id
-        ); 
-
-        if (!result.changedRows) { throw new customError.NotFoundError("you are NOT sitting on any seat"); }
-
         let seatId = await db.query('SELECT id FROM seat WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'delegateId = ' + user.id 
         );
+        
+        if (!seatId.length) { throw new customError.NotFoundError("you are NOT sitting on any seat"); }
+        
+        let result = await db.query('UPDATE seat SET delegateId = null, placard = 0 WHERE '
+            + 'id = ' + seatId[0].id + ' AND '
+            + 'committeeId = ' + user.committeeId + ' AND '
+            + 'delegateId = ' + user.id
+        ); 
 
         if (!result.changedRows) { throw new customError.NotFoundError("unexpected error while leaving seat"); }
 
         let res = {
-            id: seatId[0].id,
-            delegateId: null,
-            placard: 0
+            id: seatId[0].id
         }
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} left seat {seatId: ' + params.seatId + '}', timestampAltered);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + user.id + '} left seat {seatId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return[undefined, undefined];
@@ -419,24 +420,23 @@ exports.handleSeatPlacard = async (socket, params, event) => {
         let user = socket.userObj;
 
         let timestampAltered = hFuncs.parseDate();
-
-        let result = await db.query('UPDATE seat SET placard = ' + params.placard +  ' WHERE '
-            + 'committeeId = ' + params.committeeId + ' AND '
-            + 'delegateId = ' + user.id
-        ); 
-
-        if (!result.changedRows) { throw new customError.NotFoundError("can't raise/lower placard because you are NOT sitting on any seat"); }
-
+        
         let seatId = await db.query('SELECT id FROM seat WHERE '
             + 'committeeId = ' + user.committeeId + ' AND '
             + 'delegateId = ' + user.id 
         );
 
-        if (!result.changedRows) { throw new customError.NotFoundError("unexpected error while leaving seat"); }
+        if (!seatId.length) { throw new customError.NotFoundError("can't raise/lower placard because you are NOT sitting on any seat"); }
+
+        let result = await db.query('UPDATE seat SET placard = ' + params.placard +  ' WHERE '
+            + 'committeeId = ' + user.committeeId + ' AND '
+            + 'delegateId = ' + user.id
+        );
+
+        if (!result.changedRows) { throw new customError.NotFoundError("placard already in that state"); }
 
         let res = {
             id: seatId[0].id,
-            delegateId: user.id,
             placard: params.placard
         }
 
@@ -444,7 +444,7 @@ exports.handleSeatPlacard = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + params.delegateId + '} changed placard status to {placard: ' + res.placard + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|V-AUD|: {delegateId: ' + user.id + '} changed placard status to {placard: ' + res.placard + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return[undefined, undefined];

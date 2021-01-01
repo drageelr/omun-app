@@ -65,11 +65,6 @@ async function sendStartInfo(socket) {
 
         let allCountries = await db.query('SELECT * FROM country');
 
-        // let reqNotifications = db.query('SELECT * FROM notification WHERE committeeId = ' + user.committeeId + ' sessionId = ' + user.sessionId + ' ORDER BY id');
-
-
-        // await Promise.all([reqSeats, allDelegates, allCountries, /*reqNotifications,*/ allDias]);
-
         let committee = {
             id: reqCommittee[0].id,
             name: reqCommittee[0].name,
@@ -85,24 +80,24 @@ async function sendStartInfo(socket) {
             type: reqSession[0].type
         }
 
-        let seats = [];
+        let seats = {};
         for (let i = 0; i < reqSeats.length; i++) {
-            seats.push(hFuncs.duplicateObject(reqSeats[i], ['id', 'delegateId', 'placard']));
+            seats[reqSeats[i].id] = hFuncs.duplicateObject(reqSeats[i], ['delegateId', 'placard'])
         }
 
-        let delegates = [];
+        let delegates = {};
         for (let i = 0; i < allDelegates.length; i++) {
-            delegates.push(hFuncs.duplicateObject(allDelegates[i], ['id', 'countryId']));
+            delegates[allDelegates[i].id] = hFuncs.duplicateObject(allDelegates[i], ['countryId']);
         }
 
-        let dias = [];
+        let dias = {};
         for (let i = 0; i < allDias.length; i++) {
-            dias.push(hFuncs.duplicateObject(allDias[i], ['id', 'name', 'title']));
+            dias[allDias[i].id] = hFuncs.duplicateObject(allDias[i], ['name', 'title']);
         }
 
-        let countries = [];
+        let countries = {};
         for (let i = 0; i < allCountries.length; i++) {
-            countries.push(hFuncs.duplicateObject(allCountries[i], ['id', 'name', 'initials']));
+            countries[allCountries[i].id] = hFuncs.duplicateObject(allCountries[i], ['name', 'initials']);
         }
 
         let connectedDelegates = [];
@@ -110,20 +105,18 @@ async function sendStartInfo(socket) {
         if (namespaceUsers[nsp.name].delegate){
             conDel = Object.keys(namespaceUsers[nsp.name].delegate);
         }
-
         for (let i = 0; i < conDel.length; i++) {
             connectedDelegates.push(conDel[i]);
         }
 
-        let connectedAdmins = [];
+        let connectedAdmins = {};
         let conAdmins = [];
         if (namespaceUsers[nsp.name].admin) {
             conAdmins = Object.values(namespaceUsers[nsp.name].admin);
         }
-        
         for (let i = 0; i < conAdmins.length; i++) {
             let userDetails = nsp.sockets.get(conAdmins[i]).userObj;
-            connectedAdmins.push(hFuncs.duplicateObject(userDetails, ['id', 'name']));
+            connectedAdmins[userDetails.id] = hFuncs.duplicateObject(userDetails, ['name']);
         }
 
         let connectedDias = [];
@@ -131,16 +124,9 @@ async function sendStartInfo(socket) {
         if (namespaceUsers[nsp.name].dias) {
             conDias = Object.keys(namespaceUsers[nsp.name].dias);
         }
-        
         for (let i = 0; i < conDias.length; i++) {
             connectedDias.push(conDias[i]);
         }
-
-
-        // let notifications = [];
-        // for (let i = 0; i < reqNotifications.length; i++) {
-        //     notifications.push(hFuncs.duplicateObject(reqNotifications[i], ['id', 'message', 'timestamp']));
-        // }
 
         let resObj = {
             committee: committee,
@@ -152,16 +138,8 @@ async function sendStartInfo(socket) {
             connectedDelegates: connectedDelegates,
             connectedAdmins: connectedAdmins,
             connectedDias: connectedDias,
-            // notifications: notifications
         }
 
-        // let logs = [];
-        // if (user.type != 'delegate') {
-        //     for (let i = 0; i < reqLogs.length; i++) {
-        //         logs.push(reqLogs[i], ['id', 'message', 'timestamp']);
-        //     }
-        //     resObj.logs = logs;
-        // }
         socket.emit('RES|info-start', resObj);
         
     } catch (err) {

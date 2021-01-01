@@ -11,7 +11,7 @@ import { Button } from '@material-ui/core'
 
 let socket;
 
-function MainScreen(){
+export default function MainScreen(){
     let [chats, setChats] = useState({});
     let [connected, setConnected] = useState(false);
     let [session, setSession] = useState({});
@@ -65,8 +65,15 @@ function MainScreen(){
         socket.on('RES|dias-chat-send', responseDiasChatSend); // Recieved By: ["dias", "delegate"]
 
         // Log & Notification Management
+        socket.on('RES|log-fetch', resLogFetch); // Recieved By: ["admin", "dias"]
+        socket.on('RES|log-send', resLogSend); // Recieved By: ["admin", "dias"]
+        socket.on('RES|notif-fetch', resNotifFetch); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|notif-send', resNotifSend); // Recieved By: ["admin", "dias", "delegate"]
 
         // Seat Management
+        socket.on('RES|seat-sit', resSeatSit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|seat-unsit', resSeatUnsit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|seat-placard', resSeatPlacard); // Recieved By: ["admin", "dias", "delegate"]
 
         // MOD & GSL Management
 
@@ -87,8 +94,14 @@ function MainScreen(){
         tempEmission.push({event: 'REQ|dias-chat-send', req: requestDiasChatSend()}); // Access: ["dias", "delegate"]
 
         // Log & Notification Management
+        tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
+        tempEmission.push({event: 'REQ|notif-fetch', req: getNotifFetch()}); // Access: ["admin", "dias", "delegate"]
+        tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
 
         // Seat Management
+        tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
+        tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
+        tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
 
         // MOD & GSL Management
 
@@ -291,7 +304,124 @@ function MainScreen(){
         console.log('RES|dias-chat-send:', res);
     }
 
-    function requestDelChatFetchDel() {
+    function resLogFetch(res) {
+        /**
+         * When this is received you have to append the array
+         * use the "id" to check where to append (usually it will be in the start)
+         */
+
+        /**
+         * res = {
+         *      logs: [{
+         *          id: Number,
+         *          message: String.min(1).max(500),
+         *          timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         *      }]
+         * }
+         */
+        console.log('RES|log-fetch:', res)
+    }
+
+    function resLogSend(res) {
+        /**
+         * This is received by every admin and/or dias present in the committee
+         * Just append the logs at the end
+         */
+
+        /**
+         * res = {
+         *      id: Number,
+         *      message: String.min(1).max(500),
+         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|log-send:', res);
+    }
+
+    function resNotifFetch(res) {
+        /**
+         * When this is received you have to append the array
+         * use the "id" to check where to append (usually it will be in the start)
+         * use "diasId" to get their name to be displayed with the notification
+         */
+
+        /**
+         * res = {
+         *      notifications: [{
+         *          id: Number,
+         *          diasId: Number,
+         *          message: String.min(1).max(500),
+         *          timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         *      }]
+         * }
+         */
+        console.log('RES|notif-fetch:', res)
+    }
+
+    function resNotifSend(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just append the notification at the end
+         */
+
+        /**
+         * res = {
+         *      id: Number,
+         *      diasId: Number,
+         *      message: String.min(1).max(500),
+         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|notif-send:', res);
+    }
+
+    function resSeatSit(res) {
+        /**
+         * When recieved set the seat (specified by "id") values:
+         * "delegateId:" given "delegateId"
+         * "placard": false
+         */
+
+        /**
+         * res = {
+         *      id: Number.min(1).max(50),
+         *      delegateId: Number
+         * }
+         */
+
+        console.log('RES|seat-sit:', res);
+    }
+
+    function resSeatUnsit(res) {
+        /**
+         * When recieved set the seat (specified by "id") values:
+         * "delegateId:" null
+         * "placard": false
+         */
+
+        /**
+         * res = {
+         *      id: Number.min(1).max(50)
+         * }
+         */
+        console.log('RES|seat-unsit:', res);
+    }
+
+    function resSeatPlacard(res) {
+        /**
+         * When recieved set the seat (specified by "id") placard value to given "placard"
+         */
+
+        /**
+         * res = {
+         *      id: Number.min(1).max(50),
+         *      placard: Boolean
+         * }
+         */
+        console.log('RES|seat-placard:', res);
+    }
+
+    function getDelChatFetchDel() {
         /**
          * This function is used to fetch last 10 messages of this delegate's chat with target delegate
          * This event is supposed to be emitted when the loading sign is clicked in a chat box
@@ -394,7 +524,83 @@ function MainScreen(){
         }
         else { //dias
             tempSocket.emitEvent('REQ|dias-chat-send', {userId: targetId, message});
-        }
+    }
+
+
+    function getLogFetch() {
+        /**
+         * This function is used to fetch last 10 logs
+         * This event is supposed to be emitted when the loading sign is clicked in the log box
+         */
+
+        let req = {
+            // id of the oldest log (if no log then send 0)
+            lastLogId: 0
+        };
+
+        return req;
+    }
+
+    function getNotifFetch() {
+        /**
+         * This function is used to fetch last 10 notifications
+         * This event is supposed to be emitted when the loading sign is clicked in the notifications box
+         */
+
+        let req = {
+            // id of the oldest log (if no log then send 0)
+            lastNotifId: 0
+        };
+
+        return req;
+    }
+
+    function getNotifSend() {
+        /**
+         * This function is used to send notification
+         * This event is supposed to be emitted when the send button is pressed on the notification box
+         */
+        
+        let req = {
+            // message to send "String.min(1).max(250)"
+            message: "Hello Committee!"
+        };
+
+        return req;
+    }
+
+    function getSeatSit() {
+        /**
+         * Emit this when delegate wants to sit somewhere
+         */
+
+        let req = {
+            // Number.min(1).max(50)
+            seatId: 1
+        };
+
+        return req;
+    }
+
+    function getSeatUnsit() {
+        /**
+         * Called by delegate when they press on leave seat
+         */
+
+        return {};
+    }
+
+    function getSeatPlacard() {
+        /**
+         * Just called to toggle placard value (either true or false)
+         */
+
+        let req = {
+            // raise -> true | lower -> false
+            placard: true
+        };
+
+        return req;
     }
 
     return(
@@ -435,5 +641,3 @@ function MainScreen(){
     )
     
 }
-
-export default MainScreen
