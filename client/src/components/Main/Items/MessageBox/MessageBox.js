@@ -53,20 +53,29 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+function splitIdType(str) {
+  const idType = str.split('|');
+  return {id: Number(idType[0]), type: idType[1]};
+}
 
 export default function MessageBox({id, type, chats, sendMsg, dias, delegates, connectedDias, connectedDelegates}) {
   const classes = useStyles();
-  const [userSelected, setUserSelected] = React.useState(undefined); //id, type
-  const [chatMsgs, setChatMsgs] = React.useState(
-    [{id: 2, text: "Hi! What's up?", timestamp:Date.now()}, {id: 1, text: "Nothing much.", timestamp:Date.now()}]
-    );
+  const [userSelected, setUserSelected] = React.useState('1|dias'); //id, type
+  const [chatMsgs, setChatMsgs] = React.useState([]);
   
-  console.log(connectedDias, dias);
 
-  const handleChange = (event, newUser) => {
+  function handleChange(event, newUser) {
     setUserSelected(newUser); //has id, type both
-    // setChatMsgs(chats[newUser.id]); //show fetched chat messages of specific user
+    if (userSelected) {
+      setChatMsgs(chats[splitIdType(userSelected).id]);
+    }
   };
+
+  React.useEffect(() => {
+    if (userSelected) {
+      setChatMsgs(chats[splitIdType(userSelected).id]); //show fetched chat messages of specific user
+    }
+  }, [chats])
 
 
   return (
@@ -76,12 +85,12 @@ export default function MessageBox({id, type, chats, sendMsg, dias, delegates, c
         onChange={handleChange} 
         className={classes.tabs} >
         { 
-          connectedDias &&
-          connectedDias.map((id,i)=> <Tab label={`${dias[id].title} ${dias[id].name}`} key={{id, type: 'dias'}}/> )
+          connectedDias && dias &&
+          connectedDias.map((id,i)=> <Tab label={`${dias[id].title} ${dias[id].name}`} key={id} value={`${id}|dias`}/> )
         }     
         { 
-          connectedDelegates &&
-          connectedDelegates.map((id,i)=> <Tab label={delegates[id].countryName} key={{id, type: 'delegate'}}/> )
+          connectedDelegates && delegates &&
+          connectedDelegates.map((id,i)=> <Tab label={delegates[id].countryName} key={id} value={`${id}|delegate`}/> )
         }
       </Tabs>
       
@@ -95,9 +104,13 @@ export default function MessageBox({id, type, chats, sendMsg, dias, delegates, c
           }
           return errors
         }}
-        onSubmit={(values) => {
-          const message = values.newMsg;
-          // sendMsg();
+        onSubmit={(values, {setSubmitting, resetForm}) => {
+            const userObj = splitIdType(userSelected);
+            
+            const message = values.newMsg;
+            sendMsg(Number(userObj.id), userObj.type, message);
+            setSubmitting(false);
+            resetForm({});
         }}
       >
         {({ submitForm}) => (
@@ -105,11 +118,12 @@ export default function MessageBox({id, type, chats, sendMsg, dias, delegates, c
             <Box border={1} borderColor="grey.400" className={classes.chatPaper}>
               <List>
                 {
+                  chatMsgs &&
                   chatMsgs.map((msg, index) => {
                     return (
-                    <Paper key={index} className={msg.id == id ? classes.msgPaperYours : classes.msgPaper} >
+                    <Paper key={index} className={msg.yourId == id ? classes.msgPaperYours : classes.msgPaper} >
                       <Typography style={{margin: 5, fontWeight: 500}}>
-                        {msg.text}
+                        {msg.message}
                       </Typography>
                       <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>
                         <Timestamp relative date={new Date(msg.timestamp)}/>
@@ -120,16 +134,18 @@ export default function MessageBox({id, type, chats, sendMsg, dias, delegates, c
                 }
               </List>
             </Box>
-            <List className={classes.sendBar}>
-              {/* {
-                userSelected && delegates 
-                <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" 
-                label={'Send chat message to ' + (userSelected.type == 'delegate' ? delegates[userSelected.id].countryName : dias[userSelected.id].name)}/>
-              } */}
+            {
+              userSelected && delegates && dias  &&
+              <List className={classes.sendBar}>
+                  <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" 
+                  label={ 'Send chat message to ' + (splitIdType(userSelected).type == 'delegate' ? 
+                  delegates[splitIdType(userSelected).id].countryName 
+                  : dias[splitIdType(userSelected).id].name)}
+                  />
 
-              <Button alignRight variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
-
-            </List>
+                  <Button variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
+              </List>
+            }
           </Form>
         )}
       </Formik>

@@ -14,7 +14,6 @@ function Seat({isEmpty, placard, imageName, id, onClick}) {
     let classN = (isEmpty)? 'item': (placard)?'item raised':'item occupied';
     let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`./flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover', backgroundPosition:'center'};
-    
     return (
         <div id={id} className={classN} onClick={onClick} style={imageN}></div>
     );
@@ -34,20 +33,26 @@ export default function VirtualAud({seats, placard, delegates, seated, sit}) {
 
     React.useEffect(() => {
         let updatedSeats = seats.map(seat => {
-            let { countryName, imageName, personality } = delegates[seat.delegateId];
-            return {...seat, countryName, imageName, personality};
+            if (seat.delegateId != null) {
+                let { countryName, imageName, personality } = delegates[seat.delegateId];
+                return {...seat, countryName, imageName, personality};
+            }
+            else {
+                return seat;
+            }
         }); //add imageName and personality to seats from delegate's country
 
         setPlacement(updatedSeats)
     }, [seats])
 
     const clickSeat= (e)=>{
-        const seatId = e.target.id;
-        if(!placement[seatId].empty)
+        const seatId = parseInt(e.target.id);
+        if(placement[seatId] && placement[seatId].delegateId !== null)
         {
-            alert(placement[seatId].countryName); 
+            alert(delegates[placement[seatId].delegateId].countryName); 
             return;
         }
+        
         // (seated) ? alert('You are already seated') : sit(seatId);
     }
 

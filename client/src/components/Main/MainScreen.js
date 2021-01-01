@@ -20,7 +20,7 @@ export default function MainScreen(){
     let [connectedDelegates, setConnectedDelegates] = useState([]);
     let [connectedAdmins, setConnectedAdmins] = useState({});
     let [info, setInfo] = useState({});
-    let user = {};
+    let [user, setUser] = useState({});
     let tempEmission = [];
     let tempSocket = {};
 
@@ -40,8 +40,8 @@ export default function MainScreen(){
 
     React.useEffect(()=>{
         const { token, committeeId } = sessionStorage;
-        user = sessionStorage.user; //also extract user
-        console.log(user, user[0]);
+        let userSS = JSON.parse(sessionStorage.getItem('user')); //also extract user
+        setUser(userSS);
         console.log(window.serverURI+`/${committeeId}?token=${token}`)
         socket = io(window.serverURI+`/${committeeId}?token=${token}`);
         tempSocket = socket;
@@ -50,7 +50,10 @@ export default function MainScreen(){
         socket.on('RES|info-start', responseInfoStart);
 
         // Error Handler
-        socket.on('err', (err) => console.log('err:', err));
+        socket.on('err', (err) => {
+            console.error('err:', err);
+            alert(JSON.stringify(err));
+        });
 
         /**
          * RES Event Handlers
@@ -150,28 +153,29 @@ export default function MainScreen(){
 
     function responseInfoStart(res) { 
         console.log('RES|info-start:', res);
-        let info = res;
+        let rawInfo = res;
         // need to store states for the following as they will be updated
-        setSeats(info.seats);
-        setSession(info.session);
-        setConnectedAdmins(info.connectedAdmins);
-        setConnectedDias(info.setConnectedDias);
-        setConnectedDelegates(info.setConnectedDelegates);
+        Object.keys(rawInfo.seats).forEach(seatId => {
+            rawInfo.seats[seatId].id = seatId; 
+        })// add seat id
+        setSeats(Object.values(rawInfo.seats));
+        setSession(rawInfo.session);
+        setConnectedAdmins(rawInfo.connectedAdmins);
+        setConnectedDias(rawInfo.connectedDias);
+        setConnectedDelegates(rawInfo.connectedDelegates);
         setConnected(true);
         
         // include delegate countries inside delegate
-        let updatedDelegates = info.delegates;
-        Object.keys(info.delegates).forEach(delegateId => {
-            const delegateInfo = info.delegates[delegateId];
-            console.log(delegateInfo);
-            let delegateCountry = info.countries[delegateInfo.countryId]; // get delegate's country
+        let updatedDelegates = rawInfo.delegates;
+        Object.keys(rawInfo.delegates).forEach(delegateId => {
+            const delegateInfo = rawInfo.delegates[delegateId];
+            let delegateCountry = rawInfo.countries[delegateInfo.countryId]; // get delegate's country
             delegateCountry.countryName = delegateCountry.name;
             delete delegateCountry.name; //renamed country's name attribute so it does not replace delegate's
-            updatedDelegates.delegateId = {...delegateInfo, ...delegateCountry} //merge
+            updatedDelegates[delegateId] = {...delegateInfo, ...delegateCountry} //merge
         })
-        info.delegates = updatedDelegates;
-        console.log(info);
-        setInfo(info);
+        rawInfo.delegates = updatedDelegates;
+        setInfo(rawInfo);
     }
 
     function responseDelChatFetchDel(res) {
@@ -302,6 +306,35 @@ export default function MainScreen(){
          * }
          */
         console.log('RES|dias-chat-send:', res);
+        const { id, delegateId, diasId, message, diasSent, timestamp } = res;
+        let yourId, theirId;
+        if (user.type == 'dias' && user.id == diasId ) {
+            if (diasSent) {
+                yourId = diasId;
+                theirId = delegateId;
+            }
+            else {
+                yourId = delegateId;
+                theirId = diasId;
+            }
+        }
+        else {
+            yourId = delegateId;
+            theirId = diasId;
+        }
+        
+        pushChatMsg({ id, yourId, theirId, message, timestamp });
+    }
+
+    function pushChatMsg(chatMsg) {
+        const theirId = chatMsg.theirId;
+        if (!chats[theirId]) {
+            chats[theirId] = [];
+        }
+
+        chats[theirId].push(chatMsg);
+        console.log(chats);
+        setChats(chats);
     }
 
     function resLogFetch(res) {
@@ -421,7 +454,7 @@ export default function MainScreen(){
         console.log('RES|seat-placard:', res);
     }
 
-    function getDelChatFetchDel() {
+    function requestDelChatFetchDel() {
         /**
          * This function is used to fetch last 10 messages of this delegate's chat with target delegate
          * This event is supposed to be emitted when the loading sign is clicked in a chat box
@@ -520,10 +553,11 @@ export default function MainScreen(){
          * This event is supposed to be emitted when the send button is pressed on the chat box
          */
         if (targetType == "delegate") {
-            tempSocket.emit('REQ|del-chat-send', {delegateId: targetId, message}); 
+            socket.emit('REQ|del-chat-send', {delegateId: targetId, message}); 
         }
         else { //dias
-            tempSocket.emitEvent('REQ|dias-chat-send', {userId: targetId, message});
+            socket.emit('REQ|dias-chat-send', {userId: targetId, message});
+        }
     }
 
 
@@ -621,7 +655,7 @@ export default function MainScreen(){
                         />
                         <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
                             <MessageBox 
-                            id={user.id} 
+                            id={Number(user.id)} 
                             type={user.type} 
                             chats={chats} 
                             dias={info.dias} 
