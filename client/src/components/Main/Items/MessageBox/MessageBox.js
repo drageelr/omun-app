@@ -54,25 +54,35 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-
-export default function MessageBox() {
+export default function MessageBox({id, type, chats, sendMsg, dias, delegates, connectedDias, connectedDelegates}) {
   const classes = useStyles();
-  const [countrySelected, setCountrySelected] = React.useState(0);
-    
-  const chatMsgs = [{id: 2, text: "Hi! What's up?", timestamp:Date.now()}, {id: 1, text: "Nothing much.", timestamp:Date.now()}]
-  const countriesOnline = ["Pakistan" , "India" , "Bangladesh" , "Iran" , "China"];
+  const [userSelected, setUserSelected] = React.useState(undefined); //id, type
+  const [chatMsgs, setChatMsgs] = React.useState(
+    [{id: 2, text: "Hi! What's up?", timestamp:Date.now()}, {id: 1, text: "Nothing much.", timestamp:Date.now()}]
+    );
+  
+  console.log(connectedDias, dias);
 
-  const handleChange = (event, newValue) => {
-    setCountrySelected(newValue);
+  const handleChange = (event, newUser) => {
+    setUserSelected(newUser); //has id, type both
+    // setChatMsgs(chats[newUser.id]); //show fetched chat messages of specific user
   };
+
 
   return (
     <Card className={classes.root}>
       <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
-        value={countrySelected} 
+        value={userSelected} 
         onChange={handleChange} 
         className={classes.tabs} >
-        {countriesOnline.map((item,i)=> <Tab label={item} key={i}/> )}
+        { 
+          connectedDias &&
+          connectedDias.map((id,i)=> <Tab label={`${dias[id].title} ${dias[id].name}`} key={{id, type: 'dias'}}/> )
+        }     
+        { 
+          connectedDelegates &&
+          connectedDelegates.map((id,i)=> <Tab label={delegates[id].countryName} key={{id, type: 'delegate'}}/> )
+        }
       </Tabs>
       
       <Formik
@@ -86,7 +96,8 @@ export default function MessageBox() {
           return errors
         }}
         onSubmit={(values) => {
-
+          const message = values.newMsg;
+          // sendMsg();
         }}
       >
         {({ submitForm}) => (
@@ -96,7 +107,7 @@ export default function MessageBox() {
                 {
                   chatMsgs.map((msg, index) => {
                     return (
-                    <Paper key={index} className={msg.id == 1 ? classes.msgPaperYours : classes.msgPaper} >
+                    <Paper key={index} className={msg.id == id ? classes.msgPaperYours : classes.msgPaper} >
                       <Typography style={{margin: 5, fontWeight: 500}}>
                         {msg.text}
                       </Typography>
@@ -110,7 +121,12 @@ export default function MessageBox() {
               </List>
             </Box>
             <List className={classes.sendBar}>
-              <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" label={`Send chat message to ${countriesOnline[countrySelected]}`}/>
+              {/* {
+                userSelected && delegates 
+                <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" 
+                label={'Send chat message to ' + (userSelected.type == 'delegate' ? delegates[userSelected.id].countryName : dias[userSelected.id].name)}/>
+              } */}
+
               <Button alignRight variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
 
             </List>

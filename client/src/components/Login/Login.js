@@ -72,7 +72,7 @@ function Login({setIsLoggedIn, setUser}){
                 value="dias" 
                 onClick={()=>setUserType("dias")} 
                 style={userType==="dias" ? selectedBGStyle : normalBGStyle}>
-                    Dias
+                    Dais
                 </ToggleButton>,
                 <ToggleButton
                 value="admin" 
