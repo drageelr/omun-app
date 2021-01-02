@@ -17,16 +17,20 @@ export default function MainScreen(){
     let [chats, setChats] = useState({});
     let [connected, setConnected] = useState(false);
     let [session, setSession] = useState({});
-    let [seats, setSeats] = useState([]);
+    let [seatsState, setSeats] = useState([]);
+    let [seated, setSeated] = useState(false);
+    let [placard, setPlacard] = useState(false);
     let [connectedDias, setConnectedDias] = useState([]);
     let [connectedDelegates, setConnectedDelegates] = useState([]);
     let [connectedAdmins, setConnectedAdmins] = useState({});
+    let [logs, setLogs] = useState([]);
     let [msgCounter, setMsgCounter] = useState(0);
     const [theirId, setTheirId] = React.useState('');
     let [info, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let tempEmission = [];
     let tempSocket = {};
+    let seats = [];
 
     /*  
     info:
@@ -48,7 +52,7 @@ export default function MainScreen(){
         // console.log(userSS);
         user = userSS;
         setUserState(userSS);
-        socket = io(window.serverURI+`/${committeeId}?token=${token}`);
+        socket = io(`${window.serverURI}/${committeeId}?token=${token}`);
         tempSocket = socket;
 
         // Emitted by Server on Join
@@ -122,9 +126,9 @@ export default function MainScreen(){
         /* 8 */tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
 
         // Seat Management
-        /* 9 */tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
-        /* 10 */tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
-        /* 11 */tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
+        // /* 9 */tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
+        // /* 10 */tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
+        // /* 11 */tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
 
         // MOD & GSL Management
         /* 12 */tempEmission.push({event: 'REQ|topic-create', req: getTopicCreate()}); // Access: ["dias"]
@@ -186,15 +190,10 @@ export default function MainScreen(){
         let rawInfo = res;
         // need to store states for the following as they will be updated
         Object.keys(rawInfo.seats).forEach(seatId => {
-            rawInfo.seats[seatId].id = seatId; 
+            rawInfo.seats[seatId].id = Number(seatId); 
         })// add seat id
-        setSeats(Object.values(rawInfo.seats));
-        setSession(rawInfo.session);
-        setConnectedAdmins(rawInfo.connectedAdmins);
-        setConnectedDias(rawInfo.connectedDias);
-        setConnectedDelegates(rawInfo.connectedDelegates);
-        setConnected(true);
-        
+        seats = Object.values(rawInfo.seats);
+
         // include delegate countries inside delegate
         let updatedDelegates = rawInfo.delegates;
         Object.keys(rawInfo.delegates).forEach(delegateId => {
@@ -216,9 +215,22 @@ export default function MainScreen(){
         Object.keys(rawInfo.delegates).forEach(id => {
             rawInfo.delegatesList.push({id, ...rawInfo.delegates[id]})
         })
-
+        
+        let initSeated = false;
+        seats.forEach(seat => { // check if the user was sitting
+            if (seat.delegateId == Number(user.id)) { // found a seat with the user's id in seats initially
+                initSeated = true;
+            }
+        });
 
         setInfo(rawInfo);
+        setSeated(initSeated);
+        setSeats(seats);
+        setSession(rawInfo.session);
+        setConnectedAdmins(rawInfo.connectedAdmins);
+        setConnectedDias(rawInfo.connectedDias);
+        setConnectedDelegates(rawInfo.connectedDelegates);
+        setConnected(true);
     }
 
     function responseDelChatFetchDel(res) {
@@ -401,7 +413,6 @@ export default function MainScreen(){
         }
 
         pushChatMsg({ id, message, timestamp, ...moreAttributes });
-        
     }
 
 
@@ -430,7 +441,12 @@ export default function MainScreen(){
          *      }]
          * }
          */
-        console.log('RES|log-fetch:', res)
+
+        console.log('RES|log-fetch:', res);
+        const recievedLogs = res.logs;
+        
+        
+        setLogs(recievedLogs.concat(logs));
     }
 
     function resLogSend(res) {
@@ -499,8 +515,14 @@ export default function MainScreen(){
          *      delegateId: Number
          * }
          */
-
         console.log('RES|seat-sit:', res);
+        const {delegateId} = res;
+        let id = res.id-1;
+        seats[id].delegateId = delegateId;
+        setSeats([...seats]);
+        if (user.type == 'delegate' && user.id == delegateId) { //it was you that sat as a delegate
+            setSeated(true);
+        }
     }
 
     function resSeatUnsit(res) {
@@ -516,6 +538,13 @@ export default function MainScreen(){
          * }
          */
         console.log('RES|seat-unsit:', res);
+        const id = res.id-1;
+        if (user.type == 'delegate' && user.id == seats[id].delegateId) { //if it was your seat that was unsitten
+            setSeated(false);
+            setPlacard(false);
+        }
+        seats[id].delegateId = null;
+        setSeats([...seats]);
     }
 
     function resSeatPlacard(res) {
@@ -530,6 +559,12 @@ export default function MainScreen(){
          * }
          */
         console.log('RES|seat-placard:', res);
+        let id = res.id-1;
+        if (user.type == 'delegate' && user.id == seats[id].delegateId) {
+            setPlacard(res.placard);
+        }
+        seats[id].placard = res.placard;
+        setSeats([...seats]);
     }
 
     function resTopicCreate(res) {
@@ -649,7 +684,7 @@ export default function MainScreen(){
     }
 
     function resGSLFetch(res) {
-         /**
+        /**
          * When this is received you have to append the array
          * use the "id" to check where to append (usually it will be in the start)
          */
@@ -668,7 +703,7 @@ export default function MainScreen(){
          *      }]
          * }
          */
-        console.log('RES|gsl-fetch:', res)
+        console.log('RES|gsl-fetch:', res);
     }
 
     function resSessionEdit(res) {
@@ -752,6 +787,26 @@ export default function MainScreen(){
         return req;
     }
 
+    function sit(seatId){ // Number.min(1).max(50)
+        /**
+         * Emit this when delegate wants to sit somewhere
+         */
+        socket.emit('REQ|seat-sit', {seatId}); // Access: ["delegate"]
+    }
+
+    function unsit(){
+        /**
+         * Emit this when delegate wants to unsit from somewhere
+         */
+        socket.emit('REQ|seat-unsit', {}); // Access: ["delegate"]
+    }
+
+    function togglePlacard(placard){
+        /**
+         * Called by delegate when they press on leave seat
+         */
+        socket.emit('REQ|seat-placard', {placard}); // Access: ["delegate"]
+    }
 
     function fetchChat(chatId) { //userId, type = delegate / dias
         /**
@@ -804,6 +859,8 @@ export default function MainScreen(){
             lastLogId: 0
         };
 
+
+
         return req;
     }
 
@@ -835,39 +892,6 @@ export default function MainScreen(){
         return req;
     }
 
-    function getSeatSit() {
-        /**
-         * Emit this when delegate wants to sit somewhere
-         */
-
-        let req = {
-            // Number.min(1).max(50)
-            seatId: 1
-        };
-
-        return req;
-    }
-
-    function getSeatUnsit() {
-        /**
-         * Called by delegate when they press on leave seat
-         */
-
-        return {};
-    }
-
-    function getSeatPlacard() {
-        /**
-         * Just called to toggle placard value (either true or false)
-         */
-
-        let req = {
-            // raise -> true | lower -> false
-            placard: true
-        };
-
-        return req;
-    }
 
     function getTopicCreate() {
         /**
@@ -1030,7 +1054,15 @@ export default function MainScreen(){
                 <div className='Notifications'><Notification/>
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>
                         <VirtualAud 
-                        seats={seats}
+                        id={Number(userState.id)} 
+                        type={userState.type} 
+                        seats={seatsState}
+                        seated={seated}
+                        placard={placard}
+                        sit={sit}
+                        unsit={unsit}
+                        togglePlacard={togglePlacard}
+                        delegates={info.delegates}
                         />
                         <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
                             <MessageBox 
@@ -1052,7 +1084,6 @@ export default function MainScreen(){
                     </div>
                 </div>
             }
-            
             
         </div>
         

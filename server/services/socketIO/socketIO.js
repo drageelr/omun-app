@@ -97,7 +97,7 @@ async function sendStartInfo(socket) {
 
         let countries = {};
         for (let i = 0; i < allCountries.length; i++) {
-            countries[allCountries[i].id] = hFuncs.duplicateObject(allCountries[i], ['name', 'initials']);
+            countries[allCountries[i].id] = hFuncs.duplicateObject(allCountries[i], ['name', 'initials', 'imageName']);
         }
 
         let connectedDelegates = [];
