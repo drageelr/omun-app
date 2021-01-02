@@ -10,23 +10,18 @@ import AirlineSeatLegroomNormalIcon from '@material-ui/icons/AirlineSeatLegroomN
 import CropLandscapeIcon from '@material-ui/icons/CropLandscape';
 import MinimizeIcon from '@material-ui/icons/Minimize';
 
-function Seat({isEmpty, raised, country, id, onClick}) {
-    let classN = (isEmpty)? 'item': (raised)?'item raised':'item occupied';
-    let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`./flag/${country}.png`)}")`,backgroundRepeat: 'no-repeat',
+function Seat({isEmpty, placard, imageName, id, onClick}) {
+    let classN = (isEmpty)? 'item': (placard)?'item raised':'item occupied';
+    let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`./flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover', backgroundPosition:'center'};
-    
     return (
         <div id={id} className={classN} onClick={onClick} style={imageN}></div>
     );
 }
 
-export default function VirtualAud({raised, seated, sit}) {
-    let dummyData = Array(50).fill({id: -1, empty: true, country: '', personality: '', raised: false}) //country == country image name here
-    dummyData[0] = {id: '1', country:'pakistan', empty: false, raised: false}     
-    dummyData[15] = {id: '2', country:'south-africa', empty: false, raised: true}     
-    dummyData[46] = {id: '3', country:'japan', empty: false, raised: false}     
-
-    const [placement, setPlacement] = useState(dummyData);
+export default function VirtualAud({seats, placard, delegates, seated, sit}) {
+    let initSeats = Array(50).fill({id: -1, delegateId: null, imageName: '', personality: '', placard: false}) //country == country image countryName here
+    const [placement, setPlacement] = useState(initSeats);
 
     function toggleRaise() {
         
@@ -36,14 +31,29 @@ export default function VirtualAud({raised, seated, sit}) {
         
     }
 
+    React.useEffect(() => {
+        let updatedSeats = seats.map(seat => {
+            if (seat.delegateId != null) {
+                let { countryName, imageName, personality } = delegates[seat.delegateId];
+                return {...seat, countryName, imageName, personality};
+            }
+            else {
+                return seat;
+            }
+        }); //add imageName and personality to seats from delegate's country
+
+        setPlacement(updatedSeats)
+    }, [seats])
 
     const clickSeat= (e)=>{
-        if(!placement[e.target.id]['empty'])
+        const seatId = parseInt(e.target.id);
+        if(placement[seatId] && placement[seatId].delegateId !== null)
         {
-            alert(placement[e.target.id]['country']); 
+            alert(delegates[placement[seatId].delegateId].countryName); 
             return;
         }
-        (seated) ? alert('You are already seated') : sit(e.target.id);
+        
+        // (seated) ? alert('You are already seated') : sit(seatId);
     }
 
     return ( 
@@ -55,17 +65,17 @@ export default function VirtualAud({raised, seated, sit}) {
                     <Seat 
                     key={i} 
                     id={s.id}
-                    isEmpty={s.empty} 
-                    country={s.country} 
+                    isEmpty={s.delegateId === null} //no one sitting
+                    imageName={s.imageName} 
                     person={s.personality} 
-                    raised={s.raised} 
+                    placard={s.placard} 
                     onClick={clickSeat}
                     />
                 )
             }
             </CardContent>
             <CardActions>
-                <Button variant="contained" size="small" startIcon={raised ? <MinimizeIcon/> : <CropLandscapeIcon/>} color="secondary" onClick={toggleRaise}> { raised ? "Lower Placard" : "Raise Placard" }  </Button>
+                <Button variant="contained" size="small" startIcon={placard ? <MinimizeIcon/> : <CropLandscapeIcon/>} color="secondary" onClick={toggleRaise}> { placard ? "Lower Placard" : "Raise Placard" }  </Button>
                 { 
                     true &&
                     <Button variant="contained" size="small" startIcon={<AirlineSeatLegroomNormalIcon/> } color="secondary" onClick={toggleSeated}>  { "Leave Seat" }   </Button>

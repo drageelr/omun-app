@@ -220,7 +220,7 @@ function Home({user}){
 
     function DiasPortal() {
         return <div>
-            <h3>Dias Portal</h3>
+            <h3>Dais Portal</h3>
             
             <Button color="default" onClick={handleStart}>Start Your Session</Button>
             <FadeLoader

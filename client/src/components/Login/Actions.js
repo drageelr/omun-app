@@ -7,8 +7,8 @@ export async function newlogin({email, password, userType}) {
     }
     const {token, user} = res;
     sessionStorage.token = token; // set token to sessionStorage
-    var toRet= {...user, type: userType};
-    sessionStorage.setItem('user',JSON.stringify(toRet)) ;
+    let toRet= {...user, type: userType};
+    sessionStorage.setItem('user',JSON.stringify(toRet));
     return toRet
 }
 
