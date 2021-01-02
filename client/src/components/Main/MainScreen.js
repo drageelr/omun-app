@@ -197,6 +197,7 @@ export default function MainScreen(){
         })// add seat id
         setSeats(Object.values(info.seats));
         session = info.session;
+        session.committeeName = info.committee.name;
         setSession(session);
         timer = {topicTime: info.session.topicTime, topicToggle: 1, speakerTime: info.session.speakerTime, speakerToggle: 1};
         setTimer(timer);

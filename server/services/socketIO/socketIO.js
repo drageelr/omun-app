@@ -91,6 +91,7 @@ async function sendStartInfo(socket) {
         let session = {
             id: reqSession[0].id,
             topicId: reqSession[0].topicId,
+            topicName: topicName,
             speakerId: reqSession[0].speakerId,
             speakerName: speakerName,
             speakerImage: speakerImage,

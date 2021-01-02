@@ -31,7 +31,7 @@ export default function InformationBar ({session, timer, setSessionType, deleteS
   const [gsl, setgsl] = useState(false);
   const [idle, setidle] = useState(true);
 
-  console.log(session, timerTopic);
+  console.log("session, timerTopic: ", session);
 
   React.useEffect(() => {
     const timerTopic = setInterval(() => {
@@ -107,38 +107,45 @@ export default function InformationBar ({session, timer, setSessionType, deleteS
         <CardContent style={{color: "#FFFFFF"}}>
           <List style={{ display: 'flex', flexDirection: 'row', padding: 0 }}>
             <ListItem alignItems='flex-start' className="sessionDetails">
-              <h5>Committee Name:</h5> 
+              <h5>Committee Name:</h5>
+              {session.committeeName} 
               <h5>Topic:</h5>
+              {session.topicName}
                 <CancelIcon/>
                 <EdiText showButtonsOnHover type="text" onSave={handleTopicChange}/>
               <h5>Speaker:</h5>
-                  <CancelIcon/>
-                  <EdiText showButtonsOnHover type="text" onSave={handleTopicChange} />
+              {session.speakerName}
+                <CancelIcon/>
+                <EdiText showButtonsOnHover type="text" onSave={handleTopicChange} />
             </ListItem>
 
+            {/* Button Color basis on session type */}
             <Button 
-              variant="outlined" 
-              size="medium" 
-              color="primary"
-            >mod</Button>
+            variant={session.type === "MOD" ?  "contained" : "outlined"} 
+            size="medium"
+            onClick={()=>setSessionType("MOD")} 
+            color="primary">
+            mod</Button>
+
+            <Button variant={session.type === "UNMOD" ?  "contained" : "outlined"} 
+            size="medium" 
+            color="primary"
+            onClick={()=>setSessionType("UNMOD")}
+            >unMod</Button>
+
+            <Button 
+            variant={session.type === "GSL" ?  "contained" : "outlined"} 
+            size="medium" 
+            color="secondary"
+            onClick={()=>setSessionType("GSL")}
+            >gsl</Button>
             
             <Button 
-              variant="outlined" 
-              size="medium" 
-              color="primary"
-              >unMod</Button>
-            
-            <Button 
-              variant="outlined" 
-              size="medium" 
-              color="secondary"
-              >gsl</Button>
-            
-            <Button 
-              variant="outlined" 
-              size="medium" 
-              color="secondary"
-              >idle</Button>
+            variant={session.type === "IDLE" ?  "contained" : "outlined"} 
+            size="medium" 
+            color="secondary"
+            onClick={()=>setSessionType("IDLE")}
+            >idle</Button>
 
             <ListItem className="sessionDetails">
                 <h6>Time Left (Speaker)</h6> 
