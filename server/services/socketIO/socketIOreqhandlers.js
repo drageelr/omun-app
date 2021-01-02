@@ -679,11 +679,13 @@ exports.handleTopicSpeakerEdit = async (socket, params, event) => {
 
         const keys = ['delegateId', 'review', 'spokenTime', 'visible'];
         const kType = [0, 1, 0, 0];
+        let edits = '';
         let updateQueryStr = 'UPDATE topic_speaker SET ';
         let whereQueryStr = ' WHERE id = ' + params.topicSpeakerId  + ' AND topicId = ' + params.topicId;
         for (let i = 0; i < keys.length; i++) {
             if (params[keys[i]] !== undefined) {
-                res[keys[i]] = params[keys[i]];
+                if (keys[i] != 'review') { res[keys[i]] = params[keys[i]]; }
+                edits += keys[i] + ', ';
                 if (updateQueryStr != 'UPDATE topic_speaker SET ') { updateQueryStr += ', '; }
                 updateQueryStr += keys[i] + ' = ';
                 if (kType[i]) { updateQueryStr += '"'; }
@@ -700,11 +702,14 @@ exports.handleTopicSpeakerEdit = async (socket, params, event) => {
 
         if (!result.changedRows) { throw new customError.NotFoundError("topic or topic_speaker does not exist"); }
 
-        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] edited {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampAltered);
+        if (params.review !== undefined) { res.review = params.review; }
+
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] edited (' + edits +  ') for {gslId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
