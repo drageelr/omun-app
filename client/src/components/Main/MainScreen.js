@@ -25,6 +25,7 @@ export default function MainScreen(){
     const [theirId, setTheirId] = React.useState('');
     let [info, setInfo] = useState({});
     let [userState, setUserState] = useState({});
+    let [notifications, setNotifications] = useState([]);
     let tempEmission = [];
     let tempSocket = {};
 
@@ -468,7 +469,12 @@ export default function MainScreen(){
          *      }]
          * }
          */
-        console.log('RES|notif-fetch:', res)
+        console.log('RES|notif-fetch:', res);
+        let fetchedNotifications = res.notifications.map(notif => {
+            return {id: notif.id, diasName: info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
+        });
+        notifications = fetchedNotifications.concat(notifications);
+        setNotifications(notifications);
     }
 
     function resNotifSend(res) {
@@ -486,6 +492,10 @@ export default function MainScreen(){
          * }
          */
         console.log('RES|notif-send:', res);
+        const { id, diasId, message, timestamp } = res;
+        let diasName = info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A";
+        notifications.push({id, diasName, message, timestamp});
+        setNotifications(notifications);
     }
 
     function resSeatSit(res) {
@@ -808,6 +818,26 @@ export default function MainScreen(){
         }
     }
 
+    function fetchNotifications(lastNotifId) {
+        /**
+         * This function is used to fetch last 10 notifications
+         * This event is supposed to be emitted when the loading sign is clicked in the notifications box
+         */
+
+        socket.emit('REQ|notif-fetch', {lastNotifId});
+    }
+
+    function sendNotification(message) {
+        /**
+         * This function is used to send notification
+         * This event is supposed to be emitted when the send button is pressed on the notification box
+         */
+
+        if (user.type == "dias") {
+            socket.emit('REQ|notif-send', {message});
+        }
+    }
+
 
     function getLogFetch() {
         /**
@@ -1058,7 +1088,7 @@ export default function MainScreen(){
             
             {
                 connected && 
-                <div className='Notifications'><Notification/>
+                <div className='Notifications'><Notification notifications={notifications} sendNotification={sendNotification} fetchNotifications={fetchNotifications}/>
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>
                         <VirtualAud 
                         seats={seats}
