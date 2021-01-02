@@ -24,7 +24,7 @@ function Notification({notifications, sendNotification, fetchNotifications, type
         setOpen(false);
     };
 
-    const contentStyle = {padding:0, paddingTop: 5, overflowY: "scroll"};
+    const contentStyle = {padding:0, paddingTop: 5, height:'20vh', overflowY: "scroll"};
     const notifItemStyle = {padding:0, paddingLeft: 10};
     
     return ( 
@@ -45,19 +45,22 @@ function Notification({notifications, sendNotification, fetchNotifications, type
                     initialValues={{newNotif: ''}}
                     validate={values => {
                     const errors = {}
-                    if (values.newNotif.length > 100) {
-                        errors.newMsg = 'Please do not exceed 100 characters.'
+                    if (values.newNotif.length > 250) {
+                        errors.newMsg = 'Please do not exceed 250 characters.'
                     }
                     return errors
                     }}
-                    onSubmit={(values) => {
+                    onSubmit={(values, {setSubmitting}) => {
                         const newNotif = values.newNotif;
+                        console.log(newNotif);
                         sendNotification(newNotif);
+                        setSubmitting(false);
+                        setOpen(false);
                     }}
                 >
                     {({ submitForm}) => (
                     <Form>
-                        <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="newMsg" label={`Send notification`}/>
+                        <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="newNotif" label={`Send notification`}/>
                         <Button alignRight variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
                     </Form>
                     )}
@@ -69,9 +72,9 @@ function Notification({notifications, sendNotification, fetchNotifications, type
             <CardContent className="NotifcardBody" onClick={fetchNotifications} style={contentStyle}>
                 {
                     notifications && 
-                    notifications.map((item,i)=> (
+                    notifications.map(({diasName, id, message, timestamp},i)=> (
                         <ListItem style={notifItemStyle} className="Notif-Text" key={i} dense>
-                            <ListItemText primary={item} />
+                            <ListItemText key={id} primary={`${diasName} [${timestamp}]: ${message}`} />
                         </ListItem>
                     ))
                 }  

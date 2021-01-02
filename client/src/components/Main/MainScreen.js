@@ -23,11 +23,13 @@ export default function MainScreen(){
     let [connectedAdmins, setConnectedAdmins] = useState({});
     let [msgCounter, setMsgCounter] = useState(0);
     const [theirId, setTheirId] = React.useState('');
-    let [info, setInfo] = useState({});
+    let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let [notifications, setNotifications] = useState([]);
+    let [notifCounter, setNotifCounter] = useState([]);
     let tempEmission = [];
     let tempSocket = {};
+    let info = {};
 
     /*  
     info:
@@ -186,42 +188,41 @@ export default function MainScreen(){
 
     function responseInfoStart(res) { 
         console.log('RES|info-start:', res);
-        let rawInfo = res;
+        info = res;
         // need to store states for the following as they will be updated
-        Object.keys(rawInfo.seats).forEach(seatId => {
-            rawInfo.seats[seatId].id = seatId; 
+        Object.keys(info.seats).forEach(seatId => {
+            info.seats[seatId].id = seatId; 
         })// add seat id
-        setSeats(Object.values(rawInfo.seats));
-        setSession(rawInfo.session);
-        setConnectedAdmins(rawInfo.connectedAdmins);
-        setConnectedDias(rawInfo.connectedDias);
-        setConnectedDelegates(rawInfo.connectedDelegates);
+        setSeats(Object.values(info.seats));
+        setSession(info.session);
+        setConnectedAdmins(info.connectedAdmins);
+        setConnectedDias(info.connectedDias);
+        setConnectedDelegates(info.connectedDelegates);
         setConnected(true);
         
         // include delegate countries inside delegate
-        let updatedDelegates = rawInfo.delegates;
-        Object.keys(rawInfo.delegates).forEach(delegateId => {
-            const delegateInfo = rawInfo.delegates[delegateId];
-            let delegateCountry = rawInfo.countries[delegateInfo.countryId]; // get delegate's country
+        let updatedDelegates = info.delegates;
+        Object.keys(info.delegates).forEach(delegateId => {
+            const delegateInfo = info.delegates[delegateId];
+            let delegateCountry = info.countries[delegateInfo.countryId]; // get delegate's country
             delegateCountry.countryName = delegateCountry.name;
             delete delegateCountry.name; //renamed country's name attribute so it does not replace delegate's
             updatedDelegates[delegateId] = {...delegateInfo, ...delegateCountry} //merge
         })
-        rawInfo.delegates = updatedDelegates;
+        info.delegates = updatedDelegates;
         
         // storing dias and delegates in list form as well
-        rawInfo.diasList = [];
-        Object.keys(rawInfo.dias).forEach(id => {
-            rawInfo.diasList.push({id, ...rawInfo.dias[id]})
+        info.diasList = [];
+        Object.keys(info.dias).forEach(id => {
+            info.diasList.push({id, ...info.dias[id]})
         })
 
-        rawInfo.delegatesList = [];
-        Object.keys(rawInfo.delegates).forEach(id => {
-            rawInfo.delegatesList.push({id, ...rawInfo.delegates[id]})
+        info.delegatesList = [];
+        Object.keys(info.delegates).forEach(id => {
+            info.delegatesList.push({id, ...info.delegates[id]})
         })
 
-
-        setInfo(rawInfo);
+        setInfo(info);
     }
 
     function responseDelChatFetchDel(res) {
@@ -471,8 +472,9 @@ export default function MainScreen(){
          */
         console.log('RES|notif-fetch:', res);
         let fetchedNotifications = res.notifications.map(notif => {
-            return {id: notif.id, diasName: info.dias[res.diasId] ? info.dias[res.diasId].title + ' ' + info.dias[res.diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
+            return {id: notif.id, diasName: info.dias[notif.diasId] ? info.dias[notif.diasId].title + ' ' + info.dias[notif.diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
         });
+        console.log('fetchedNotifs', fetchedNotifications);
         notifications = fetchedNotifications.concat(notifications);
         setNotifications(notifications);
     }
@@ -495,7 +497,8 @@ export default function MainScreen(){
         const { id, diasId, message, timestamp } = res;
         let diasName = info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A";
         notifications.push({id, diasName, message, timestamp});
-        setNotifications(notifications);
+        console.log('RES|notif-send', diasName, notifications);
+        setNotifications([...notifications]);
     }
 
     function resSeatSit(res) {
@@ -1108,10 +1111,10 @@ export default function MainScreen(){
                             <MessageBox 
                             id={Number(userState.id)} 
                             type={userState.type} 
-                            dias={info.dias}
-                            delegates={info.delegates}
-                            diasList={info.diasList} 
-                            delegatesList={info.delegatesList}
+                            dias={infoState.dias}
+                            delegates={infoState.delegates}
+                            diasList={infoState.diasList} 
+                            delegatesList={infoState.delegatesList}
                             currentChat={chats[theirId]}
                             setChats={setChats}
                             theirId={theirId}
