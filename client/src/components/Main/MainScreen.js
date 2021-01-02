@@ -17,6 +17,7 @@ export default function MainScreen(){
     let [chats, setChats] = useState({});
     let [connected, setConnected] = useState(false);
     let [sessionState, setSession] = useState({});
+    let [timerState, setTimer] = useState({});
     let [seats, setSeats] = useState([]);
     let [connectedDias, setConnectedDias] = useState([]);
     let [connectedDelegates, setConnectedDelegates] = useState([]);
@@ -30,6 +31,7 @@ export default function MainScreen(){
     let tempSocket = {};
     let info = {};
     let session = {};
+    let timer = {};
 
     /*  
     info:
@@ -196,6 +198,8 @@ export default function MainScreen(){
         setSeats(Object.values(info.seats));
         session = info.session;
         setSession(session);
+        timer = {topicTime: info.session.topicTime, topicToggle: 1, speakerTime: info.session.speakerTime, speakerToggle: 1};
+        setTimer(timer);
         setConnectedAdmins(info.connectedAdmins);
         setConnectedDias(info.connectedDias);
         setConnectedDelegates(info.connectedDelegates);
@@ -726,6 +730,12 @@ export default function MainScreen(){
          * }
          */
         console.log('RES|session-timer:', res);
+        if (res.speakerTimer) {
+            timer.speakerToggle = toggle;
+        } else {
+            timer.topicToggle = toggle;
+        }
+        setTimer({...timer});
     }
 
     function resSessionCon(res) {
@@ -875,6 +885,14 @@ export default function MainScreen(){
             let req = {speakerId: 0};
             console.log('REQ|session-edit:', req);
             socket.emit('REQ|session-edit', req);
+        }
+    }
+
+    function timerToggle(speakerTimer, toggle) {
+        if (user.type == "dias") {
+            let req = {speakerTimer, toggle};
+            console.log('REQ|session-timer:', req);
+            socket.emit('REQ|session-timer', req);
         }
     }
 
@@ -1111,7 +1129,7 @@ export default function MainScreen(){
 
     return(
         <div className='parent'>
-            <div className= 'Information-Bar'><InformationBar session={sessionState} setSessionType={setSessionType} deleteSessionTopic={deleteSessionTopic} deleteSessionSpeaker={deleteSessionSpeaker}/>
+            <div className= 'Information-Bar'><InformationBar session={sessionState} timer={timerState} setSessionType={setSessionType} deleteSessionTopic={deleteSessionTopic} deleteSessionSpeaker={deleteSessionSpeaker} timerToggle={timerToggle}/>
                 <div style={{marginTop:'2vh'}} className='Zoom'><Zoom/>
                     <div  style={{marginTop:'2vh'}} className='Buttons'>
                         <div>

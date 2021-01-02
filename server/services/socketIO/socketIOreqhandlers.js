@@ -4,7 +4,6 @@ var db = require('../mysql');
 var customError = require('../../errors/errors');
 var hFuncs = require('../helper-funcs');
 const { namespaceUsers, fetchSocketId } = require('./socketIOusers');
-const { param } = require('../../routes/auth.route');
 
 function emitToSocket(nspName, socketId, event, data = undefined) {
     var { io } = require('../../bin/www');
