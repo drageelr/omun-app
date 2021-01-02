@@ -195,6 +195,11 @@ function createNameSpace(committeeId) {
                         let user = socket.userObj;
                         if (user) {
                             if (namespaceUsers["/" + committeeId][user.type]) {
+                                io.of("/" + committeeId).emit('RES|session-con', {
+                                    type: user.type,
+                                    userId: user.id,
+                                    connected: false
+                                });
                                 delete namespaceUsers["/" + committeeId][user.type][user.id];
                             }
                         }
@@ -249,6 +254,12 @@ function createNameSpace(committeeId) {
                 attachEventListeners(socket);
 
                 socket.join(socket.userObj.committeeId + '|' + socket.userObj.type)
+
+                io.of("/" + givenCommitteeId).emit('RES|session-con', {
+                    type: userObj.type,
+                    userId: userObj.id,
+                    connected: true
+                });
 
             } catch(err) {
                 errorHandler(socket, err);

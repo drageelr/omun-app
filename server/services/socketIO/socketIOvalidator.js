@@ -234,7 +234,7 @@ const validations = {
         speakerId: {
             type: Number
         },
-        sessionTime: {
+        speakerTime: {
             type: Number
         },
         topicTime: {

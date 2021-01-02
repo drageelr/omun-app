@@ -29,7 +29,7 @@ CREATE TABLE `admin` (
   `password` char(64) NOT NULL,
   `active` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,6 +54,8 @@ CREATE TABLE `chat_message_del_del` (
   KEY `fk_chat_message_del_del_recipientDelegateId_idx` (`recipientDelegateId`),
   KEY `S_TO_R` (`committeeId`,`sessionId`,`senderDelegateId`,`recipientDelegateId`,`id`),
   KEY `R_TO_S` (`committeeId`,`sessionId`,`recipientDelegateId`,`senderDelegateId`,`id`),
+  KEY `S_TO_R_TS` (`committeeId`,`sessionId`,`senderDelegateId`,`recipientDelegateId`,`timestamp`),
+  KEY `R_TO_S_TS` (`committeeId`,`sessionId`,`recipientDelegateId`,`senderDelegateId`,`timestamp`),
   CONSTRAINT `fk_chat_message_del_del_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_chat_message_del_del_recipientDelegateId` FOREIGN KEY (`recipientDelegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_chat_message_del_del_senderDelegateId` FOREIGN KEY (`senderDelegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -104,6 +106,8 @@ CREATE TABLE `chat_message_del_dias` (
   KEY `fk_chat_message_del_dias_delegateId_idx` (`delegateId`),
   KEY `DIAS_TO_DEL` (`committeeId`,`sessionId`,`diasId`,`delegateId`,`id`),
   KEY `DEL_TO_DIAS` (`committeeId`,`sessionId`,`delegateId`,`diasId`,`id`),
+  KEY `DIAS_TO_DEL_TS` (`committeeId`,`sessionId`,`diasId`,`delegateId`,`timestamp`),
+  KEY `DEL_TO_DIAS_TS` (`committeeId`,`sessionId`,`delegateId`,`diasId`,`id`),
   CONSTRAINT `fk_chat_message_del_dias_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_chat_message_del_dias_delegateId` FOREIGN KEY (`delegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_chat_message_del_dias_diasId` FOREIGN KEY (`diasId`) REFERENCES `dias` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -143,7 +147,7 @@ CREATE TABLE `committee` (
   `name` varchar(100) NOT NULL,
   `initials` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -182,7 +186,7 @@ CREATE TABLE `country` (
   `personality` tinyint DEFAULT '0',
   `imageName` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -205,7 +209,7 @@ CREATE TABLE `delegate` (
   KEY `COUNTRY` (`countryId`),
   CONSTRAINT `fk_delegate_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_delegate_countryId` FOREIGN KEY (`countryId`) REFERENCES `country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -244,7 +248,7 @@ CREATE TABLE `dias` (
   PRIMARY KEY (`id`),
   KEY `COMMITTEE` (`committeeId`),
   CONSTRAINT `fk_dias_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -267,6 +271,7 @@ CREATE TABLE `gsl` (
   KEY `fk_gsl_delegateId_idx` (`delegateId`),
   KEY `COM-ID` (`committeeId`,`id`),
   KEY `COM-DEL-ID` (`committeeId`,`delegateId`,`id`),
+  KEY `COM-DEL-TS` (`committeeId`,`delegateId`,`timestampAdded`),
   CONSTRAINT `fk_gsl_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_gsl_delegateId` FOREIGN KEY (`delegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -309,6 +314,8 @@ CREATE TABLE `log` (
   KEY `SESSION` (`sessionId`),
   KEY `fk_log_committeeId_idx` (`committeeId`),
   KEY `COM-SESSION-ID` (`committeeId`,`sessionId`,`id`),
+  KEY `COM-SESSION-TS` (`committeeId`,`sessionId`,`timestamp`),
+  KEY `COM-ID` (`committeeId`,`id`),
   CONSTRAINT `fk_log_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_sessionId` FOREIGN KEY (`sessionId`) REFERENCES `session` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -353,6 +360,8 @@ CREATE TABLE `notification` (
   KEY `fk_notification_sessionId_idx` (`sessionId`),
   KEY `COM-SESSION-ID` (`committeeId`,`sessionId`,`id`),
   KEY `fk_notification_diasId_idx` (`diasId`),
+  KEY `COM-SESSION-TS` (`committeeId`,`sessionId`,`timestamp`),
+  KEY `COM-ID` (`committeeId`,`id`),
   CONSTRAINT `fk_notification_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_notification_diasId` FOREIGN KEY (`diasId`) REFERENCES `dias` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_notification_sessionId` FOREIGN KEY (`sessionId`) REFERENCES `session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -490,10 +499,11 @@ CREATE TABLE `topic` (
   KEY `COM-SESSION-ID` (`committeeId`,`sessionId`,`id`),
   KEY `COM-SESSION-VIS` (`committeeId`,`sessionId`,`visible`,`id`),
   KEY `fk_topic_committeeId_idx` (`committeeId`),
+  KEY `COM-SESSION-TS` (`committeeId`,`sessionId`,`timestamp`),
   CONSTRAINT `fk_topic_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_topic_delegateId` FOREIGN KEY (`delegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_topic_sessionId` FOREIGN KEY (`sessionId`) REFERENCES `session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -536,6 +546,7 @@ CREATE TABLE `topic_speaker` (
   KEY `DELEGATE` (`delegateId`),
   KEY `TOPIC-VIS` (`topicId`,`visible`),
   KEY `TOPIC-ID` (`topicId`,`id`),
+  KEY `TOPIC-TS` (`topicId`,`timestamp`),
   CONSTRAINT `fk_topic_speaker_delegateId` FOREIGN KEY (`delegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_topic_speaker_topicId` FOREIGN KEY (`topicId`) REFERENCES `topic` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -570,4 +581,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-12-31  5:43:00
+-- Dump completed on 2021-01-02  6:56:34
