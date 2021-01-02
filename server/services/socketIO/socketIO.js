@@ -41,7 +41,8 @@ const reqEvents = {
     'gsl-fetch': IOreqhandlers.handleGSLFetch,
 
     // Session Management
-    'session-edit': IOreqhandlers.handleSessionEdit
+    'session-edit': IOreqhandlers.handleSessionEdit,
+    'session-timer': IOreqhandlers.handleSessionTimer
 };
 
 async function sendStartInfo(socket) {

@@ -6,7 +6,7 @@ import Zoom from './Items/Zoom/Zoom'
 import Notification from './Items/Notification/Notification'
 import VirtualAud from './Items/VirtualAud/VirtualAud'
 import MessageBox from './Items/MessageBox/MessageBox'
-import io from "socket.io-client"
+import io, { Socket } from "socket.io-client"
 import { Button } from '@material-ui/core'
 
 let socket;
@@ -64,8 +64,9 @@ function MainScreen(){
         socket.on('RES|gsl-fetch', resGSLFetch); // Recieved By: ["admin", "dias", "delegate"]
 
         // Session Management
-        socket.on('RES|session-edit', resSessionEdit) // Recieved By: ["admin", "delegate", "dias"]
-        socket.on('RES|session-con', resSessionCon);
+        socket.on('RES|session-edit', resSessionEdit); // Recieved By: ["admin", "delegate", "dias"]
+        socket.on('RES|session-timer', resSessionTimer); // Recieved By: ["admin", "delegate", "dias"]
+        socket.on('RES|session-con', resSessionCon); // Recieved By: ["admin", "delegate", "dias"]
 
         /**
          * REQ Event Emission
@@ -102,6 +103,7 @@ function MainScreen(){
 
         // Session Management
         /* 21 */tempEmission.push({event: 'REQ|session-edit', req: getSessionEdit()}); // Access: ["dias"]
+        /* 22 */tempEmission.push({event: 'REQ|session-timer', req: getSessionTimer()}); // Access: ["dias"]
 
     }, []);
 
@@ -539,6 +541,20 @@ function MainScreen(){
         console.log('RES|session-edit:', res);
     }
 
+    function resSessionTimer(res) {
+        /**
+         * When received apply the appropraite result on the specified timer
+         */
+
+        /**
+         * res = {
+         *      speakerTimer: Boolean,
+         *      toggle: Number // 0->reset 1->pause 2->play
+         * }
+         */
+        console.log('RES|session-timer:', res);
+    }
+
     function resSessionCon(res) {
         /**
          * Tells whether a member connected or disconnected
@@ -863,6 +879,21 @@ function MainScreen(){
             topicTime: 1,
             // whenever button toggled
             type: "IDLE"
+        };
+
+        return req;
+    }
+
+    function getSessionTimer() {
+        /**
+         * Will be used to play/pause/reset both speaker and topic timers
+         */
+
+        let req = {
+            // true->SpeakerTimer false->TopicTimer
+            speakerTimer: true,
+            // 0->reset 1->pause 2->play
+            toggle: 0,
         };
 
         return req;

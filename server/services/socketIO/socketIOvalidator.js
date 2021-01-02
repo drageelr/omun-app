@@ -244,6 +244,17 @@ const validations = {
             type: String,
             length: { min: 0, max: 10 }
         }
+    }),
+    'session-timer': new Schema({
+        speakerTimer: {
+            type: Boolean,
+            required: true
+        },
+        toggle: {
+            type: Number,
+            required: true,
+            size: { min: 0, max: 2 } // 0->reset 1->pause 2->play
+        }
     })
 }
 
