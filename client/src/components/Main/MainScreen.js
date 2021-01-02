@@ -84,10 +84,19 @@ export default function MainScreen(){
         socket.on('RES|seat-placard', resSeatPlacard); // Recieved By: ["admin", "dias", "delegate"]
 
         // MOD & GSL Management
+        socket.on('RES|topic-create', resTopicCreate); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|topic-edit', resTopicEdit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|topic-fetch', resTopicFetch); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|topic-speaker-create', resTopicSpeakerCreate); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|topic-speaker-edit', resTopicSpeakerEdit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|topic-speaker-fetch', resTopicSpeakerFetch); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|gsl-create', resGSLCreate); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|gsl-edit', resGSLEdit); // Recieved By: ["admin", "dias", "delegate"]
+        socket.on('RES|gsl-fetch', resGSLFetch); // Recieved By: ["admin", "dias", "delegate"]
 
         // Session Management
-
-        // Extra Management
+        socket.on('RES|session-edit', resSessionEdit) // Recieved By: ["admin", "delegate", "dias"]
+        socket.on('RES|session-con', resSessionCon);
 
         /**
          * REQ Event Emission
@@ -95,23 +104,38 @@ export default function MainScreen(){
 
         // Chat Management
         // tempEmission.push({event: 'REQ|del-chat-fetch|DEL', req: requestDelChatFetchDel()}) // Access: ["delegate"]
-        tempEmission.push({event: 'REQ|del-chat-fetch', req: requestDelChatFetch()}); // Access: ["admin", "dias"]
+        // tempEmission.push({event: 'REQ|del-chat-fetch', req: requestDelChatFetch()}); // Access: ["admin", "dias"]
         // tempEmission.push({event: 'REQ|dias-chat-fetch|DEL', req: requestDiasChatFetchDel()}) // Access: ["delegate"]
-        tempEmission.push({event: 'REQ|dias-chat-fetch|DIAS', req: requestDiasChatFetchDias()}) // Access: ["dias"]
+        // tempEmission.push({event: 'REQ|dias-chat-fetch|DIAS', req: requestDiasChatFetchDias()}) // Access: ["dias"]
         // tempEmission.push({event: 'REQ|del-chat-send', req: requestDelChatSend()}) // Access: ["delegate"]
         // tempEmission.push({event: 'REQ|dias-chat-send', req: requestDiasChatSend()}); // Access: ["dias", "delegate"]
+        /* 0 */tempEmission.push({event: 'REQ|del-chat-fetch|DEL', req: getDelChatFetchDel()}) // Access: ["delegate"]
+        /* 1 */tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
+        /* 2 */tempEmission.push({event: 'REQ|dias-chat-fetch|DEL', req: {}}) // Access: ["delegate"]
+        /* 3 */tempEmission.push({event: 'REQ|dias-chat-fetch|DIAS', req: {}}) // Access: ["dias"]
+        /* 4 */tempEmission.push({event: 'REQ|del-chat-send', req: {}}) // Access: ["delegate"]
+        /* 5 */tempEmission.push({event: 'REQ|dias-chat-send', req: {}}); // Access: ["dias", "delegate"]
 
         // Log & Notification Management
-        tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
-        tempEmission.push({event: 'REQ|notif-fetch', req: getNotifFetch()}); // Access: ["admin", "dias", "delegate"]
-        tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
+        /* 6 */tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
+        /* 7 */tempEmission.push({event: 'REQ|notif-fetch', req: getNotifFetch()}); // Access: ["admin", "dias", "delegate"]
+        /* 8 */tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
 
         // Seat Management
-        tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
-        tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
-        tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
+        /* 9 */tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
+        /* 10 */tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
+        /* 11 */tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
 
         // MOD & GSL Management
+        /* 12 */tempEmission.push({event: 'REQ|topic-create', req: getTopicCreate()}); // Access: ["dias"]
+        /* 13 */tempEmission.push({event: 'REQ|topic-edit', req: getTopicEdit()}); // Access: ["dias"]
+        /* 14 */tempEmission.push({event: 'REQ|topic-fetch', req: getTopicFetch()}); // Access: ["admin", "dias", "delegate"]
+        /* 15 */tempEmission.push({event: 'REQ|topic-speaker-create', req: getTopicSpeakerCreate()}); // Access: ["dias"]
+        /* 16 */tempEmission.push({event: 'REQ|topic-speaker-edit', req: getTopicSpeakerEdit()}); // Access: ["dias"]
+        /* 17 */tempEmission.push({event: 'REQ|topic-speaker-fetch', req: getTopicSpeakerFetch()}); // Access: ["admin", "dias", "delegate"]
+        /* 18 */tempEmission.push({event: 'REQ|gsl-create', req: getGSLCreate()}); // Access: ["dias"]
+        /* 19 */tempEmission.push({event: 'REQ|gsl-edit', req: getGSLEdit()}); // Access: ["dias"]
+        /* 20 */tempEmission.push({event: 'REQ|gsl-fetch', req: getGSLFetch()}); // Access: ["admin", "dias", "delegate"]
 
         // Session Management
 
@@ -128,6 +152,7 @@ export default function MainScreen(){
         // else { //admin
         //     tempSocket.emit('REQ|del-chat-fetch', {})
         // }
+        /* 21 */tempEmission.push({event: 'REQ|session-edit', req: getSessionEdit()}); // Access: ["dias"]
 
     }, []);
 
@@ -385,8 +410,6 @@ export default function MainScreen(){
         if (!chats[theirChatId]) {
             chats[theirChatId] = [];
         }
-        console.log("Pushing",chatMsg, "at", theirChatId);
-
         chats[theirChatId].push(chatMsg);
         setChats(chats);
         setMsgCounter(++msgCounter); // to trigger the chat to update
@@ -509,7 +532,194 @@ export default function MainScreen(){
         console.log('RES|seat-placard:', res);
     }
 
+    function resTopicCreate(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just append the topics at the top
+         */
 
+        /**
+         * res = {
+        *       id: Number,
+        *       delegateId: Number,
+        *       description: String.min(0).max(250)
+        *       totalTime: Number,
+        *       speakerTime: Number,
+        *       visible: Boolean,
+        *       timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|topic-create:', res);
+    }
+    
+    function resTopicEdit(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just alter the topic identified by "id" in topics
+         * NOTE: only edited attributes received
+         */
+
+        /**
+         * res = {
+        *       id: Number, // Always sent
+        *       delegateId: Number,
+        *       description: String.min(0).max(250)
+        *       totalTime: Number,
+        *       speakerTime: Number,
+        *       visible: Boolean,
+        *       timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|topic-edit:', res);
+    }
+
+    function resTopicFetch(res) {
+        /**
+         * When this is received you have to append the array
+         * use the "id" to check where to append (usually it will be in the start)
+         */
+        
+        /**
+         * res = {
+         *      id: Number, // Always sent
+         *      delegateId: Number,
+         *      description: String.min(0).max(250)
+         *      totalTime: Number,
+         *      speakerTime: Number,
+         *      visible: Boolean,
+         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+         * }
+         */
+        console.log('RES|topic-fetch:', res);
+    }
+
+    function resTopicSpeakerCreate(res) {
+
+    }
+
+    function resTopicSpeakerEdit(res) {
+
+    }
+
+    function resTopicSpeakerFetch(res) {
+
+    }
+
+    function resGSLCreate(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just append the gsl at the top
+         */
+
+        /**
+         * res = {
+         *      id: Number,
+         *      delegateId: Number,
+         *      review: String.min(0).max(500) // Not received by delegate
+         *      totalTime: Number,
+         *      spokenTime: 0,
+         *      visible: Boolean,
+         *      timestampAdded: String.format('YYYY-MM-DD HH:mm:ss')
+         *      timestampAdded: String.format('YYYY-MM-DD HH:mm:ss') // Can be null
+         * }
+         */
+        console.log('RES|gsl-create:', res);
+    }
+
+    function resGSLEdit(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just alter the topic identified by "id" in gsl
+         * NOTE: only edited attributes received
+         */
+
+        /**
+         * res = {
+         *      id: Number, // Always sent
+         *      delegateId: Number,
+         *      review: String.min(0).max(500) // Not received by delegate
+         *      totalTime: Number,
+         *      spokenTime: 0,
+         *      visible: Boolean,
+         *      timestampAdded: String.format('YYYY-MM-DD HH:mm:ss')
+         *      timestampAdded: String.format('YYYY-MM-DD HH:mm:ss') // Can be null
+         * }
+         */
+        console.log('RES|gsl-edit:', res);
+    }
+
+    function resGSLFetch(res) {
+         /**
+         * When this is received you have to append the array
+         * use the "id" to check where to append (usually it will be in the start)
+         */
+
+        /**
+         * res = {
+         *      gsl: [{
+         *          id: Number, // Always sent
+         *          delegateId: Number,
+         *          review: String.min(0).max(500) // Not received by delegate
+         *          totalTime: Number,
+         *          spokenTime: 0,
+         *          visible: Boolean,
+         *          timestampAdded: String.format('YYYY-MM-DD HH:mm:ss')
+         *          timestampAdded: String.format('YYYY-MM-DD HH:mm:ss') // Can be null
+         *      }]
+         * }
+         */
+        console.log('RES|gsl-fetch:', res)
+    }
+
+    function resSessionEdit(res) {
+        /**
+         * This is received by every admin, dias and/or delegate present in the committee
+         * Just alter the fields that are recieved
+         * NOTE: All are optional
+         */
+        
+        /**
+         * res = {
+         *      topicId: Number,
+         *      speakerId: Number,
+         *      speakerTime: Number,
+         *      topicTime: Number,
+         *      type: String.min(0).max(10) // can be null
+         * }
+         */
+
+        console.log('RES|session-edit:', res);
+    }
+
+    function resSessionCon(res) {
+        /**
+         * Tells whether a member connected or disconnected
+         */
+
+        /**
+         * res = {
+         *      type: String ("admin", "dias", "delegate"),
+         *      userId: Number,
+         *      connected: Boolean
+         * }
+         */
+        console.log('RES|session-con:', res);
+    }
+
+    function getDelChatFetchDel() {
+        /**
+         * This function is used to fetch last 10 messages of this delegate's chat with target delegate
+         * This event is supposed to be emitted when the loading sign is clicked in a chat box
+         */
+        
+        let req = {
+            // id of target delegate
+            delegateId: 2,
+            // id of the oldest message (if no message then send 0)
+            lastMessageId: 0
+        };
+    }
+    
     function requestDelChatFetch() {
         /**
          * This function is used to fetch last 10 messages of the chat between the 2 delegates
@@ -555,7 +765,7 @@ export default function MainScreen(){
         
         let lastMessageId = 0;
         if (chats[chatId]) { //if already chat exists
-            lastMessageId = chats[chatId][0].id; //first message in chat is last
+            lastMessageId = chats[chatId][0].id; //first message in chat is last    
         }
 
         console.log("fetchChat", chatId, lastMessageId);
@@ -604,7 +814,7 @@ export default function MainScreen(){
          */
 
         let req = {
-            // id of the oldest log (if no log then send 0)
+            // id of the oldest notification (if no notification then send 0)
             lastNotifId: 0
         };
 
@@ -659,6 +869,145 @@ export default function MainScreen(){
         return req;
     }
 
+    function getTopicCreate() {
+        /**
+         * Call this when a new topic is to be created
+         */
+
+        let req = {
+            // id of the delegate who proposed this topic
+            delegateId: 2,
+            // desc of topic
+            description: "Topic Desc",
+            // total time for the topic
+            totalTime: 120,
+            // individual speaker time for the topic
+            speakerTime: 30
+        }
+
+        return req;
+    }
+
+    function getTopicEdit() {
+        /**
+         * Only "topicId" is required, rest is optional
+         * This will be used to edit the topic by the dias
+         */
+
+
+        let req = {
+            // id of topic to edit
+            topicId: 1, // REQUIRED
+            // id of the delegate who proposed this topic
+            delegateId: 2,
+            // desc of topic
+            description: "Topic Desc",
+            // total time for the topic
+            totalTime: 120,
+            // individual speaker time for the topic
+            speakerTime: 30,
+            // to toggle visiblity for delegates
+            visible: true
+        }
+
+        return req;
+    }
+
+    function getTopicFetch() {
+        /**
+         * This function is used to fetch last 10 topics (will fetch only visible ones for "delegates" automatically)
+         * This event is supposed to be emitted when the loading sign is clicked in the topics box
+         */
+
+        let req = {
+            // id of the oldest topic (if no topic then send 0)
+            lastTopicId: 0
+        }
+
+        return req;
+    }
+
+    function getTopicSpeakerCreate() {
+
+    }
+
+    function getTopicSpeakerEdit() {
+
+    }
+
+    function getTopicSpeakerFetch() {
+
+    }
+
+    function getGSLCreate() {
+        /**
+         * Call this when a new gsl is to be created
+         */
+
+        let req = {
+            // id of the delegate to add
+            delegateId: 2,
+        }
+
+        return req;
+    }
+
+    function getGSLEdit() {
+        /**
+         * Only "gslId" is required, rest is optional
+         * This will be used to edit the gsl by the dias and some auto features
+         */
+
+
+        let req = {
+            // id of gsl to edit
+            gslId: 1, // REQUIRED
+            // id of the delegate to change
+            delegateId: 2,
+            // review for speaker "String.min(0).max(500)"
+            review: "Speaker Review",
+            // time that the delegate spoke for
+            spokenTime: 30,
+            // to toggle visiblity for delegates
+            visible: true,
+            // will tell server to timestamp
+            timestampSpoken: true
+        }
+
+        return req;
+    }
+
+    function getGSLFetch() {
+        /**
+         * This function is used to fetch last 10 topics (will fetch only visible ones for "delegates" automatically)
+         * This event is supposed to be emitted when the loading sign is clicked in the topics box
+         */
+
+        let req = {
+            // id of the oldest topic (if no topic then send 0)
+            lastGSLId: 0
+        }
+
+        return req;
+    }
+
+    function getSessionEdit() {
+        
+        let req = {
+            // to change topic
+            topicId: 1,
+            // to change current speaker
+            speakerId: 1,
+            // whenever speaker total duration changed
+            speakerTime: 1,
+            // whenever topic total duration changed
+            topicTime: 1,
+            // whenever button toggled
+            type: "IDLE"
+        };
+
+        return req;
+    }
 
     return(
         <div className='parent'>
