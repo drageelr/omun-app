@@ -209,7 +209,7 @@ function createNameSpace(committeeId) {
 
         nsp.on('connection', async socket => {
             try {
-                socket.on('disconnect', (reason) => {
+                socket.on('disconnect', async (reason) => {
                     if (namespaceUsers["/" + committeeId]) {
                         let user = socket.userObj;
                         if (user) {

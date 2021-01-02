@@ -703,11 +703,11 @@ export default function MainScreen(){
          *      topicId: Number,
          *      topicName: String,
          *      speakerId: Number,
-         *      speakerName: String,
-         *      speakerImage: String,
-         *      speakerTime: Number,
-         *      topicTime: Number,
-         *      type: String.min(0).max(10) // can be null
+         *      speakerName: String,  N/A
+         *      speakerImage: String, N/A
+         *      speakerTime: Number, -> onchange reset total time
+         *      topicTime: Number, -> onchange reset total time
+         *      type: String.min(0).max(10) /GSL/IDLE/MOD/UNMOD
          * }
          */
         console.log('RES|session-edit:', res);
@@ -731,9 +731,9 @@ export default function MainScreen(){
          */
         console.log('RES|session-timer:', res);
         if (res.speakerTimer) {
-            timer.speakerToggle = toggle;
+            timer.speakerToggle = res.toggle;
         } else {
-            timer.topicToggle = toggle;
+            timer.topicToggle = res.toggle;
         }
         setTimer({...timer});
     }
