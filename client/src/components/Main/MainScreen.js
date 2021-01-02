@@ -818,11 +818,16 @@ export default function MainScreen(){
         }
     }
 
-    function fetchNotifications(lastNotifId) {
+    function fetchNotifications() {
         /**
          * This function is used to fetch last 10 notifications
          * This event is supposed to be emitted when the loading sign is clicked in the notifications box
          */
+        
+        let lastNotifId = 0;
+        if (notifications.length) {
+            lastNotifId = notifications[0].id;
+        }
 
         socket.emit('REQ|notif-fetch', {lastNotifId});
     }
