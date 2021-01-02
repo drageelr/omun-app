@@ -471,7 +471,7 @@ export default function MainScreen(){
          */
         console.log('RES|notif-fetch:', res);
         let fetchedNotifications = res.notifications.map(notif => {
-            return {id: notif.id, diasName: info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
+            return {id: notif.id, diasName: info.dias[res.diasId] ? info.dias[res.diasId].title + ' ' + info.dias[res.diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
         });
         notifications = fetchedNotifications.concat(notifications);
         setNotifications(notifications);
@@ -818,12 +818,12 @@ export default function MainScreen(){
         }
     }
 
-    function fetchNotifications(lastNotifId) {
+    function fetchNotifications() {
         /**
          * This function is used to fetch last 10 notifications
          * This event is supposed to be emitted when the loading sign is clicked in the notifications box
          */
-
+        const lastNotifId = notifications[0].id;
         socket.emit('REQ|notif-fetch', {lastNotifId});
     }
 
@@ -1088,7 +1088,13 @@ export default function MainScreen(){
             
             {
                 connected && 
-                <div className='Notifications'><Notification notifications={notifications} sendNotification={sendNotification} fetchNotifications={fetchNotifications} userType={userState.type}/>
+                <div className='Notifications'>
+                    <Notification 
+                    notifications={notifications}
+                    sendNotification={sendNotification} 
+                    fetchNotifications={fetchNotifications} 
+                    type={userState.type}
+                    />
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>
                         <VirtualAud 
                         seats={seats}
