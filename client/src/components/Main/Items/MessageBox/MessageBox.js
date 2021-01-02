@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
   msgPaper: {
     padding: 2, 
     borderRadius: 3, 
-    margin: 8, 
+    margin: 8,
     width: '30vw',
     backgroundColor: theme.palette.primary.main,
     color: 'white'
@@ -40,8 +40,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 2, 
     borderRadius: 3, 
     margin: 8,
-    marginRight: 12, 
-    float: 'right',
+    marginLeft: '8vw',
     width: '30vw',
     backgroundColor: 'whitesmoke',
     color: '#111111'
@@ -58,42 +57,37 @@ function splitIdType(str) {
   return {id: Number(idType[0]), type: idType[1]};
 }
 
-export default function MessageBox({id, type, chats, sendMsg, dias, delegates, connectedDias, connectedDelegates}) {
+export default function MessageBox({id, type, currentChat, theirId, setTheirId, sendMsg, fetchChat, msgCounter, dias, delegates, diasList, delegatesList}) {
   const classes = useStyles();
-  const [userSelected, setUserSelected] = React.useState('1|dias'); //id, type
-  const [chatMsgs, setChatMsgs] = React.useState([]);
-  
+  const chatContainer = React.createRef();
 
   function handleChange(event, newUser) {
-    setUserSelected(newUser); //has id, type both
-    if (userSelected) {
-      setChatMsgs(chats[splitIdType(userSelected).id]);
-    }
+    setTheirId(newUser); //has id, type both
+    fetchChat(newUser);
   };
 
-  React.useEffect(() => {
-    if (userSelected) {
-      setChatMsgs(chats[splitIdType(userSelected).id]); //show fetched chat messages of specific user
-    }
-  }, [chats])
-
+  useEffect(() => {
+    // triggers react state update whenever their is a message
+    const scroll = chatContainer.current.scrollHeight - chatContainer.current.clientHeight;
+    chatContainer.current.scrollTo(0, scroll);
+  }, [msgCounter]);
 
   return (
     <Card className={classes.root}>
       <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
-        value={userSelected} 
+        value={theirId} 
         onChange={handleChange} 
         className={classes.tabs} >
+        
         { 
-          connectedDias && dias &&
-          connectedDias.map((id,i)=> <Tab label={`${dias[id].title} ${dias[id].name}`} key={id} value={`${id}|dias`}/> )
+          diasList && (type == 'delegate') &&
+          diasList.map((d,i)=> <Tab label={`${d.title} ${d.name}`} key={d.id} value={`${d.id}|dias`}/> )
         }     
-        { 
-          connectedDelegates && delegates &&
-          connectedDelegates.map((id,i)=> <Tab label={delegates[id].countryName} key={id} value={`${id}|delegate`}/> )
+        {
+          delegatesList &&
+          delegatesList.map((d,i)=> !(Number(d.id) === Number(id) && type==='delegate') && <Tab label={d.countryName} key={d.id} value={`${d.id}|delegate`}/> )
         }
-      </Tabs>
-      
+      </Tabs>      
       <Formik
         validateOnChange={false} validateOnBlur={true}
         initialValues={{newMsg: ''}}
@@ -105,8 +99,7 @@ export default function MessageBox({id, type, chats, sendMsg, dias, delegates, c
           return errors
         }}
         onSubmit={(values, {setSubmitting, resetForm}) => {
-            const userObj = splitIdType(userSelected);
-            
+            const userObj = splitIdType(theirId);
             const message = values.newMsg;
             sendMsg(Number(userObj.id), userObj.type, message);
             setSubmitting(false);
@@ -115,34 +108,32 @@ export default function MessageBox({id, type, chats, sendMsg, dias, delegates, c
       >
         {({ submitForm}) => (
           <Form>
-            <Box border={1} borderColor="grey.400" className={classes.chatPaper}>
-              <List>
-                {
-                  chatMsgs &&
-                  chatMsgs.map((msg, index) => {
-                    return (
-                    <Paper key={index} className={msg.yourId == id ? classes.msgPaperYours : classes.msgPaper} >
-                      <Typography style={{margin: 5, fontWeight: 500}}>
-                        {msg.message}
-                      </Typography>
-                      <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>
-                        <Timestamp relative date={new Date(msg.timestamp)}/>
-                      </Typography>
-                    </Paper>
-                    )
-                  })
-                }
-              </List>
+            <Box ref={chatContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
+              {
+                currentChat &&
+                currentChat.map((msg, index) => {
+                  const isTheirMsg = !(msg.senderId == id && msg.senderType == type); //message id type does not match mine
+                  return (
+                  <Paper key={index} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
+                    <Typography style={{margin: 5, fontWeight: 500}}>
+                      {msg.message}
+                    </Typography>
+                    <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>
+                      <Timestamp relative date={new Date(msg.timestamp)}/>
+                    </Typography>
+                  </Paper>
+                  )
+                })
+              }
             </Box>
             {
-              userSelected && delegates && dias  &&
+              theirId && delegates && dias  &&
               <List className={classes.sendBar}>
                   <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" 
-                  label={ 'Send chat message to ' + (splitIdType(userSelected).type == 'delegate' ? 
-                  delegates[splitIdType(userSelected).id].countryName 
-                  : dias[splitIdType(userSelected).id].name)}
+                  label={ 'Send chat message to ' + (splitIdType(theirId).type == 'delegate' ? 
+                  delegates[splitIdType(theirId).id].countryName 
+                  : dias[splitIdType(theirId).id].name)}
                   />
-
                   <Button variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
               </List>
             }
