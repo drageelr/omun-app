@@ -836,9 +836,10 @@ export default function MainScreen(){
          * This function is used to send notification
          * This event is supposed to be emitted when the send button is pressed on the notification box
          */
-
+        
         if (user.type == "dias") {
-            socket.emit('REQ|notif-send', {message});
+            console.log('REQ|notif-send:', {message: message});
+            socket.emit('REQ|notif-send', {message: message});
         }
     }
 
