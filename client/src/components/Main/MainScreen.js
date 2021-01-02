@@ -1088,7 +1088,7 @@ export default function MainScreen(){
             
             {
                 connected && 
-                <div className='Notifications'><Notification notifications={notifications} sendNotification={sendNotification} fetchNotifications={fetchNotifications}/>
+                <div className='Notifications'><Notification notifications={notifications} sendNotification={sendNotification} fetchNotifications={fetchNotifications} userType={userState.type}/>
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>
                         <VirtualAud 
                         seats={seats}
