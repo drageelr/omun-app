@@ -58,6 +58,22 @@ async function sendStartInfo(socket) {
         let reqSession = await db.query('SELECT * FROM session WHERE committeeId = ' + user.committeeId + ' AND active = 1 AND id = ' + user.sessionId);
         if (!reqSession.length) { throw new customError.NotFoundError("active session not found"); }
 
+        let topicName = "N/A";
+        if (reqSession[0].topicId) {
+            let topic = await db.query('SELECT description FROM topic WHERE id = ' + reqSession[0].topicId + ' AND committeeId = ' + user.committeeId);
+            if (topic.length) { topicName = topic[0].description; }
+        }
+
+        let speakerName = "N/A";
+        let speakerImage = "N/A";
+        if (reqSession[0].speakerId) {
+            let speaker = await db.query('SELECT name, imageName FROM country WHERE id IN (SELECT countryId FROM delegate WHERE id = ' + reqSession[0].speakerId + ')');
+            speakerName = speaker[0].name;
+            if (speaker[0].imageName) {
+                speakerImage = speaker[0].imageName;
+            }
+        }
+
         let reqSeats = await db.query('SELECT * FROM seat WHERE committeeId = ' + user.committeeId + ' ORDER BY id');
 
         let allDelegates = await db.query('SELECT * FROM delegate WHERE committeeId = ' + user.committeeId);
@@ -76,6 +92,8 @@ async function sendStartInfo(socket) {
             id: reqSession[0].id,
             topicId: reqSession[0].topicId,
             speakerId: reqSession[0].speakerId,
+            speakerName: speakerName,
+            speakerImage: speakerImage,
             speakerTime: reqSession[0].speakerTime,
             topicTime: reqSession[0].topicTime,
             type: reqSession[0].type

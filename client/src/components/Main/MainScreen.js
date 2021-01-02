@@ -16,7 +16,7 @@ let user;
 export default function MainScreen(){
     let [chats, setChats] = useState({});
     let [connected, setConnected] = useState(false);
-    let [session, setSession] = useState({});
+    let [sessionState, setSession] = useState({});
     let [seats, setSeats] = useState([]);
     let [connectedDias, setConnectedDias] = useState([]);
     let [connectedDelegates, setConnectedDelegates] = useState([]);
@@ -26,10 +26,10 @@ export default function MainScreen(){
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let [notifications, setNotifications] = useState([]);
-    let [notifCounter, setNotifCounter] = useState([]);
     let tempEmission = [];
     let tempSocket = {};
     let info = {};
+    let session = {};
 
     /*  
     info:
@@ -194,7 +194,8 @@ export default function MainScreen(){
             info.seats[seatId].id = seatId; 
         })// add seat id
         setSeats(Object.values(info.seats));
-        setSession(info.session);
+        session = info.session;
+        setSession(session);
         setConnectedAdmins(info.connectedAdmins);
         setConnectedDias(info.connectedDias);
         setConnectedDelegates(info.connectedDelegates);
@@ -696,14 +697,21 @@ export default function MainScreen(){
         /**
          * res = {
          *      topicId: Number,
+         *      topicName: String,
          *      speakerId: Number,
+         *      speakerName: String,
+         *      speakerImage: String,
          *      speakerTime: Number,
          *      topicTime: Number,
          *      type: String.min(0).max(10) // can be null
          * }
          */
-
         console.log('RES|session-edit:', res);
+        let keys = Object.keys(res);
+        for (let i = 0; i < keys.length; i++) {
+            session[keys[i]] = res[keys[i]];
+        }
+        setSession({...session});
     }
 
     function resSessionTimer(res) {
@@ -846,6 +854,29 @@ export default function MainScreen(){
         }
     }
 
+    function setSessionType(type) {
+        if (user.type == "dias") {
+            let req = {type};
+            console.log('REQ|session-edit:', req);
+            socket.emit('REQ|session-edit', req);
+        }
+    }
+
+    function deleteSessionTopic() {
+        if (user.type == "dias") {
+            let req = {topicId: 0};
+            console.log('REQ|session-edit:', req);
+            socket.emit('REQ|session-edit', req);
+        }
+    }
+
+    function deleteSessionSpeaker() {
+        if (user.type == "dias") {
+            let req = {speakerId: 0};
+            console.log('REQ|session-edit:', req);
+            socket.emit('REQ|session-edit', req);
+        }
+    }
 
     function getLogFetch() {
         /**
@@ -1080,7 +1111,7 @@ export default function MainScreen(){
 
     return(
         <div className='parent'>
-            <div className= 'Information-Bar'><InformationBar/>
+            <div className= 'Information-Bar'><InformationBar session={sessionState} setSessionType={setSessionType} deleteSessionTopic={deleteSessionTopic} deleteSessionSpeaker={deleteSessionSpeaker}/>
                 <div style={{marginTop:'2vh'}} className='Zoom'><Zoom/>
                     <div  style={{marginTop:'2vh'}} className='Buttons'>
                         <div>

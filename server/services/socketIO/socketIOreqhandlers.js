@@ -885,12 +885,30 @@ exports.handleSessionEdit = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        if (params.speakerId !== undefined) {
-            let reqDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.speakerId + ' AND committeeId = ' + user.committeeId);
+        let res = {};
+
+        if (params.speakerId === 0) {
+            params.speakerId = null;
+            res.speakerName = "N/A";
+            res.speakerImage = "N/A";
+        } else if (params.speakerId !== undefined) {
+            let reqDelegate = await db.query('SELECT id, countryId FROM delegate WHERE id = ' + params.speakerId + ' AND committeeId = ' + user.committeeId);
             if (!reqDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
+            let speaker = await db.query('SELECT name, imageName FROM country WHERE id = ' + reqDelegate[0].countryId);
+            res.speakerName = speaker[0].name;
+            if (speaker[0].speakerImage) {
+                res.speakerImage = speaker[0].speakerImage;
+            }
         }
 
-        let res = {};
+        if (params.topicId === 0) {
+            params.topicId = null;
+            res.topicName = "N/A";
+        } else if (params.topicId !== undefined) {
+            let reqTopic = await db.query('SELECT id, description FROM topic WHERE id = ' + params.topicId + ' AND committeeId = ' + user.committeeId);
+            if (!reqTopic.length) { throw new customError.NotFoundError("topic not found in current committee"); }
+            res.topicName = reqTopic[0].description;
+        }
 
         const keys = ['topicId', 'speakerId', 'speakerTime', 'topicTime', 'type'];
         const kType = [0, 0, 0, 0, 1];
