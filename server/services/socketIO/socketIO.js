@@ -281,7 +281,7 @@ function createNameSpace(committeeId) {
 
                 socket.join(socket.userObj.committeeId + '|' + socket.userObj.type)
 
-                io.of("/" + givenCommitteeId).emit('RES|session-con', {
+                socket.broadcast.emit('RES|session-con', {
                     type: userObj.type,
                     userId: userObj.id,
                     connected: true
