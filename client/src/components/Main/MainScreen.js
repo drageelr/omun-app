@@ -52,7 +52,7 @@ export default function MainScreen() {
     let [singleMsg, setSingleMsg] = useState(false);
     let [reachedTop, setReachedTop] = useState(false);
     let [currentChatIdState, setCurrentChatId] = React.useState('');
-    let [info, setInfo] = useState({});
+    let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let [notifications, setNotifications] = useState([]);
     let tempSocket = {};
@@ -225,35 +225,35 @@ export default function MainScreen() {
         console.log('RES|info-start:', res);
         info = res;
         // need to store states for the following as they will be updated
-        Object.keys(rawInfo.seats).forEach(seatId => {
-            rawInfo.seats[seatId].id = Number(seatId); 
+        Object.keys(info.seats).forEach(seatId => {
+            info.seats[seatId].id = Number(seatId); 
         })// add seat id
-        seats = Object.values(rawInfo.seats);
+        seats = Object.values(info.seats);
 
         // include delegate countries inside delegate
-        delegates = rawInfo.delegates;
+        delegates = info.delegates;
         Object.keys(delegates).forEach(delegateId => {
             const delegateInfo = delegates[delegateId];
-            let delegateCountry = rawInfo.countries[delegateInfo.countryId]; // get delegate's country
+            let delegateCountry = info.countries[delegateInfo.countryId]; // get delegate's country
             delegateCountry.countryName = delegateCountry.name;
             delete delegateCountry.name; //renamed country's name attribute so it does not replace delegate's
             delegates[delegateId] = {...delegateInfo, ...delegateCountry, unreadMessages: 0} //merge, also show unread messages
         })
 
-        dias = rawInfo.dias;
-        Object.keys(rawInfo.dias).forEach(diasId => {
+        dias = info.dias;
+        Object.keys(info.dias).forEach(diasId => {
             dias[diasId].unreadMessages = 0; // add unread messages to dias as well
         })
         
         // storing dias and delegates in list form as well
-        rawInfo.diasList = [];
+        info.diasList = [];
         Object.keys(dias).forEach(id => {
-            rawInfo.diasList.push({id, ...dias[id]})
+            info.diasList.push({id, ...dias[id]})
         })
 
-        rawInfo.delegatesList = [];
+        info.delegatesList = [];
         Object.keys(delegates).forEach(id => {
-            rawInfo.delegatesList.push({id, ...delegates[id]})
+            info.delegatesList.push({id, ...delegates[id]})
         })
         
         let initSeated = false;
@@ -263,20 +263,20 @@ export default function MainScreen() {
             }
         });
 
-        session = rawInfo.session;
-        session.committeeName = rawInfo.committee.name;
-        timer = {topicTime: rawInfo.session.topicTime, topicToggle: 1, speakerTime: rawInfo.session.speakerTime, speakerToggle: 1};
+        session = info.session;
+        session.committeeName = info.committee.name;
+        timer = {topicTime: info.session.topicTime, topicToggle: 1, speakerTime: info.session.speakerTime, speakerToggle: 1};
         
         setTimer(timer);
-        setInfo(rawInfo);
+        setInfo(info);
         setSeated(initSeated);
         setSeats(seats);
         setDias(dias);
         setDelegates(delegates);
         setSession(session);
-        setConnectedAdmins(rawInfo.connectedAdmins);
-        setConnectedDias(rawInfo.connectedDias);
-        setConnectedDelegates(rawInfo.connectedDelegates);
+        setConnectedAdmins(info.connectedAdmins);
+        setConnectedDias(info.connectedDias);
+        setConnectedDelegates(info.connectedDelegates);
         setConnected(true);
     }
 
@@ -1294,7 +1294,7 @@ export default function MainScreen() {
                         sit={sit}
                         unsit={unsit}
                         togglePlacard={togglePlacard}
-                        delegates={info.delegates} //update does not matter so state prop not sent
+                        delegates={infoState.delegates} //update does not matter so state prop not sent
                         />
                         <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
                             <MessageBox 
@@ -1302,8 +1302,8 @@ export default function MainScreen() {
                             type={userState.type} 
                             dias={diasState}
                             delegates={delegatesState}
-                            diasList={info.diasList} 
-                            delegatesList={info.delegatesList}
+                            diasList={infoState.diasList} 
+                            delegatesList={infoState.delegatesList}
                             currentChat={chats[currentChatIdState]}
                             setChats={setChats}
                             singleMsg={singleMsg}
