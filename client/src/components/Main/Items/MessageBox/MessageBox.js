@@ -113,7 +113,7 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
             const unreadMessages = dias[d.id].unreadMessages;
             let label = `${d.title} ${d.name}`;
             if (unreadMessages) {
-              label += `(${unreadMessages})`;
+              label += ` (${unreadMessages})`;
             }
             return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|dias`}></div>;
           })

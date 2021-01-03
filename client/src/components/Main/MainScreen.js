@@ -28,6 +28,7 @@ const useStyles = makeStyles((theme) => ({
 
 let socket;
 let user;
+let currentChatId = '';
 
 export default function MainScreen() {
     const classes = useStyles();
@@ -47,7 +48,7 @@ export default function MainScreen() {
     let [msgCounter, setMsgCounter] = useState(0);
     let [singleMsg, setSingleMsg] = useState(false);
     let [reachedTop, setReachedTop] = useState(false);
-    const [theirId, setTheirId] = React.useState('');
+    let [currentChatIdState, setCurrentChatId] = React.useState('');
     let [info, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let tempEmission = [];
@@ -444,14 +445,18 @@ export default function MainScreen() {
         
         if (Number(user.id) == senderDelegateId) {
             theirChatId = `${recipientDelegateId}|delegate`;
-            if (msgNotYours) {
+            console.log('comparison', currentChatId, theirChatId);
+
+            if (msgNotYours && currentChatId !== theirChatId) {
                 delegates[recipientDelegateId].unreadMessages++;
                 setDelegates(delegates);
             }
         }
         else if (Number(user.id) == recipientDelegateId) {
             theirChatId = `${senderDelegateId}|delegate`;
-            if (msgNotYours) {
+            console.log('comparison', currentChatId, theirChatId);
+
+            if (msgNotYours && currentChatId !== theirChatId) {
                 delegates[senderDelegateId].unreadMessages++;
                 setDelegates(delegates);
             }
@@ -483,14 +488,16 @@ export default function MainScreen() {
 
         if (Number(user.id) == diasId && user.type == 'dias') {
             theirChatId = `${delegateId}|delegate`;
-            if ( msgNotYours ) {
+            console.log('comparison', currentChatId, theirChatId);
+            if ( msgNotYours && currentChatId !== theirChatId ) {
                 delegates[delegateId].unreadMessages++;
                 setDelegates(delegates);
             }
         }
         else if (Number(user.id) == delegateId && user.type == 'delegate') {
             theirChatId = `${diasId}|dias`;
-            if ( msgNotYours ) {
+            console.log('comparison', currentChatId, theirChatId);
+            if ( msgNotYours && currentChatId !== theirChatId ) {
                 dias[diasId].unreadMessages++;
                 setDias(dias);
             }
@@ -1124,6 +1131,10 @@ export default function MainScreen() {
         setSnackbarMsg('');
     }
 
+    function setChatId(newChatId) {
+        currentChatId = newChatId;
+        setCurrentChatId(currentChatId);
+    }
 
     return(
         <div className='parent'>
@@ -1164,12 +1175,12 @@ export default function MainScreen() {
                             delegates={delegatesState}
                             diasList={info.diasList} 
                             delegatesList={info.delegatesList}
-                            currentChat={chats[theirId]}
+                            currentChat={chats[currentChatIdState]}
                             setChats={setChats}
                             singleMsg={singleMsg}
                             reachedTop={reachedTop}
-                            chatId={theirId}
-                            setChatId={setTheirId}
+                            chatId={currentChatIdState}
+                            setChatId={setChatId}
                             msgCounter={msgCounter}
                             sendMsg={sendMsg}
                             fetchChat={fetchChat}
