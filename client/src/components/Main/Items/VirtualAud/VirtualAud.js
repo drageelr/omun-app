@@ -5,6 +5,8 @@ import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import AccessibilityNewIcon from '@material-ui/icons/AccessibilityNew';
 import AirlineSeatLegroomNormalIcon from '@material-ui/icons/AirlineSeatLegroomNormal';
 import CropLandscapeIcon from '@material-ui/icons/CropLandscape';
@@ -15,9 +17,16 @@ function Seat({isEmpty, placard, countryName, imageName, id, onClick}) {
     try {
         let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`./flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover', backgroundPosition:'center'};
-        return (
-            <div id={id} className={classN} onClick={onClick} style={imageN}></div>
-        );
+        if (countryName) {
+            return (
+                <Tooltip title={countryName}>
+                    <div id={id} className={classN} onClick={onClick} style={imageN}></div>
+                </Tooltip>
+            );
+        }
+        else {
+            return <div id={id} className={classN} onClick={onClick} style={imageN}></div>
+        }
     }
     catch { // image not found
         return (
@@ -30,11 +39,21 @@ function Seat({isEmpty, placard, countryName, imageName, id, onClick}) {
 export default function VirtualAud({id, type, seats, placard, delegates, seated, sit, unsit, togglePlacard}) {
     let initSeats = Array(50).fill({id: -1, delegateId: null, imageName: '', personality: '', placard: false}) //country == country image countryName here
     const [placement, setPlacement] = useState(initSeats);
+    const [placardsRaised, setPlacardsRaised] = useState(0);
+    const [seatedCount, setSeatedCount] = useState(0);
+
 
     React.useEffect(() => {
         if (delegates) {
+            let numPlacards = 0;
+            let numSeated = 0;
             let updatedSeats = seats.map(seat => {
                 if (seat.delegateId != null) {
+                    numSeated++; //side job to store seats and placards count
+                    if (seat.placard) {
+                        numPlacards++;
+                    }
+
                     let { countryName, imageName, personality } = delegates[seat.delegateId];
                     return {...seat, countryName, imageName, personality};
                 }
@@ -43,6 +62,8 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
                 }
             }); //add imageName and personality to seats from delegate's country
             setPlacement(updatedSeats);
+            setPlacardsRaised(numPlacards);
+            setSeatedCount(numSeated);
         }
     }, [seats])
 
@@ -85,11 +106,14 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
                 {   
                     // if you are a seated delegate, then show Placard Toggle and Leave Seat buttons
                     type == "delegate" && seated &&
-                    <div>
-                        <Button variant="contained" size="small" startIcon={placard ? <MinimizeIcon/> : <CropLandscapeIcon/>} color="secondary" onClick={() => togglePlacard(!placard)}> { placard ? "Lower Placard" : "Raise Placard" }  </Button>                    
-                        <Button variant="contained" size="small" startIcon={<AirlineSeatLegroomNormalIcon/> } color="secondary" onClick={unsit}>  { "Leave Seat" }   </Button>
-                    </div>
+                    <Button variant="contained" size="small" startIcon={placard ? <MinimizeIcon/> : <CropLandscapeIcon/>} color="secondary" onClick={() => togglePlacard(!placard)}> { placard ? "Lower Placard" : "Raise Placard" }  </Button>                
                 }
+                {
+                    type == "delegate" && seated &&
+                    <Button variant="contained" size="small" startIcon={<AirlineSeatLegroomNormalIcon/> } color="secondary" onClick={unsit}>  { "Leave Seat" }   </Button>
+                }
+                <Typography style={{fontSize: 14}} color='secondary'>Placards Raised: {placardsRaised}</Typography>
+                <Typography style={{fontSize: 14}} color='secondary'>Delegates Seated: {seatedCount}</Typography>
             </CardActions>
         </Card>
     );

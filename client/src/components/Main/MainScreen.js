@@ -343,7 +343,23 @@ export default function MainScreen(){
          * }
          */
         console.log('RES|dias-chat-fetch|DIAS:', res);
-
+        const chatId = `${res.delegateId}|delegate`; //fetched this dias's chat
+        const fetchedChatMsgs = res.chat.map(chatMsg => {
+            const {diasId, diasSent, delegateId} = chatMsg;
+            if (!diasSent) {
+                chatMsg.senderId = diasId;
+                chatMsg.senderType = 'dias';
+            }
+            else {
+                chatMsg.senderId = delegateId;
+                chatMsg.senderType = 'delegate';
+            }
+            return chatMsg;
+        });
+        console.log(chatId, fetchedChatMsgs);
+        chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
+        setChats(chats); //concat older chat messages to head of specific chat
+        setMsgCounter(++msgCounter);
     }
 
 
@@ -827,8 +843,11 @@ export default function MainScreen(){
         if (user.type == "delegate" && targetType == "delegate") {
             socket.emit('REQ|del-chat-fetch|DEL', {delegateId: targetId, lastMessageId});   // id of the oldest message (if no message then send 0)
         }
-        else { //dias
+        else if (user.type == "delegate"){ //dias
             socket.emit('REQ|dias-chat-fetch|DEL', {diasId: targetId, lastMessageId});
+        }
+        else { //dias delegate
+            socket.emit('REQ|dias-chat-fetch|DIAS', {delegateId: targetId, lastMessageId});
         }
     }
 
