@@ -41,6 +41,8 @@ export default function MainScreen() {
     let [connectedDias, setConnectedDias] = useState([]);
     let [connectedDelegates, setConnectedDelegates] = useState([]);
     let [connectedAdmins, setConnectedAdmins] = useState({});
+    let [diasState, setDias] = useState({});
+    let [delegatesState, setDelegates] = useState({});
     let [logs, setLogs] = useState([]);
     let [msgCounter, setMsgCounter] = useState(0);
     let [singleMsg, setSingleMsg] = useState(false);
@@ -51,6 +53,8 @@ export default function MainScreen() {
     let tempEmission = [];
     let tempSocket = {};
     let seats = [];
+    let dias = {};
+    let delegates = {};
 
     /*  
     info:
@@ -59,8 +63,10 @@ export default function MainScreen() {
         connectedDelegates: []
         connectedDias: ["1"] //id
         countries: (2) [{id, name, initials}]
-        delegates: (2) [{id, country}]
-        dias: (2) [{id, name, title}]
+        dias: {}
+        delegates: {}
+        delegatesList: (2) [{id, country}]
+        diasList: (2) [{id, name, title}]
         seats: (50) [{id, delegateId, placard}]
         session: {id: 5, topicId: null, speakerId: null, speakerTime: 0, topicTime: 0, type: null}
     */
@@ -215,25 +221,29 @@ export default function MainScreen() {
         seats = Object.values(rawInfo.seats);
 
         // include delegate countries inside delegate
-        let updatedDelegates = rawInfo.delegates;
-        Object.keys(rawInfo.delegates).forEach(delegateId => {
-            const delegateInfo = rawInfo.delegates[delegateId];
+        delegates = rawInfo.delegates;
+        Object.keys(delegates).forEach(delegateId => {
+            const delegateInfo = delegates[delegateId];
             let delegateCountry = rawInfo.countries[delegateInfo.countryId]; // get delegate's country
             delegateCountry.countryName = delegateCountry.name;
             delete delegateCountry.name; //renamed country's name attribute so it does not replace delegate's
-            updatedDelegates[delegateId] = {...delegateInfo, ...delegateCountry} //merge
+            delegates[delegateId] = {...delegateInfo, ...delegateCountry, unreadMessages: 0} //merge, also show unread messages
         })
-        rawInfo.delegates = updatedDelegates;
+
+        dias = rawInfo.dias;
+        Object.keys(rawInfo.dias).forEach(diasId => {
+            dias[diasId].unreadMessages = 0; // add unread messages to dias as well
+        })
         
         // storing dias and delegates in list form as well
         rawInfo.diasList = [];
-        Object.keys(rawInfo.dias).forEach(id => {
-            rawInfo.diasList.push({id, ...rawInfo.dias[id]})
+        Object.keys(dias).forEach(id => {
+            rawInfo.diasList.push({id, ...dias[id]})
         })
 
         rawInfo.delegatesList = [];
-        Object.keys(rawInfo.delegates).forEach(id => {
-            rawInfo.delegatesList.push({id, ...rawInfo.delegates[id]})
+        Object.keys(delegates).forEach(id => {
+            rawInfo.delegatesList.push({id, ...delegates[id]})
         })
         
         let initSeated = false;
@@ -242,10 +252,12 @@ export default function MainScreen() {
                 initSeated = true;
             }
         });
-
+        
         setInfo(rawInfo);
         setSeated(initSeated);
         setSeats(seats);
+        setDias(dias);
+        setDelegates(delegates);
         setSession(rawInfo.session);
         setConnectedAdmins(rawInfo.connectedAdmins);
         setConnectedDias(rawInfo.connectedDias);
@@ -275,11 +287,18 @@ export default function MainScreen() {
         console.log('RES|del-chat-fetch|DEL:', res);
         const chatId = `${res.delegateId}|delegate`; //fetched chat with this delegate 
         const fetchedChatMsgs = res.chat.map(chatMsg => ({...chatMsg, senderId: chatMsg.senderDelegateId, senderType: 'delegate'}));
+        
+        //fetched 10 messages now unread 10 less
+        delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
+        setDelegates(delegates);
+
         setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
         setSingleMsg(false);
         setMsgCounter(++msgCounter);
+
+        
     }
 
     function responseDelChatFetch(res) {
@@ -337,6 +356,11 @@ export default function MainScreen() {
             }
             return chatMsg;
         });
+
+        //fetched 10 messages now unread 10 less
+        dias[res.diasId].unreadMessages = Math.max(dias[res.diasId].unreadMessages-10, 0);
+        setDias(dias);
+
         setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
@@ -378,6 +402,9 @@ export default function MainScreen() {
             }
             return chatMsg;
         });
+
+        delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
+        setDelegates(delegates);
         
         setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
@@ -409,18 +436,27 @@ export default function MainScreen() {
          *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
          * }
          */
-        let moreAttributes = {
-            senderId: senderDelegateId, 
-            senderType: 'delegate'
-        };
+
+        const senderId = senderDelegateId;
+        const senderType = 'delegate';
+        let theirChatId = '';
+        const msgNotYours = !(Number(user.id) == senderId); // you are not the sender (just check id as both are delegates)
         
         if (Number(user.id) == senderDelegateId) {
-            moreAttributes.theirChatId = `${recipientDelegateId}|delegate`;
+            theirChatId = `${recipientDelegateId}|delegate`;
+            if (msgNotYours) {
+                delegates[recipientDelegateId].unreadMessages++;
+                setDelegates(delegates);
+            }
         }
         else if (Number(user.id) == recipientDelegateId) {
-            moreAttributes.theirChatId = `${senderDelegateId}|delegate`;
+            theirChatId = `${senderDelegateId}|delegate`;
+            if (msgNotYours) {
+                delegates[senderDelegateId].unreadMessages++;
+                setDelegates(delegates);
+            }
         }
-        pushChatMsg({ id, message, timestamp, ...moreAttributes });
+        pushChatMsg({ id, message, timestamp, senderId, senderType, theirChatId });
     }
 
     function responseDiasChatSend(res) {
@@ -440,18 +476,26 @@ export default function MainScreen() {
          *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
          * }
          */
-        let moreAttributes = {
-            senderId: diasSent ? diasId : delegateId, 
-            senderType: diasSent ? 'dias' : 'delegate'
-        };
-        
+        const senderId = diasSent ? diasId : delegateId;
+        const senderType = diasSent ? 'dias' : 'delegate';
+        let theirChatId = '';
+        const msgNotYours = !(Number(user.id) == senderId && user.type == senderType); // you are not the sender
+
         if (Number(user.id) == diasId && user.type == 'dias') {
-            moreAttributes.theirChatId = `${delegateId}|delegate`;
+            theirChatId = `${delegateId}|delegate`;
+            if ( msgNotYours ) {
+                delegates[delegateId].unreadMessages++;
+                setDelegates(delegates);
+            }
         }
         else if (Number(user.id) == delegateId && user.type == 'delegate') {
-            moreAttributes.theirChatId = `${diasId}|dias`;
+            theirChatId = `${diasId}|dias`;
+            if ( msgNotYours ) {
+                dias[diasId].unreadMessages++;
+                setDias(dias);
+            }
         }
-        pushChatMsg({ id, message, timestamp, ...moreAttributes });
+        pushChatMsg({ id, message, timestamp, theirChatId, senderId, senderType });
     }
 
 
@@ -859,7 +903,7 @@ export default function MainScreen() {
         const targetId = Number(targetIdStr);
         
         let lastMessageId = 0;
-        if (chats[chatId]) { //if already chat exists
+        if (chats[chatId] && chats[chatId].length !== 0) { //if already chat exists
             lastMessageId = chats[chatId][0].id; //first message in chat is last    
         }
 
@@ -1110,14 +1154,14 @@ export default function MainScreen() {
                         sit={sit}
                         unsit={unsit}
                         togglePlacard={togglePlacard}
-                        delegates={info.delegates}
+                        delegates={info.delegates} //update does not matter so state prop not sent
                         />
                         <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
                             <MessageBox 
                             id={Number(userState.id)} 
                             type={userState.type} 
-                            dias={info.dias}
-                            delegates={info.delegates}
+                            dias={diasState}
+                            delegates={delegatesState}
                             diasList={info.diasList} 
                             delegatesList={info.delegatesList}
                             currentChat={chats[theirId]}

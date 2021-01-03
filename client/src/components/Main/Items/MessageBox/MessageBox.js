@@ -89,22 +89,49 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
     }
   }
 
-  return (
-    <Card className={classes.root}>
+  function SortedTabs({children}) {  
+    return  (
       <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
         value={chatId} 
         onChange={handleChange} 
         className={classes.tabs} >
-        
+        {
+          React.Children.toArray(children) // Sort and render the children based on unread messages
+          .sort((t1, t2) => (t2.props.um - t1.props.um))
+          .map(div => <Tab label={div.props.label} value={div.props.value}/>)
+        }
+      </Tabs>
+    )
+  }
+  
+  return (
+    <Card className={classes.root}>
+        <SortedTabs>
         { 
           diasList && (type == 'delegate') &&
-          diasList.map((d,i)=> <Tab label={`${d.title} ${d.name}`} key={d.id} value={`${d.id}|dias`}/> )
+          diasList.map((d,i)=> {
+            const unreadMessages = dias[d.id].unreadMessages;
+            let label = `${d.title} ${d.name}`;
+            if (unreadMessages) {
+              label += `(${unreadMessages})`;
+            }
+            return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|dias`}></div>;
+          })
         }     
         {
           delegatesList &&
-          delegatesList.map((d,i)=> !(Number(d.id) === Number(id) && type==='delegate') && <Tab label={d.countryName} key={d.id} value={`${d.id}|delegate`}/> )
+          delegatesList.map((d,i)=> {
+            if (!(Number(d.id) === Number(id) && type==='delegate')){
+              const unreadMessages = delegates[d.id].unreadMessages;
+              let label = d.countryName;
+              if (unreadMessages) {
+                label += `(${unreadMessages})`;
+              }
+              return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|delegate`}></div>;
+            }
+          })
         }
-      </Tabs>      
+        </SortedTabs>
       <Formik
         validateOnChange={false} validateOnBlur={true}
         initialValues={{newMsg: ''}}
