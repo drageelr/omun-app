@@ -11,6 +11,8 @@ import { Formik, Form, Field } from 'formik'
 import { TextField } from 'formik-material-ui'
 import SendIcon from '@material-ui/icons/Send';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import NotificationBadge from 'react-notification-badge';
+import {Effect} from 'react-notification-badge';
 import Timestamp from 'react-timestamp';
 
 const useStyles = makeStyles((theme) => ({
@@ -89,6 +91,17 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
     }
   }
 
+  function NotifBadge(props) {
+    return (
+      <div {...props} style={{minWidth: 0, padding: 0, fontSize: 12}}>
+        <div style={{marginLeft: 20, textAlign: 'left'}}>
+          {props.children}
+        </div>
+        <NotificationBadge style={{position: 'relative', minWidth: 0, float: 'right', marginRight: 10}} count={props.um}/>
+      </div>
+    )
+  }
+
   function SortedTabs({children}) {  
     return  (
       <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
@@ -98,7 +111,10 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
         {
           React.Children.toArray(children) // Sort and render the children based on unread messages
           .sort((t1, t2) => (t2.props.um - t1.props.um))
-          .map(div => <Tab label={div.props.label} value={div.props.value}/>)
+          .map(div => (
+            <Tab label={div.props.label} value={div.props.value} um={div.props.um} component={NotifBadge}/>
+
+          ))
         }
       </Tabs>
     )
@@ -112,9 +128,9 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
           diasList.map((d,i)=> {
             const unreadMessages = dias[d.id].unreadMessages;
             let label = `${d.title} ${d.name}`;
-            if (unreadMessages) {
-              label += ` (${unreadMessages})`;
-            }
+            // if (unreadMessages) {
+            //   label += ` (${unreadMessages})`;
+            // }
             return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|dias`}></div>;
           })
         }     
@@ -124,9 +140,9 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
             if (!(Number(d.id) === Number(id) && type==='delegate')){
               const unreadMessages = delegates[d.id].unreadMessages;
               let label = d.countryName;
-              if (unreadMessages) {
-                label += `(${unreadMessages})`;
-              }
+              // if (unreadMessages) {
+              //   label += `(${unreadMessages})`;
+              // }
               return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|delegate`}></div>;
             }
           })
