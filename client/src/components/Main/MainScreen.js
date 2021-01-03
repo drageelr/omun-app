@@ -43,6 +43,8 @@ export default function MainScreen() {
     let [connectedAdmins, setConnectedAdmins] = useState({});
     let [logs, setLogs] = useState([]);
     let [msgCounter, setMsgCounter] = useState(0);
+    let [singleMsg, setSingleMsg] = useState(false);
+    let [reachedTop, setReachedTop] = useState(false);
     const [theirId, setTheirId] = React.useState('');
     let [info, setInfo] = useState({});
     let [userState, setUserState] = useState({});
@@ -273,9 +275,10 @@ export default function MainScreen() {
         console.log('RES|del-chat-fetch|DEL:', res);
         const chatId = `${res.delegateId}|delegate`; //fetched chat with this delegate 
         const fetchedChatMsgs = res.chat.map(chatMsg => ({...chatMsg, senderId: chatMsg.senderDelegateId, senderType: 'delegate'}));
-        console.log(chatId, fetchedChatMsgs);
+        setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
+        setSingleMsg(false);
         setMsgCounter(++msgCounter);
     }
 
@@ -334,9 +337,10 @@ export default function MainScreen() {
             }
             return chatMsg;
         });
-        console.log(chatId, fetchedChatMsgs);
+        setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
+        setSingleMsg(false);
         setMsgCounter(++msgCounter);
     }
 
@@ -374,9 +378,11 @@ export default function MainScreen() {
             }
             return chatMsg;
         });
-        console.log(chatId, fetchedChatMsgs);
+        
+        setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
+        setSingleMsg(false);
         setMsgCounter(++msgCounter);
     }
 
@@ -445,7 +451,6 @@ export default function MainScreen() {
         else if (Number(user.id) == delegateId && user.type == 'delegate') {
             moreAttributes.theirChatId = `${diasId}|dias`;
         }
-
         pushChatMsg({ id, message, timestamp, ...moreAttributes });
     }
 
@@ -457,6 +462,7 @@ export default function MainScreen() {
         }
         chats[theirChatId].push(chatMsg);
         setChats(chats);
+        setSingleMsg(true);
         setMsgCounter(++msgCounter); // to trigger the chat to update
     }
 
@@ -1116,8 +1122,10 @@ export default function MainScreen() {
                             delegatesList={info.delegatesList}
                             currentChat={chats[theirId]}
                             setChats={setChats}
-                            theirId={theirId}
-                            setTheirId={setTheirId}
+                            singleMsg={singleMsg}
+                            reachedTop={reachedTop}
+                            chatId={theirId}
+                            setChatId={setTheirId}
                             msgCounter={msgCounter}
                             sendMsg={sendMsg}
                             fetchChat={fetchChat}

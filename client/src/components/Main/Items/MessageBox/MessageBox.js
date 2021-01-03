@@ -10,6 +10,7 @@ import {Card, Paper, List} from '@material-ui/core'
 import { Formik, Form, Field } from 'formik'
 import { TextField } from 'formik-material-ui'
 import SendIcon from '@material-ui/icons/Send';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Timestamp from 'react-timestamp';
 
 const useStyles = makeStyles((theme) => ({
@@ -57,25 +58,41 @@ function splitIdType(str) {
   return {id: Number(idType[0]), type: idType[1]};
 }
 
-export default function MessageBox({id, type, currentChat, theirId, setTheirId, sendMsg, fetchChat, msgCounter, dias, delegates, diasList, delegatesList}) {
+export default function MessageBox({id, type, singleMsg, reachedTop, currentChat, chatId, setChatId, sendMsg, fetchChat, msgCounter, dias, delegates, diasList, delegatesList}) {
   const classes = useStyles();
   const chatContainer = React.createRef();
+  const [fetching, setFetching] = useState(true);
 
   function handleChange(event, newUser) {
-    setTheirId(newUser); //has id, type both
+    setChatId(newUser); //has id, type both
     fetchChat(newUser);
   };
 
   useEffect(() => {
     // triggers react state update whenever their is a message
-    const scroll = chatContainer.current.scrollHeight - chatContainer.current.clientHeight;
-    chatContainer.current.scrollTo(0, scroll);
+    if (singleMsg) {
+      chatContainer.current.scrollTo(0, chatContainer.current.scrollHeight); // scroll to end
+    }
+    else if (!reachedTop) { //fetch multiple and top not reached
+      chatContainer.current.scrollTo(0, chatContainer.current.clientHeight+500);
+    }
+    setFetching(false);
   }, [msgCounter]);
+  
+  function handleScroll(e) {
+    let element = e.target;
+    if (element.scrollTop===0) {
+      if (!reachedTop) {
+        setFetching(true);
+        setTimeout(() => fetchChat(chatId), 500);
+      }
+    }
+  }
 
   return (
     <Card className={classes.root}>
       <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
-        value={theirId} 
+        value={chatId} 
         onChange={handleChange} 
         className={classes.tabs} >
         
@@ -99,7 +116,7 @@ export default function MessageBox({id, type, currentChat, theirId, setTheirId, 
           return errors
         }}
         onSubmit={(values, {setSubmitting, resetForm}) => {
-            const userObj = splitIdType(theirId);
+            const userObj = splitIdType(chatId);
             const message = values.newMsg;
             sendMsg(Number(userObj.id), userObj.type, message);
             setSubmitting(false);
@@ -108,7 +125,13 @@ export default function MessageBox({id, type, currentChat, theirId, setTheirId, 
       >
         {({ submitForm}) => (
           <Form>
-            <Box ref={chatContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
+            <Box onScroll={ handleScroll } ref={chatContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
+              {
+                fetching && !reachedTop &&
+                <Box style={{marginTop: 10, display: 'flex', justifyContent: 'center'}}>
+                  <CircularProgress size={30} color="secondary" />
+                </Box>
+              }
               {
                 currentChat &&
                 currentChat.map((msg, index) => {
@@ -127,12 +150,12 @@ export default function MessageBox({id, type, currentChat, theirId, setTheirId, 
               }
             </Box>
             {
-              theirId && delegates && dias  &&
+              chatId && delegates && dias  &&
               <List className={classes.sendBar}>
                   <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" 
-                  label={ 'Send chat message to ' + (splitIdType(theirId).type == 'delegate' ? 
-                  delegates[splitIdType(theirId).id].countryName 
-                  : dias[splitIdType(theirId).id].name)}
+                  label={ 'Send chat message to ' + (splitIdType(chatId).type == 'delegate' ? 
+                  delegates[splitIdType(chatId).id].countryName 
+                  : dias[splitIdType(chatId).id].name)}
                   />
                   <Button variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
               </List>

@@ -12,8 +12,8 @@ import MoonLoader from "react-spinners/MoonLoader";
 import Button from '@material-ui/core/Button';
 
 function Login({setIsLoggedIn, setUser}){
-    const selectedBGStyle = {backgroundColor: "goldenrod", color:"white"}
-    const normalBGStyle = {backgroundColor: "sienna", color:"white"}
+    const selectedBGStyle = {backgroundColor: '#aa2e25', color: 'white'}
+    const normalBGStyle = {backgroundColor: '#f44336', color:"white"}
     const [userType, setUserType] = React.useState("delegate")
     const override = css`
     display: block;
