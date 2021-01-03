@@ -12,6 +12,7 @@ import { Button } from '@material-ui/core'
 
 let socket;
 let user;
+let tempEmission = [];
 
 export default function MainScreen(){
     let [chats, setChats] = useState({});
@@ -27,7 +28,6 @@ export default function MainScreen(){
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let [notifications, setNotifications] = useState([]);
-    let tempEmission = [];
     let tempSocket = {};
     let info = {};
     let session = {};
@@ -160,12 +160,13 @@ export default function MainScreen(){
         // }
         /* 21 */tempEmission.push({event: 'REQ|session-edit', req: getSessionEdit()}); // Access: ["dias"]
         /* 22 */tempEmission.push({event: 'REQ|session-timer', req: getSessionTimer()}); // Access: ["dias"]
-
+            console.log("puushed phuddi", tempEmission.length)
     }, []);
 
 
     function tempOnClick() {
         let findex = prompt("Enter Socket Emit Function Number");
+        console.log(tempEmission.length)
         if (findex >= tempEmission.length || findex < 0) { alert("Out Of Bounds"); return; }
         let req = tempEmission[findex].req;
         let event = tempEmission[findex].event;

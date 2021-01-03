@@ -1,11 +1,14 @@
 import React, {useState, useEffect} from 'react'
 import './InformationBar.css'
 // import { CountdownCircleTimer } from 'react-countdown-circle-timerTopic';
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
+
 import { Button, Card, CardContent, List, ListItem, ButtonGroup } from '@material-ui/core';
 import EdiText from 'react-editext'
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
+import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -14,6 +17,31 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
+
+/** 
+ * Timer Toggle (Function)
+ * When Start/Stop/Reset is pressed call this function
+ * Case Speaker Timer
+ *    speakerTimer: true
+ *    toggle: 0->Reset 1->Stop 2->Start
+ * Case Topic Timer
+ *    speakerTimer: false
+ *    toggle: 0->Reset
+ * */
+
+/** 
+ * Timer (State)
+ *    speakerToggle: 0/1/2
+ *    topicToggle: 0
+ * Functionality:
+ *    speakerToggle:
+ *        0: Speaker Timer's current value = session.speakerTime AND Topic Timer's current value increment the difference (make sure does not exceed session.topicTime)
+ *        1: Stop Speaker and Topic Timers
+ *        2: Start Speaker and Topic Timers
+ *    topicToggle:
+ *        0: Topic Timer's current value = session.topicTime
+*/
+
 
 export default function InformationBar ({session, timer, setSessionType, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
   const classes = useStyles();
@@ -31,7 +59,7 @@ export default function InformationBar ({session, timer, setSessionType, deleteS
   const [gsl, setgsl] = useState(false);
   const [idle, setidle] = useState(true);
 
-  console.log("session, timerTopic: ", session);
+  // console.log("session, timerTopic: ", session);
 
   React.useEffect(() => {
     const timerTopic = setInterval(() => {
@@ -105,82 +133,108 @@ export default function InformationBar ({session, timer, setSessionType, deleteS
     <div >
       <Card style={{backgroundColor: "#111111", height:"38vh", overflowY:"auto"}}>
         <CardContent style={{color: "#FFFFFF"}}>
-          <List style={{ display: 'flex', flexDirection: 'row', padding: 0 }}>
-            <ListItem alignItems='flex-start' className="sessionDetails">
-              <h5>Committee Name:</h5>
+          <Grid container justify="center" direction="row" alignItems="center" item xs={12} spacing={3}>
+            <Grid item xs>
+              <p>Committee Name:</p>
               {session.committeeName} 
-              <h5>Topic:</h5>
+              <p>Topic:</p>
               {session.topicName}
-                <CancelIcon/>
-                <EdiText showButtonsOnHover type="text" onSave={handleTopicChange}/>
-              <h5>Speaker:</h5>
+                <CancelIcon 
+                  onClick={()=>deleteSessionTopic}
+                />
+              <p>Speaker:</p>
               {session.speakerName}
-                <CancelIcon/>
-                <EdiText showButtonsOnHover type="text" onSave={handleTopicChange} />
-            </ListItem>
+                <CancelIcon
+                onClick={()=>deleteSessionSpeaker}
+                />
+            </Grid>
 
             {/* Button Color basis on session type */}
+            
+            <Grid item xs={2}>
+            <ButtonGroup orientation="vertical">
             <Button 
             variant={session.type === "MOD" ?  "contained" : "outlined"} 
-            size="medium"
+            size="small"
             onClick={()=>setSessionType("MOD")} 
             color="primary">
             mod</Button>
 
             <Button variant={session.type === "UNMOD" ?  "contained" : "outlined"} 
-            size="medium" 
+            size="small" 
             color="primary"
             onClick={()=>setSessionType("UNMOD")}
             >unMod</Button>
 
             <Button 
             variant={session.type === "GSL" ?  "contained" : "outlined"} 
-            size="medium" 
+            size="small" 
             color="secondary"
             onClick={()=>setSessionType("GSL")}
             >gsl</Button>
             
             <Button 
             variant={session.type === "IDLE" ?  "contained" : "outlined"} 
-            size="medium" 
+            size="small" 
             color="secondary"
             onClick={()=>setSessionType("IDLE")}
             >idle</Button>
+            </ButtonGroup>
+            </Grid>
 
-            <ListItem className="sessionDetails">
-                <h6>Time Left (Speaker)</h6> 
-                {/* <CountdownCircleTimer
-                    key={key}
-                    isPlaying={timerTopic}
-                    size={80}
-                    duration={duration}
-                    colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
-                >
+            <Grid item xs={4}>
+            {/* <ListItem className="sessionDetails"> */}
+                <div style={{marginLeft: '3vw'}}>Time Left (Speaker)</div> 
+                <div style={{marginLeft: '5vw'}}>
+                  <CountdownCircleTimer
+                      key={key}
+                      isPlaying={timerTopic}
+                      size={80}
+                      duration={duration}
+                      colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
+                  >
+                    {/* {
+                      timer.speakerToggle === 0 ? {
+                        remainingTime = duration
+                        setkey(key+1)
+                      } : {({ remainingTime }) => `${parseInt(remainingTime/60)}:${remainingTime%60}`} 
+                    } */}
+                    {/* timer.speakerToggle === 1 && 
+                        {setTimerTopic(!timerTopic)}
+
+                        timer.speakerToggle === 2 && 
+                        {setTimerTopic(!timerTopic)}
+                    
+                    */}
                     {({ remainingTime }) => `${parseInt(remainingTime/60)}:${remainingTime%60}`}
-                </CountdownCircleTimer> */}
+                  </CountdownCircleTimer>
+                </div>
+                <ButtonGroup style={{marginTop: 10}}>
+                    {   
+                        !timerTopic ? 
+                            <Button size="small" style={{padding: 5}} onClick={handletimer} color="secondary">Start</Button> :
+                            <Button size="small" style={{padding: 5}} onClick={handletimer} color="secondary">Pause</Button>
+                    }
+                    <Button size="small" style={{padding: 5}} onClick={handlereset} color="secondary">reset</Button>
+                    <Button size="small" style={{padding: 5}} onClick={handleDuration} color="secondary">duration</Button>
+                </ButtonGroup>
+                
+                <br/>
+                <br/>
+                <h6 >Time Left (Topic)</h6> 
+                <LinearProgress variant="determinate" value={progress}/>
                 <ButtonGroup >
                     {   
                         !timerTopic ? 
-                            <Button onClick={handletimer} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>Start</Button> :
-                            <Button onClick={handletimer} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>Pause</Button>
+                            <Button size="small" onClick={handletimer} color="secondary">Start</Button> :
+                            <Button size="small" onClick={handletimer} color="secondary">Pause</Button>
                     }
-                    <Button onClick={handlereset} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>reset</Button>
-                    <Button onClick={handleDuration} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>duration</Button>
+                    <Button size="small" onClick={handlereset} color="secondary">reset</Button>
+                    <Button size="small" onClick={handleDuration} color="secondary">duration</Button>
                 </ButtonGroup>
-                <br></br>
-                <h6 style={{marginTop:'5px'}}>Time Left (Topic)</h6> 
-                <LinearProgress variant="determinate" value={progress} style={{width:'80%', height:'10px',borderRadius:'5px'}}/>
-                <ButtonGroup >
-                    {   
-                        !timerTopic ? 
-                            <Button onClick={handletimer} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>Start</Button> :
-                            <Button onClick={handletimer} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>Pause</Button>
-                    }
-                    <Button onClick={handlereset} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>reset</Button>
-                    <Button onClick={handleDuration} style={{backgroundColor:'grey',width:'30%',marginTop:'5px'}}>duration</Button>
-                </ButtonGroup>
-            </ListItem>
-          </List>
+            {/* </ListItem> */}
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
     </div>
