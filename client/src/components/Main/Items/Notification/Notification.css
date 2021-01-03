@@ -2,12 +2,23 @@
    color: white;
 }
 
-.NotifcardBody, .NotifBody{
-   height: 15vh;
-}
-
 .NotifHeader{
    background-color:#aa2e25 !important;
    color: white;
-   height: 6vh;
+}
+
+
+.NotifHeaderText{
+   font-size: 1rem;
+}
+
+
+.NotifTextInit{
+   font-size: 0.8rem;
+   color: '#ffcf33' !important;
+}
+
+.NotifTextMsg{
+   font-size: 0.8rem;
+   margin-left: 3;
 }

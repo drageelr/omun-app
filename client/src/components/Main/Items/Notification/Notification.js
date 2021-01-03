@@ -1,6 +1,6 @@
 import React from 'react';
 import './Notification.css'
-import { Card, CardContent, CardHeader, List, ListItem, ListItemText} from '@material-ui/core';
+import { Card, CardContent, CardHeader, List, ListItem, ListItemText, Paper, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import AddIcon from '@material-ui/icons/Add';
 import SendIcon from '@material-ui/icons/Send';
@@ -10,12 +10,16 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import IconButton from '@material-ui/core/IconButton';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
+import Timestamp from 'react-timestamp';
+
 
 function Notification({notifications, sendNotification, fetchNotifications, type}) {
     const [open, setOpen] = React.useState(false);
     const [message, setMessage] = React.useState("");
+    const notifContainer = React.createRef();
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -24,57 +28,89 @@ function Notification({notifications, sendNotification, fetchNotifications, type
         setOpen(false);
     };
 
-    const contentStyle = {padding:0, paddingTop: 5, height:'20vh', overflowY: "scroll"};
+    const contentStyle = {padding:0, paddingTop: 5, height:'12vh', overflowY: "scroll"};
     const notifItemStyle = {padding:0, paddingLeft: 10};
     
-    return ( 
-        <Card className="NotifBody" style={{backgroundColor: "#111111"}}>
-            <CardHeader titleTypographyProps={{variant:'h6' }} className="NotifHeader" title="Notifications"/>
-            {   
+    React.useEffect(() => {
+        notifContainer.current.scrollTo(0, notifContainer.current.scrollHeight-notifContainer.current.clientHeight);
+    }, [notifications])
+
+    function NotifHeader(props) {
+        return (
+            <div {...props} style={{height: '4vh'}}>
+                {props.children}
+                {   
                 type == "dias" &&
-                <AddIcon style={{float: 'right', backgroundColor: '#ffffff'}} onClick={handleClickOpen}/>
-            }
+                    <IconButton style={{marginRight: -10, padding: 5}} onClick={handleClickOpen}>
+                        <AddIcon style={{color: 'white', fontSize: '1.3rem'}}/>
+                    </IconButton>
+                }
+            </div>
+        )
+    }
+
+    return ( 
+        <Card style={{backgroundColor: "#111111"}}>
+            <CardHeader className="NotifHeader" title={<div className="NotifHeaderText">Notifications</div>} component={NotifHeader}/>
+            
             <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Message Notification</DialogTitle>
-                <DialogContent>
-                <DialogContentText>
-                    Enter the Message to notify the participants
-                </DialogContentText>
-                <Formik 
-                    validateOnChange={false} validateOnBlur={true}
-                    initialValues={{newNotif: ''}}
-                    validate={values => {
-                    const errors = {}
-                    if (values.newNotif.length > 250) {
-                        errors.newMsg = 'Please do not exceed 250 characters.'
-                    }
-                    return errors
-                    }}
-                    onSubmit={(values, {setSubmitting}) => {
-                        const newNotif = values.newNotif;
-                        console.log(newNotif);
-                        sendNotification(newNotif);
-                        setSubmitting(false);
-                        setOpen(false);
-                    }}
-                >
-                    {({ submitForm}) => (
-                    <Form>
-                        <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="newNotif" label={`Send notification`}/>
-                        <Button alignRight variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
-                    </Form>
-                    )}
-                </Formik>
+                <DialogTitle id="form-dialog-title">Add Notification</DialogTitle>
+                <DialogContent style={{marginTop: -20}}>
+                    <DialogContentText>
+                        Enter a message to notify session particpants
+                    </DialogContentText>
+                    <Formik 
+                        validateOnChange={false} validateOnBlur={true}
+                        initialValues={{newNotif: ''}}
+                        validate={values => {
+                        const errors = {}
+                        if (values.newNotif.length > 250) {
+                            errors.newNotif = 'Please do not exceed 250 characters.'
+                        }
+                        return errors
+                        }}
+                        onSubmit={(values, {setSubmitting}) => {
+                            const newNotif = values.newNotif;
+                            console.log(newNotif);
+                            sendNotification(newNotif);
+                            setSubmitting(false);
+                            setOpen(false);
+                        }}
+                    >
+                        {({ submitForm}) => (
+                        <Form>
+                            <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="newNotif" label={`Send notification`}/>
+                            <Button
+                            style={{marginTop: 5, float: 'right', marginBottom: 10}}
+                            alignRight 
+                            variant="contained" 
+                            endIcon={<SendIcon fontSize="small"/>} 
+                            color="primary" 
+                            onClick={submitForm}
+                            >Send</Button>
+                        </Form>
+                        )}
+                    </Formik>
                 </DialogContent>
             </Dialog>
             
 
-            <CardContent className="NotifcardBody" onClick={fetchNotifications} style={contentStyle}>
+            <CardContent ref={notifContainer} onClick={fetchNotifications} style={contentStyle}>
                 {
                     notifications && 
                     notifications.map(({diasName, id, message, timestamp},i)=> (
                         <ListItem style={notifItemStyle} className="Notif-Text" key={i} dense>
-                            <ListItemText key={id} primary={`${diasName} [${timestamp}]: ${message}`} />
+                            {/* <div className='NotifTextInit'>{`${diasName} [${timestamp}]:`}</div>
+                            <div className='NotifTextMsg'>{message}</div> */}
+                            <Paper key={i} style={{backgroundColor: '#ddb82f', marginBottom: 5, width: '46.7vw'}}>
+                                <Typography style={{margin: 5, fontSize: '0.9rem', fontWeight: 500, wordWrap: "break-word"}}>
+                                    {message}
+                                </Typography>
+                                <Typography style={{margin: 4, marginTop: 1, marginLeft: 5, fontSize: 10}}>
+                                    {`${diasName} `}
+                                    [<Timestamp relative date={new Date(timestamp)}/>]
+                                </Typography>
+                            </Paper>
                         </ListItem>
                     ))
                 }  

@@ -8,7 +8,7 @@ var { errorHandler } = require('./socketIOerrorhandler');
 var { validate } = require('./socketIOvalidator');
 var { validateAccess } = require('./socketIOaccessvalidator');
 var IOreqhandlers = require('./socketIOreqhandlers');
-const { namespaceUsers } = require('./socketIOusers');
+const { namespaceUsers, addUser, deleteUser, fetchSocketId, fetchUsers, createNamespaceObj, deleteNamespaceObj, attachFunc } = require('./socketIOusers');
 
 const reqEvents = {
     // Chat Management
@@ -122,18 +122,20 @@ async function sendStartInfo(socket) {
 
         let connectedDelegates = [];
         let conDel = [];
-        if (namespaceUsers[nsp.name].delegate){
-            conDel = Object.keys(namespaceUsers[nsp.name].delegate);
-        }
+        // if (namespaceUsers[nsp.name].delegate){
+        //     conDel = Object.keys(namespaceUsers[nsp.name].delegate);
+        // }
+        conDel = Object.keys(fetchUsers(nsp.name, 'delegate'));
         for (let i = 0; i < conDel.length; i++) {
             connectedDelegates.push(conDel[i]);
         }
 
         let connectedAdmins = {};
         let conAdmins = [];
-        if (namespaceUsers[nsp.name].admin) {
-            conAdmins = Object.values(namespaceUsers[nsp.name].admin);
-        }
+        // if (namespaceUsers[nsp.name].admin) {
+        //     conAdmins = Object.values(namespaceUsers[nsp.name].admin);
+        // }
+        conAdmins = Object.keys(fetchUsers(nsp.name, 'admin'));
         for (let i = 0; i < conAdmins.length; i++) {
             let userDetails = nsp.sockets.get(conAdmins[i]).userObj;
             connectedAdmins[userDetails.id] = hFuncs.duplicateObject(userDetails, ['name']);
@@ -141,9 +143,10 @@ async function sendStartInfo(socket) {
 
         let connectedDias = [];
         let conDias = [];
-        if (namespaceUsers[nsp.name].dias) {
-            conDias = Object.keys(namespaceUsers[nsp.name].dias);
-        }
+        // if (namespaceUsers[nsp.name].dias) {
+        //     conDias = Object.keys(namespaceUsers[nsp.name].dias);
+        // }
+        conDias = Object.keys(fetchUsers(nsp.name, 'dias'));
         for (let i = 0; i < conDias.length; i++) {
             connectedDias.push(conDias[i]);
         }
@@ -197,39 +200,63 @@ function attachEventListeners(socket) {
 
 function createNameSpace(committeeId) {
     try {
-        let namespaces = Object.keys(namespaceUsers);
+        // let namespaces = Object.keys(namespaceUsers);
 
-        for (let i = 0; i < namespaces.length; i++) {
-            if (namespaces[i] == "/" + committeeId) { throw new customError.DuplicateResourceError("committee session already in progress"); }
-        }
+        // for (let i = 0; i < namespaces.length; i++) {
+        //     if (namespaces[i] == "/" + committeeId) { throw new customError.DuplicateResourceError("committee session already in progress"); }
+        // }
 
-        namespaceUsers["/" + committeeId] = {};
+        // namespaceUsers["/" + committeeId] = {};
+        let namespaceCreated = createNamespaceObj('/'+committeeId);
+        if (!namespaceCreated) { throw new customError.DuplicateResourceError("committee session already in progress"); }
         
         var { io } = require('../../bin/www');
         let nsp = io.of("/" + committeeId);
 
+        let funcAttached = attachFunc('/' + committeeId);
+        if (!funcAttached) { return undefined; }
+
         nsp.on('connection', async socket => {
             try {
                 socket.on('disconnect', async (reason) => {
-                    if (namespaceUsers["/" + committeeId]) {
-                        let user = socket.userObj;
-                        if (user) {
-                            if (namespaceUsers["/" + committeeId][user.type]) {
-                                io.of("/" + committeeId).emit('RES|session-con', {
-                                    type: user.type,
-                                    userId: user.id,
-                                    connected: false
-                                });
-                                if (user.type == "delegate") {
-                                    let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
-                                    if (occupiedSeat.length) {
-                                        let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
-                                        if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
-                                    }
-                                }
-                                delete namespaceUsers["/" + committeeId][user.type][user.id];
+                    // if (namespaceUsers["/" + committeeId]) {
+                    //     let user = socket.userObj;
+                    //     if (user) {
+                    //         if (namespaceUsers["/" + committeeId][user.type]) {
+                    //             io.of("/" + committeeId).emit('RES|session-con', {
+                    //                 type: user.type,
+                    //                 userId: user.id,
+                    //                 connected: false
+                    //             });
+                    //             if (user.type == "delegate") {
+                    //                 let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
+                    //                 if (occupiedSeat.length) {
+                    //                     let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
+                    //                     if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
+                    //                 }
+                    //             }
+                    //             delete namespaceUsers["/" + committeeId][user.type][user.id];
+                    //             //deleteNS
+                    //         }
+                    //     }
+                    // }
+                    let user = socket.userObj;
+                    if (user) {
+                        io.of("/" + committeeId).emit('RES|session-con', {
+                            type: user.type,
+                            userId: user.id,
+                            connected: false
+                        });
+                        
+                        if (user.type == "delegate") {
+                            let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
+                            if (occupiedSeat.length) {
+                                let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
+                                if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
                             }
                         }
+                        let userDeleted = deleteUser("/" + committeeId, user.type, user.id);
+                        console.log(fetchSocketId("/" + committeeId, user.type, user.id));
                     }
                     console.log(socket.id, "DISCONNECTED:", reason);
                 });
@@ -252,15 +279,17 @@ function createNameSpace(committeeId) {
                     if (reqUser[0].committeeId != givenCommitteeId) { throw new customError.ForbiddenAccessError("you cannot connect with this committee"); }
                 }
 
-                if(!namespaceUsers[nsp.name][userObj.type]) { namespaceUsers[nsp.name][userObj.type] = {}; }
+                // if(!namespaceUsers[nsp.name][userObj.type]) { namespaceUsers[nsp.name][userObj.type] = {}; } //addNS
                 
-                let userIdsKey = Object.keys(namespaceUsers[nsp.name][userObj.type])
-                for (let i = 0; i < userIdsKey.length; i++) {
-                    if (userObj.id == userIdsKey[i]) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
-                }
+                // let userIdsKey = Object.keys(namespaceUsers[nsp.name][userObj.type])
+                // for (let i = 0; i < userIdsKey.length; i++) {
+                //     if (userObj.id == userIdsKey[i]) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
+                // }
                 
-                namespaceUsers[nsp.name][userObj.type][userObj.id] = socket.id;
-                
+                // namespaceUsers[nsp.name][userObj.type][userObj.id] = socket.id; //addNS
+                let userAdded = addUser(nsp.name, userObj.type, userObj.id, socket.id);
+                console.log("userAdded", userAdded);
+                if (!userAdded) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
                 socket.userObj = {
                     type: userObj.type,
                     id: userObj.id,
@@ -288,6 +317,8 @@ function createNameSpace(committeeId) {
                     connected: true
                 });
 
+
+
             } catch(err) {
                 errorHandler(socket, err);
                 socket.disconnect(true);
@@ -302,25 +333,30 @@ function createNameSpace(committeeId) {
 
 async function stopNameSpace(committeeId) {
     try {
-        let namespaces = Object.keys(namespaceUsers);
+        // let namespaces = Object.keys(namespaceUsers);
         
-        let n = 0;
-        for ( ; n < namespaces.length; n++) {
-            if (namespaces[n] == "/" + committeeId) { break; }
-        }
-        if (n == namespaces.length) { throw new customError.NotFoundError("no running session for this committee found"); }
+        // let n = 0;
+        // for ( ; n < namespaces.length; n++) {
+        //     if (namespaces[n] == "/" + committeeId) { break; }
+        // }
+        // if (n == namespaces.length) { throw new customError.NotFoundError("no running session for this committee found"); }
 
         var { io } = require('../../bin/www');
-        let sockets = io.of("/" + committeeId).sockets;
+        // let sockets = io.of("/" + committeeId).sockets;
 
         await db.query('UPDATE session SET active = 0 WHERE active = 1 AND committeeId = ' + committeeId);
 
+        let sockets = io.of("/" + committeeId).sockets;
         let sKeys = Object.keys(sockets);
         for (let i = 0; i < sKeys.length; i++) {
             sockets[sKeys[i]].disconnect(true);
         }
 
-        delete namespaceUsers["/" + committeeId];
+        // delete namespaceUsers["/" + committeeId]; //deleteNS
+        let namespaceDeleted = deleteNamespaceObj('/'+committeeId);
+        if (!namespaceDeleted) { throw new customError.NotFoundError("no running session for this committee found"); }
+
+        // delete io.nsps['/'+committeeId];
 
         return undefined;
     } catch(err) {

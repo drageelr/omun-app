@@ -153,8 +153,8 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
         initialValues={{newMsg: ''}}
         validate={values => {
           const errors = {}
-          if (values.newMsg.length > 100) {
-            errors.newMsg = 'Please do not exceed 100 characters.'
+          if (values.newMsg.length > 250) {
+            errors.newMsg = 'Please do not exceed 250 characters.'
           }
           return errors
         }}
@@ -181,7 +181,7 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
                   const isTheirMsg = !(msg.senderId == id && msg.senderType == type); //message id type does not match mine
                   return (
                   <Paper key={index} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
-                    <Typography style={{margin: 5, fontWeight: 500}}>
+                    <Typography style={{margin: 5, fontWeight: 500, wordWrap: "break-word", maxWidth: '30vw'}}>
                       {msg.message}
                     </Typography>
                     <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>

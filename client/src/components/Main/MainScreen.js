@@ -85,7 +85,7 @@ export default function MainScreen() {
         // console.log(userSS);
         user = userSS;
         setUserState(userSS);
-        socket = io(`${window.serverURI}/${committeeId}?token=${token}`);
+        socket = io(`${window.serverURI}/${committeeId}?token=${token}`, {forceNew: true});
         tempSocket = socket;
 
         // Emitted by Server on Join
