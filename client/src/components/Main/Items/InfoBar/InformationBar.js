@@ -31,7 +31,7 @@ export default function InformationBar ({session, timer, setSessionType, deleteS
   const [gsl, setgsl] = useState(false);
   const [idle, setidle] = useState(true);
 
-  console.log("session, timerTopic: ", session);
+//   console.log("session, timerTopic: ", session);
 
   React.useEffect(() => {
     const timerTopic = setInterval(() => {
