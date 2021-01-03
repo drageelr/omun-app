@@ -49,8 +49,10 @@ export default function MainScreen() {
     let [delegatesState, setDelegates] = useState({});
     let [logs, setLogs] = useState([]);
     let [msgCounter, setMsgCounter] = useState(0);
-    let [singleMsg, setSingleMsg] = useState(false);
+    let [singleMsg, setSingleMsg] = useState(true); //scroll to bottom init
+    let [singleNotif, setSingleNotif] = useState(true);
     let [reachedTop, setReachedTop] = useState(false);
+    let [reachedNotifTop, setReachedNotifTop] = useState(false);
     let [currentChatIdState, setCurrentChatId] = React.useState('');
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
@@ -82,7 +84,6 @@ export default function MainScreen() {
     React.useEffect(()=>{
         const { token, committeeId } = sessionStorage;
         let userSS = JSON.parse(sessionStorage.getItem('user')); //also extract user
-        // console.log(userSS);
         user = userSS;
         setUserState(userSS);
         socket = io(`${window.serverURI}/${committeeId}?token=${token}`, {forceNew: true});
@@ -192,13 +193,11 @@ export default function MainScreen() {
         // }
         /* 21 */tempEmission.push({event: 'REQ|session-edit', req: getSessionEdit()}); // Access: ["dias"]
         /* 22 */tempEmission.push({event: 'REQ|session-timer', req: getSessionTimer()}); // Access: ["dias"]
-            console.log("puushed phuddi", tempEmission.length)
     }, []);
 
 
     function tempOnClick() {
         let findex = prompt("Enter Socket Emit Function Number");
-        console.log(tempEmission.length)
         if (findex >= tempEmission.length || findex < 0) { alert("Out Of Bounds"); return; }
         let req = tempEmission[findex].req;
         let event = tempEmission[findex].event;
@@ -278,6 +277,7 @@ export default function MainScreen() {
         setConnectedDias(info.connectedDias);
         setConnectedDelegates(info.connectedDelegates);
         setConnected(true);
+        fetchNotifications();
     }
 
     function responseDelChatFetchDel(res) {
@@ -459,7 +459,6 @@ export default function MainScreen() {
         
         if (Number(user.id) == senderDelegateId) {
             theirChatId = `${recipientDelegateId}|delegate`;
-            console.log('comparison', currentChatId, theirChatId);
 
             if (msgNotYours && currentChatId !== theirChatId) {
                 delegates[recipientDelegateId].unreadMessages++;
@@ -468,7 +467,6 @@ export default function MainScreen() {
         }
         else if (Number(user.id) == recipientDelegateId) {
             theirChatId = `${senderDelegateId}|delegate`;
-            console.log('comparison', currentChatId, theirChatId);
 
             if (msgNotYours && currentChatId !== theirChatId) {
                 delegates[senderDelegateId].unreadMessages++;
@@ -502,7 +500,7 @@ export default function MainScreen() {
 
         if (Number(user.id) == diasId && user.type == 'dias') {
             theirChatId = `${delegateId}|delegate`;
-            console.log('comparison', currentChatId, theirChatId);
+
             if ( msgNotYours && currentChatId !== theirChatId ) {
                 delegates[delegateId].unreadMessages++;
                 setDelegates(delegates);
@@ -510,7 +508,7 @@ export default function MainScreen() {
         }
         else if (Number(user.id) == delegateId && user.type == 'delegate') {
             theirChatId = `${diasId}|dias`;
-            console.log('comparison', currentChatId, theirChatId);
+
             if ( msgNotYours && currentChatId !== theirChatId ) {
                 dias[diasId].unreadMessages++;
                 setDias(dias);
@@ -591,8 +589,9 @@ export default function MainScreen() {
         let fetchedNotifications = res.notifications.map(notif => {
             return {id: notif.id, diasName: info.dias[notif.diasId] ? info.dias[notif.diasId].title + ' ' + info.dias[notif.diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
         });
-        console.log('fetchedNotifs', fetchedNotifications);
+        setReachedNotifTop((fetchedNotifications.length == 0)); 
         notifications = fetchedNotifications.concat(notifications);
+        setSingleNotif(false);
         setNotifications(notifications);
     }
 
@@ -615,6 +614,7 @@ export default function MainScreen() {
         let diasName = info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A";
         notifications.push({id, diasName, message, timestamp});
         console.log('RES|notif-send', diasName, notifications);
+        setSingleNotif(true);
         setNotifications([...notifications]);
     }
 
@@ -1282,6 +1282,8 @@ export default function MainScreen() {
                     notifications={notifications}
                     sendNotification={sendNotification} 
                     fetchNotifications={fetchNotifications} 
+                    singleNotif={singleNotif}
+                    reachedNotifTop={reachedNotifTop}
                     type={userState.type}
                     />
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './Notification.css'
-import { Card, CardContent, CardHeader, List, ListItem, ListItemText, Paper, Typography } from '@material-ui/core';
+import { Card, CardContent, CardHeader, List, ListItem, ListItemText, Paper, Typography, Box, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import AddIcon from '@material-ui/icons/Add';
 import SendIcon from '@material-ui/icons/Send';
@@ -16,23 +16,41 @@ import { TextField } from 'formik-material-ui';
 import Timestamp from 'react-timestamp';
 
 
-function Notification({notifications, sendNotification, fetchNotifications, type}) {
+function Notification({notifications, sendNotification, reachedNotifTop, fetchNotifications, singleNotif, type}) {
     const [open, setOpen] = React.useState(false);
-    const [message, setMessage] = React.useState("");
     const notifContainer = React.createRef();
+    const [fetching, setFetching] = useState(true);
 
-    const handleClickOpen = () => {
+
+    function handleClickOpen() {
         setOpen(true);
     };
-    const handleClose = () => {
+
+    function handleClose() {
         setOpen(false);
     };
+
+    function handleScroll(e) {
+        let element = e.target;
+        if (element.scrollTop===0) {
+            if (!reachedNotifTop) {
+                setFetching(true);
+                setTimeout(() => fetchNotifications(), 500);
+            }
+        }
+    }
 
     const contentStyle = {padding:0, paddingTop: 5, height:'12vh', overflowY: "scroll"};
     const notifItemStyle = {padding:0, paddingLeft: 10};
     
     React.useEffect(() => {
-        notifContainer.current.scrollTo(0, notifContainer.current.scrollHeight-notifContainer.current.clientHeight);
+        if (singleNotif) {
+            notifContainer.current.scrollTo(0, notifContainer.current.scrollHeight-notifContainer.current.clientHeight);
+        }
+        else if(!reachedNotifTop) { //fetch multiple and top not reached
+            notifContainer.current.scrollTo(0, notifContainer.current.clientHeight+300);
+        }
+        setFetching(false);
     }, [notifications])
 
     function NotifHeader(props) {
@@ -95,13 +113,17 @@ function Notification({notifications, sendNotification, fetchNotifications, type
             </Dialog>
             
 
-            <CardContent ref={notifContainer} onClick={fetchNotifications} style={contentStyle}>
+            <CardContent ref={notifContainer} onScroll={handleScroll} onClick={fetchNotifications} style={contentStyle}>
+                {
+                    fetching && !reachedNotifTop &&
+                    <Box style={{margin: 4, display: 'flex', justifyContent: 'center'}}>
+                        <CircularProgress size={30} color="secondary" />
+                    </Box>
+                }
                 {
                     notifications && 
                     notifications.map(({diasName, id, message, timestamp},i)=> (
                         <ListItem style={notifItemStyle} className="Notif-Text" key={i} dense>
-                            {/* <div className='NotifTextInit'>{`${diasName} [${timestamp}]:`}</div>
-                            <div className='NotifTextMsg'>{message}</div> */}
                             <Paper key={i} style={{backgroundColor: '#ddb82f', marginBottom: 5, width: '46.7vw'}}>
                                 <Typography style={{margin: 5, fontSize: '0.9rem', fontWeight: 500, wordWrap: "break-word"}}>
                                     {message}

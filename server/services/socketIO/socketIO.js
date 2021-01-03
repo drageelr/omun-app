@@ -256,7 +256,6 @@ function createNameSpace(committeeId) {
                             }
                         }
                         let userDeleted = deleteUser("/" + committeeId, user.type, user.id);
-                        console.log(fetchSocketId("/" + committeeId, user.type, user.id));
                     }
                     console.log(socket.id, "DISCONNECTED:", reason);
                 });
@@ -288,7 +287,6 @@ function createNameSpace(committeeId) {
                 
                 // namespaceUsers[nsp.name][userObj.type][userObj.id] = socket.id; //addNS
                 let userAdded = addUser(nsp.name, userObj.type, userObj.id, socket.id);
-                console.log("userAdded", userAdded);
                 if (!userAdded) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
                 socket.userObj = {
                     type: userObj.type,
