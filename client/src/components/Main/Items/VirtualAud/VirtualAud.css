@@ -8,12 +8,12 @@
     grid-template-columns: repeat(10,1fr);
     grid-template-rows: repeat(7,1fr);
     grid-gap: 3%;
-    height: 30vh;
+    height: 32vh;
 }
 
 
 .item{
-    height: 5vh;
+    height: 4.2vh;
     width: 3.3vw;
     border: 3.5px solid #E2AC26;
     color: white; 

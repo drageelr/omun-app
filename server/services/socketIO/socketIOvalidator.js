@@ -98,7 +98,7 @@ const validations = {
         seatId: {
             type: Number,
             required: true,
-            size: { min: 1, max: 50 }
+            size: { min: 1, max: 60 }
         }
     }),
     'seat-unsit': undefined,

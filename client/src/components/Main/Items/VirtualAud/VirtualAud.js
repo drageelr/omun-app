@@ -37,41 +37,38 @@ function Seat({isEmpty, placard, countryName, imageName, id, onClick}) {
 }
 
 export default function VirtualAud({id, type, seats, placard, delegates, seated, sit, unsit, togglePlacard}) {
-    let initSeats = Array(50).fill({id: -1, delegateId: null, imageName: '', personality: '', placard: false}) //country == country image countryName here
-    const [placement, setPlacement] = useState(initSeats);
+    const [placement, setPlacement] = useState([]);
     const [placardsRaised, setPlacardsRaised] = useState(0);
     const [seatedCount, setSeatedCount] = useState(0);
 
 
     React.useEffect(() => {
-        if (delegates) {
-            let numPlacards = 0;
-            let numSeated = 0;
-            let updatedSeats = seats.map(seat => {
-                if (seat.delegateId != null) {
-                    numSeated++; //side job to store seats and placards count
-                    if (seat.placard) {
-                        numPlacards++;
-                    }
+        let numPlacards = 0;
+        let numSeated = 0;
+        let updatedSeats = seats.map(seat => {
+            if (seat.delegateId != null) {
+                numSeated++; //side job to store seats and placards count
+                if (seat.placard) {
+                    numPlacards++;
+                }
 
-                    let { countryName, imageName, personality } = delegates[seat.delegateId];
-                    return {...seat, countryName, imageName, personality};
-                }
-                else {
-                    return seat;
-                }
-            }); //add imageName and personality to seats from delegate's country
-            setPlacement(updatedSeats);
-            setPlacardsRaised(numPlacards);
-            setSeatedCount(numSeated);
-        }
+                let { countryName, imageName, personality } = delegates[seat.delegateId];
+                return {...seat, countryName, imageName, personality};
+            }
+            else {
+                return seat;
+            }
+        }); //add imageName and personality to seats from delegate's country
+        setPlacement(updatedSeats);
+        setPlacardsRaised(numPlacards);
+        setSeatedCount(numSeated);
     }, [seats])
 
     function clickSeat(e) {
         if (type == 'delegate') { // function only works for delegates
             const seatId = parseInt(e.target.id);
             console.log('clickSeat', seatId, placement[seatId])
-            if(placement[seatId] && placement[seatId].delegateId === null) { //seat clicked exists and is empty   
+            if(placement[seatId-1] && placement[seatId-1].delegateId === null) { //seat clicked exists and is empty   
                 if (seated) {
                     alert('You are already seated.');
                 } 
@@ -90,7 +87,7 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
                 placement && 
                 placement.map((s,i)=> 
                     <Seat 
-                    key={i} 
+                    key={s.id} 
                     id={s.id}
                     countryName={s.countryName}
                     isEmpty={s.delegateId === null} //no one sitting

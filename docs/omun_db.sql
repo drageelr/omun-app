@@ -160,7 +160,7 @@ CREATE TABLE `committee` (
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`omun`@`localhost`*/ /*!50003 TRIGGER `committee_AFTER_INSERT` AFTER INSERT ON `committee` FOR EACH ROW BEGIN
 	SET @x = 0;
-    WHILE @x < 50 DO
+    WHILE @x < 60 DO
 		INSERT INTO seat (committeeId) VALUES (NEW.id);
         SET @x = @x + 1;
     END WHILE;
