@@ -623,17 +623,23 @@ exports.handleTopicSpeakerCreate = async (socket, params, event) => {
         let reqTopic = await db.query('SELECT id FROM topic WHERE id = ' + params.topicId + ' AND committeeId = ' + user.committeeId);
         if (!reqTopic.length) { throw new customError.NotFoundError("topic not found"); }
 
-        let reqDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + params.committeeId);
+        let reqDelegate = await db.query('SELECT id, countryId FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + params.committeeId);
         if (!reqDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
-    
+
         let timestampCreated = hFuncs.parseDate();
 
         let result = await db.query('INSERT INTO topic_speaker (topicId, delegateId, review, timestamp) VALUES ('
             + params.topicId + ', ' + params.delegateId + ', "N/A", "' + timestampCreated + '")'
         );
 
+        let getId = await db.query('SELECT id FROM topic_speaker WHERE '
+            + 'delegateId = ' + params.delegateId + ' AND '
+            + 'review = "N/A" AND '
+            + 'timestamp = "' + timestampCreated + '"'
+        );
+
         let res = {
-            id: result.insertId,
+            id: getId[0].id,
             topicId: params.topicId,
             delegateId: params.delegateId,
             review: "N/A",
@@ -646,7 +652,9 @@ exports.handleTopicSpeakerCreate = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] created {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampCreated);
+        let reqCountry = await db.query('SELECT name FROM country WHERE id = ' + reqDelegate[0].countryId);
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] added [' + reqCountry[0].name + '] to {topicId: ' + res.topicId + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -676,7 +684,7 @@ exports.handleTopicSpeakerEdit = async (socket, params, event) => {
         for (let i = 0; i < keys.length; i++) {
             if (params[keys[i]] !== undefined) {
                 res[keys[i]] = params[keys[i]];
-                if (updateQueryStr != 'UPDATE topic_speaker SET ') { updateQueryStr += ' AND '; }
+                if (updateQueryStr != 'UPDATE topic_speaker SET ') { updateQueryStr += ', '; }
                 updateQueryStr += keys[i] + ' = ';
                 if (kType[i]) { updateQueryStr += '"'; }
                 updateQueryStr += params[keys[i]];

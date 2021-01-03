@@ -219,6 +219,13 @@ function createNameSpace(committeeId) {
                                     userId: user.id,
                                     connected: false
                                 });
+                                if (user.type == "delegate") {
+                                    let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
+                                    if (occupiedSeat.length) {
+                                        let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
+                                        if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
+                                    }
+                                }
                                 delete namespaceUsers["/" + committeeId][user.type][user.id];
                             }
                         }
