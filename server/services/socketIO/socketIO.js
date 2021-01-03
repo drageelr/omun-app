@@ -41,7 +41,8 @@ const reqEvents = {
     'gsl-fetch': IOreqhandlers.handleGSLFetch,
 
     // Session Management
-    'session-edit': IOreqhandlers.handleSessionEdit
+    'session-edit': IOreqhandlers.handleSessionEdit,
+    'session-timer': IOreqhandlers.handleSessionTimer
 };
 
 async function sendStartInfo(socket) {
@@ -56,6 +57,22 @@ async function sendStartInfo(socket) {
 
         let reqSession = await db.query('SELECT * FROM session WHERE committeeId = ' + user.committeeId + ' AND active = 1 AND id = ' + user.sessionId);
         if (!reqSession.length) { throw new customError.NotFoundError("active session not found"); }
+
+        let topicName = "N/A";
+        if (reqSession[0].topicId) {
+            let topic = await db.query('SELECT description FROM topic WHERE id = ' + reqSession[0].topicId + ' AND committeeId = ' + user.committeeId);
+            if (topic.length) { topicName = topic[0].description; }
+        }
+
+        let speakerName = "N/A";
+        let speakerImage = "N/A";
+        if (reqSession[0].speakerId) {
+            let speaker = await db.query('SELECT name, imageName FROM country WHERE id IN (SELECT countryId FROM delegate WHERE id = ' + reqSession[0].speakerId + ')');
+            speakerName = speaker[0].name;
+            if (speaker[0].imageName) {
+                speakerImage = speaker[0].imageName;
+            }
+        }
 
         let reqSeats = await db.query('SELECT * FROM seat WHERE committeeId = ' + user.committeeId + ' ORDER BY id');
 
@@ -74,7 +91,10 @@ async function sendStartInfo(socket) {
         let session = {
             id: reqSession[0].id,
             topicId: reqSession[0].topicId,
+            topicName: topicName,
             speakerId: reqSession[0].speakerId,
+            speakerName: speakerName,
+            speakerImage: speakerImage,
             speakerTime: reqSession[0].speakerTime,
             topicTime: reqSession[0].topicTime,
             type: reqSession[0].type
@@ -190,7 +210,7 @@ function createNameSpace(committeeId) {
 
         nsp.on('connection', async socket => {
             try {
-                socket.on('disconnect', (reason) => {
+                socket.on('disconnect', async (reason) => {
                     if (namespaceUsers["/" + committeeId]) {
                         let user = socket.userObj;
                         if (user) {
@@ -200,6 +220,13 @@ function createNameSpace(committeeId) {
                                     userId: user.id,
                                     connected: false
                                 });
+                                if (user.type == "delegate") {
+                                    let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
+                                    if (occupiedSeat.length) {
+                                        let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
+                                        if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
+                                    }
+                                }
                                 delete namespaceUsers["/" + committeeId][user.type][user.id];
                             }
                         }
@@ -255,7 +282,7 @@ function createNameSpace(committeeId) {
 
                 socket.join(socket.userObj.committeeId + '|' + socket.userObj.type)
 
-                io.of("/" + givenCommitteeId).emit('RES|session-con', {
+                socket.broadcast.emit('RES|session-con', {
                     type: userObj.type,
                     userId: userObj.id,
                     connected: true

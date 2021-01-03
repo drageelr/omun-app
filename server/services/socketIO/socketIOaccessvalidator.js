@@ -33,7 +33,8 @@ const eventAccess = {
     'gsl-fetch': ["admin", "dias", "delegate"],
 
     // Session Management
-    'session-edit': ["dias"]
+    'session-edit': ["dias"],
+    'session-timer': ["dias"]
 };
 
 exports.validateAccess = (event, type) => {

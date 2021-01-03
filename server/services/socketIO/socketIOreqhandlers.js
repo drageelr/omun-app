@@ -524,7 +524,7 @@ exports.handleTopicCreate = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.id + '} created {topicId: ' + res.id + '}', timestampCreated);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] created {topicId: ' + res.id + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -548,11 +548,13 @@ exports.handleTopicEdit = async (socket, params, event) => {
 
         const keys = ['delegateId', 'description', 'totalTime', 'speakerTime', 'visible'];
         const kType = [0, 1, 0, 0, 0];
+        let edits = '';
         let updateQueryStr = 'UPDATE topic SET ';
         let whereQueryStr = ' WHERE id = ' + params.topicId + ' AND committeeId = ' + user.committeeId;
         for (let i = 0; i < keys.length; i++) {
             if (params[keys[i]] !== undefined) {
                 res[keys[i]] = params[keys[i]];
+                edits += keys[i] + ', ';
                 if (updateQueryStr != 'UPDATE topic SET ') { updateQueryStr += ', '; }
                 updateQueryStr += keys[i] + ' = ';
                 if (kType[i]) { updateQueryStr += '"'; }
@@ -573,7 +575,7 @@ exports.handleTopicEdit = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.id + '} edited {topicId: ' + res.id + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] edited (' + edits + ') for {topicId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -621,17 +623,23 @@ exports.handleTopicSpeakerCreate = async (socket, params, event) => {
         let reqTopic = await db.query('SELECT id FROM topic WHERE id = ' + params.topicId + ' AND committeeId = ' + user.committeeId);
         if (!reqTopic.length) { throw new customError.NotFoundError("topic not found"); }
 
-        let reqDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + params.committeeId);
+        let reqDelegate = await db.query('SELECT id, countryId FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + params.committeeId);
         if (!reqDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
-    
+
         let timestampCreated = hFuncs.parseDate();
 
         let result = await db.query('INSERT INTO topic_speaker (topicId, delegateId, review, timestamp) VALUES ('
             + params.topicId + ', ' + params.delegateId + ', "N/A", "' + timestampCreated + '")'
         );
 
+        let getId = await db.query('SELECT id FROM topic_speaker WHERE '
+            + 'delegateId = ' + params.delegateId + ' AND '
+            + 'review = "N/A" AND '
+            + 'timestamp = "' + timestampCreated + '"'
+        );
+
         let res = {
-            id: result.insertId,
+            id: getId[0].id,
             topicId: params.topicId,
             delegateId: params.delegateId,
             review: "N/A",
@@ -644,7 +652,9 @@ exports.handleTopicSpeakerCreate = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.id + '} created {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampCreated);
+        let reqCountry = await db.query('SELECT name FROM country WHERE id = ' + reqDelegate[0].countryId);
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] added [' + reqCountry[0].name + '] to {topicId: ' + res.topicId + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -669,12 +679,14 @@ exports.handleTopicSpeakerEdit = async (socket, params, event) => {
 
         const keys = ['delegateId', 'review', 'spokenTime', 'visible'];
         const kType = [0, 1, 0, 0];
+        let edits = '';
         let updateQueryStr = 'UPDATE topic_speaker SET ';
         let whereQueryStr = ' WHERE id = ' + params.topicSpeakerId  + ' AND topicId = ' + params.topicId;
         for (let i = 0; i < keys.length; i++) {
             if (params[keys[i]] !== undefined) {
-                res[keys[i]] = params[keys[i]];
-                if (updateQueryStr != 'UPDATE topic_speaker SET ') { updateQueryStr += ' AND '; }
+                if (keys[i] != 'review') { res[keys[i]] = params[keys[i]]; }
+                edits += keys[i] + ', ';
+                if (updateQueryStr != 'UPDATE topic_speaker SET ') { updateQueryStr += ', '; }
                 updateQueryStr += keys[i] + ' = ';
                 if (kType[i]) { updateQueryStr += '"'; }
                 updateQueryStr += params[keys[i]];
@@ -690,11 +702,14 @@ exports.handleTopicSpeakerEdit = async (socket, params, event) => {
 
         if (!result.changedRows) { throw new customError.NotFoundError("topic or topic_speaker does not exist"); }
 
-        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
-        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
-        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.id + '} edited {topicSpeakerId: ' + res.id + ', topicId: ' + res.topicId + '}', timestampAltered);
+        if (params.review !== undefined) { res.review = params.review; }
+
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] edited (' + edits +  ') for {gslId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -771,7 +786,7 @@ exports.handleGSLCreate = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
         
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.id + '} added {gslId: ' + res.id + '}', timestampCreated);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] added {gslId: ' + res.id + '}', timestampCreated);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -799,11 +814,13 @@ exports.handleGSLEdit = async (socket, params, event) => {
 
         const keys = ['delegateId', 'review', 'spokenTime', 'visible', 'timestampSpoken'];
         const kType = [0, 1, 0, 0, 1];
+        let edits = '';
         let updateQueryStr = 'UPDATE gsl SET ';
         let whereQueryStr = ' WHERE id = ' + params.gslId + ' AND committeeId = ' + user.committeeId;
         for (let i = 0; i < keys.length; i++) {
             if (params[keys[i]] !== undefined) {
                 if (keys[i] != 'review') { res[keys[i]] = params[keys[i]]; }
+                edits += keys[i] + ', ';
                 if (updateQueryStr != 'UPDATE gsl SET ') { updateQueryStr += ', '; }
                 updateQueryStr += keys[i] + ' = ';
                 if (kType[i]) { updateQueryStr += '"'; }
@@ -827,7 +844,7 @@ exports.handleGSLEdit = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: {diasId: ' + user.id + '} edited {gslId: ' + res.id + '}', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|GSL-MOD|: [' + user.title + ' ' + user.name + '] edited (' + edits +  ') for {gslId: ' + res.id + '}', timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];
@@ -880,20 +897,40 @@ exports.handleSessionEdit = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        if (params.speakerId !== undefined) {
-            let reqDelegate = await db.query('SELECT id FROM delegate WHERE id = ' + params.speakerId + ' AND committeeId = ' + user.committeeId);
+        let res = {};
+
+        if (params.speakerId === 0) {
+            params.speakerId = null;
+            res.speakerName = "N/A";
+            res.speakerImage = "N/A";
+        } else if (params.speakerId !== undefined) {
+            let reqDelegate = await db.query('SELECT id, countryId FROM delegate WHERE id = ' + params.speakerId + ' AND committeeId = ' + user.committeeId);
             if (!reqDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
+            let speaker = await db.query('SELECT name, imageName FROM country WHERE id = ' + reqDelegate[0].countryId);
+            res.speakerName = speaker[0].name;
+            if (speaker[0].speakerImage) {
+                res.speakerImage = speaker[0].speakerImage;
+            }
         }
 
-        let res = {};
+        if (params.topicId === 0) {
+            params.topicId = null;
+            res.topicName = "N/A";
+        } else if (params.topicId !== undefined) {
+            let reqTopic = await db.query('SELECT id, description FROM topic WHERE id = ' + params.topicId + ' AND committeeId = ' + user.committeeId);
+            if (!reqTopic.length) { throw new customError.NotFoundError("topic not found in current committee"); }
+            res.topicName = reqTopic[0].description;
+        }
 
         const keys = ['topicId', 'speakerId', 'speakerTime', 'topicTime', 'type'];
         const kType = [0, 0, 0, 0, 1];
+        let edits = '';
         let updateQueryStr = 'UPDATE session SET ';
         let whereQueryStr = ' WHERE id = ' + user.sessionId  + ' AND committeeId = ' + user.committeeId;
         for (let i = 0; i < keys.length; i++) {
             if (params[keys[i]] !== undefined) {
                 res[keys[i]] = params[keys[i]];
+                edits += keys[i] + ', ';
                 if (updateQueryStr != 'UPDATE session SET ') { updateQueryStr += ', '; }
                 updateQueryStr += keys[i] + ' = ';
                 if (kType[i]) { updateQueryStr += '"'; }
@@ -914,7 +951,37 @@ exports.handleSessionEdit = async (socket, params, event) => {
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res)
 
-        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|SESSION|: {diasId: ' + user.id + '} edited the session', timestampAltered);
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|SESSION|: [' + user.title + ' ' + user.name + '] edited (' + edits + ') in the session', timestampAltered);
+        if (logErr) { throw logErr; }
+
+        return [undefined, undefined];
+    } catch(err) {
+        return [{}, err];
+    }
+}
+
+exports.handleSessionTimer = async (socket, params, event) => {
+    try {
+        let user = socket.userObj;
+        const dataArr = ['RESETED', 'PAUSED', 'STARTED'];
+        let dataTimer = 'SPEAKER TIMER';
+
+        let timestampAltered = hFuncs.parseDate();
+
+        let res = {
+            speakerTimer: params.speakerTimer,
+            toggle: params.toggle
+        };
+
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
+        
+        if (!res.speakerTimer) {
+            dataTimer = 'TOPIC TIMER';
+        }
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|TIMER|: [' + user.title + ' ' + user.name + '] ' + dataArr[res.toggle] + ' the ' + dataTimer, timestampAltered);
         if (logErr) { throw logErr; }
 
         return [undefined, undefined];

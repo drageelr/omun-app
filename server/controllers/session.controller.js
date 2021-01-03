@@ -22,7 +22,7 @@ exports.startSession = async (req, res, next) => {
         let sessionCheck = await db.query('SELECT * FROM session WHERE active = 1 AND committeeId = ' + committeeId);
         if (sessionCheck.length) { throw new customError.DuplicateResourceError("a session is already running for this committee"); }
 
-        await db.query('INSERT INTO session (active, committeeId) VALUES (1, ' + committeeId + ')');
+        await db.query('INSERT INTO session (active, committeeId, type) VALUES (1, ' + committeeId + ', "IDLE")');
         
         let err = createNameSpace(committeeId);
         if (err) { throw err; }

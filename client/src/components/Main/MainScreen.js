@@ -30,16 +30,18 @@ const useStyles = makeStyles((theme) => ({
 let socket;
 let user;
 let currentChatId = '';
+let tempEmission = [];
 
 export default function MainScreen() {
     const classes = useStyles();
     let [snackbarMsg, setSnackbarMsg] = useState('');
     let [chats, setChats] = useState({});
     let [connected, setConnected] = useState(false);
-    let [session, setSession] = useState({});
     let [seatsState, setSeats] = useState([]);
     let [seated, setSeated] = useState(false);
     let [placard, setPlacard] = useState(false);
+    let [sessionState, setSession] = useState({});
+    let [timerState, setTimer] = useState({});
     let [connectedDias, setConnectedDias] = useState([]);
     let [connectedDelegates, setConnectedDelegates] = useState([]);
     let [connectedAdmins, setConnectedAdmins] = useState({});
@@ -52,12 +54,14 @@ export default function MainScreen() {
     let [currentChatIdState, setCurrentChatId] = React.useState('');
     let [info, setInfo] = useState({});
     let [userState, setUserState] = useState({});
-    let tempEmission = [];
+    let [notifications, setNotifications] = useState([]);
     let tempSocket = {};
     let seats = [];
     let dias = {};
     let delegates = {};
-    
+    let info = {};
+    let session = {};
+    let timer = {};
 
     /*  
     info:
@@ -128,8 +132,9 @@ export default function MainScreen() {
         socket.on('RES|gsl-fetch', resGSLFetch); // Recieved By: ["admin", "dias", "delegate"]
 
         // Session Management
-        socket.on('RES|session-edit', resSessionEdit) // Recieved By: ["admin", "delegate", "dias"]
-        socket.on('RES|session-con', resSessionCon);
+        socket.on('RES|session-edit', resSessionEdit); // Recieved By: ["admin", "delegate", "dias"]
+        socket.on('RES|session-timer', resSessionTimer); // Recieved By: ["admin", "delegate", "dias"]
+        socket.on('RES|session-con', resSessionCon); // Recieved By: ["admin", "delegate", "dias"]
 
         /**
          * REQ Event Emission
@@ -186,12 +191,14 @@ export default function MainScreen() {
         //     tempSocket.emit('REQ|del-chat-fetch', {})
         // }
         /* 21 */tempEmission.push({event: 'REQ|session-edit', req: getSessionEdit()}); // Access: ["dias"]
-
+        /* 22 */tempEmission.push({event: 'REQ|session-timer', req: getSessionTimer()}); // Access: ["dias"]
+            console.log("puushed phuddi", tempEmission.length)
     }, []);
 
 
     function tempOnClick() {
         let findex = prompt("Enter Socket Emit Function Number");
+        console.log(tempEmission.length)
         if (findex >= tempEmission.length || findex < 0) { alert("Out Of Bounds"); return; }
         let req = tempEmission[findex].req;
         let event = tempEmission[findex].event;
@@ -216,7 +223,7 @@ export default function MainScreen() {
 
     function responseInfoStart(res) { 
         console.log('RES|info-start:', res);
-        let rawInfo = res;
+        info = res;
         // need to store states for the following as they will be updated
         Object.keys(rawInfo.seats).forEach(seatId => {
             rawInfo.seats[seatId].id = Number(seatId); 
@@ -255,13 +262,18 @@ export default function MainScreen() {
                 initSeated = true;
             }
         });
+
+        session = rawInfo.session;
+        session.committeeName = rawInfo.committee.name;
+        timer = {topicTime: rawInfo.session.topicTime, topicToggle: 1, speakerTime: rawInfo.session.speakerTime, speakerToggle: 1};
         
+        setTimer(timer);
         setInfo(rawInfo);
         setSeated(initSeated);
         setSeats(seats);
         setDias(dias);
         setDelegates(delegates);
-        setSession(rawInfo.session);
+        setSession(session);
         setConnectedAdmins(rawInfo.connectedAdmins);
         setConnectedDias(rawInfo.connectedDias);
         setConnectedDelegates(rawInfo.connectedDelegates);
@@ -575,7 +587,13 @@ export default function MainScreen() {
          *      }]
          * }
          */
-        console.log('RES|notif-fetch:', res)
+        console.log('RES|notif-fetch:', res);
+        let fetchedNotifications = res.notifications.map(notif => {
+            return {id: notif.id, diasName: info.dias[notif.diasId] ? info.dias[notif.diasId].title + ' ' + info.dias[notif.diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
+        });
+        console.log('fetchedNotifs', fetchedNotifications);
+        notifications = fetchedNotifications.concat(notifications);
+        setNotifications(notifications);
     }
 
     function resNotifSend(res) {
@@ -593,6 +611,11 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|notif-send:', res);
+        const { id, diasId, message, timestamp } = res;
+        let diasName = info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A";
+        notifications.push({id, diasName, message, timestamp});
+        console.log('RES|notif-send', diasName, notifications);
+        setNotifications([...notifications]);
     }
 
     function resSeatSit(res) {
@@ -809,14 +832,41 @@ export default function MainScreen() {
         /**
          * res = {
          *      topicId: Number,
+         *      topicName: String,
          *      speakerId: Number,
-         *      speakerTime: Number,
-         *      topicTime: Number,
-         *      type: String.min(0).max(10) // can be null
+         *      speakerName: String,  N/A
+         *      speakerImage: String, N/A
+         *      speakerTime: Number, -> onchange reset total time
+         *      topicTime: Number, -> onchange reset total time
+         *      type: String.min(0).max(10) /GSL/IDLE/MOD/UNMOD
          * }
          */
-
         console.log('RES|session-edit:', res);
+        let keys = Object.keys(res);
+        for (let i = 0; i < keys.length; i++) {
+            session[keys[i]] = res[keys[i]];
+        }
+        setSession({...session});
+    }
+
+    function resSessionTimer(res) {
+        /**
+         * When received apply the appropraite result on the specified timer
+         */
+
+        /**
+         * res = {
+         *      speakerTimer: Boolean,
+         *      toggle: Number // 0->reset 1->pause 2->play
+         * }
+         */
+        console.log('RES|session-timer:', res);
+        if (res.speakerTimer) {
+            timer.speakerToggle = res.toggle;
+        } else {
+            timer.topicToggle = res.toggle;
+        }
+        setTimer({...timer});
     }
 
     function resSessionCon(res) {
@@ -943,6 +993,62 @@ export default function MainScreen() {
         }
     }
 
+    function fetchNotifications() {
+        /**
+         * This function is used to fetch last 10 notifications
+         * This event is supposed to be emitted when the loading sign is clicked in the notifications box
+         */
+        
+        let lastNotifId = 0;
+        if (notifications.length) {
+            lastNotifId = notifications[0].id;
+        }
+        socket.emit('REQ|notif-fetch', {lastNotifId});
+    }
+
+    function sendNotification(message) {
+        /**
+         * This function is used to send notification
+         * This event is supposed to be emitted when the send button is pressed on the notification box
+         */
+        
+        if (user.type == "dias") {
+            console.log('REQ|notif-send:', {message: message});
+            socket.emit('REQ|notif-send', {message: message});
+        }
+    }
+
+    function setSessionType(type) {
+        if (user.type == "dias") {
+            let req = {type};
+            console.log('REQ|session-edit:', req);
+            socket.emit('REQ|session-edit', req);
+        }
+    }
+
+    function deleteSessionTopic() {
+        if (user.type == "dias") {
+            let req = {topicId: 0};
+            console.log('REQ|session-edit:', req);
+            socket.emit('REQ|session-edit', req);
+        }
+    }
+
+    function deleteSessionSpeaker() {
+        if (user.type == "dias") {
+            let req = {speakerId: 0};
+            console.log('REQ|session-edit:', req);
+            socket.emit('REQ|session-edit', req);
+        }
+    }
+
+    function timerToggle(speakerTimer, toggle) {
+        if (user.type == "dias") {
+            let req = {speakerTimer, toggle};
+            console.log('REQ|session-timer:', req);
+            socket.emit('REQ|session-timer', req);
+        }
+    }
 
     function getLogFetch() {
         /**
@@ -1138,9 +1244,24 @@ export default function MainScreen() {
         setCurrentChatId(currentChatId);
     }
 
+    function getSessionTimer() {
+        /**
+         * Will be used to play/pause/reset both speaker and topic timers
+         */
+
+        let req = {
+            // true->SpeakerTimer false->TopicTimer
+            speakerTimer: true,
+            // 0->reset 1->pause 2->play
+            toggle: 0,
+        };
+
+        return req;
+    }
+
     return(
         <div className='parent'>
-            <div className= 'Information-Bar'><InformationBar/>
+            <div className= 'Information-Bar'><InformationBar session={sessionState} timer={timerState} setSessionType={setSessionType} deleteSessionTopic={deleteSessionTopic} deleteSessionSpeaker={deleteSessionSpeaker} timerToggle={timerToggle}/>
                 <div style={{marginTop:'2vh'}} className='Zoom'><Zoom/>
                     <div  style={{marginTop:'2vh'}} className='Buttons'>
                         <div>
@@ -1156,7 +1277,13 @@ export default function MainScreen() {
             
             {
                 connected && 
-                <div className='Notifications'><Notification/>
+                <div className='Notifications'>
+                    <Notification 
+                    notifications={notifications}
+                    sendNotification={sendNotification} 
+                    fetchNotifications={fetchNotifications} 
+                    type={userState.type}
+                    />
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>
                         <VirtualAud 
                         id={Number(userState.id)} 
