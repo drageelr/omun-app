@@ -973,6 +973,10 @@ exports.handleSessionTimer = async (socket, params, event) => {
             toggle: params.toggle
         };
 
+        if (params.value) {
+            res.value = params.value;
+        }
+
         broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
         broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);

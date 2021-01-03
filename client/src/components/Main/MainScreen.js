@@ -1,20 +1,18 @@
-import React, {Component, useState} from 'react'
+import React, {useState} from 'react'
 import './MainScreen.css'
 import InformationBar from './Items/InfoBar/InformationBar'
-import Zoom from './Items/Zoom/Zoom'
 import Notification from './Items/Notification/Notification'
 import VirtualAud from './Items/VirtualAud/VirtualAud'
 import MessageBox from './Items/MessageBox/MessageBox'
 import io from "socket.io-client"
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import DescriptionIcon from '@material-ui/icons/Description'
-import Backdrop from '@material-ui/core/Backdrop'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import { Button } from '@material-ui/core'
+import { Button, Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles';
-import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
-
+import Topics from './Items/Zoom/Topics'
+import GSL from './Items/Zoom/GSL'
+import RSL from './Items/Zoom/RSL'
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -57,6 +55,7 @@ export default function MainScreen() {
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let [notifications, setNotifications] = useState([]);
+    const [tabValue, setTabValue] = React.useState(0);    
     let tempSocket = {};
     let seats = [];
     let dias = {};
@@ -264,7 +263,8 @@ export default function MainScreen() {
 
         session = info.session;
         session.committeeName = info.committee.name;
-        timer = {topicTime: info.session.topicTime, topicToggle: 1, speakerTime: info.session.speakerTime, speakerToggle: 1};
+
+        timer = {topicToggle: 0, speakerToggle: 1, speakerValue: info.session.speakerTime, topicValue: info.session.topicTime};
         
         setTimer(timer);
         setInfo(info);
@@ -771,7 +771,7 @@ export default function MainScreen() {
          *      spokenTime: 0,
          *      visible: Boolean,
          *      timestampAdded: String.format('YYYY-MM-DD HH:mm:ss')
-         *      timestampAdded: String.format('YYYY-MM-DD HH:mm:ss') // Can be null
+         *      timestampSpoken: String.format('YYYY-MM-DD HH:mm:ss') // Can be null
          * }
          */
         console.log('RES|gsl-create:', res);
@@ -863,8 +863,14 @@ export default function MainScreen() {
         console.log('RES|session-timer:', res);
         if (res.speakerTimer) {
             timer.speakerToggle = res.toggle;
+            if (res.value !== undefined) {
+                timer.speakerValue = res.value;
+            }
         } else {
             timer.topicToggle = res.toggle;
+            if (res.value !== undefined) {
+                timer.topicValue = res.value;
+            }
         }
         setTimer({...timer});
     }
@@ -1026,6 +1032,13 @@ export default function MainScreen() {
         }
     }
 
+    function setSessionTime(type, duration) { //speaker / topic, duraton
+        if (user.type == "dias") {           
+            console.log('REQ|session-edit:', type === 'speaker' ? {speakerTime: duration} : {topicTime: duration} );
+            socket.emit('REQ|session-edit', type === 'speaker' ? {speakerTime: duration} : {topicTime: duration});
+        }
+    }
+
     function deleteSessionTopic() {
         if (user.type == "dias") {
             let req = {topicId: 0};
@@ -1042,9 +1055,13 @@ export default function MainScreen() {
         }
     }
 
-    function timerToggle(speakerTimer, toggle) {
+    function timerToggle(speakerTimer, toggle, value=undefined) {
         if (user.type == "dias") {
             let req = {speakerTimer, toggle};
+            if (value !== undefined) {
+                req.value = value;
+            }
+            
             console.log('REQ|session-timer:', req);
             socket.emit('REQ|session-timer', req);
         }
@@ -1259,22 +1276,63 @@ export default function MainScreen() {
         return req;
     }
 
+    function handleChange(e, newValue) {
+        setTabValue(newValue);
+    };
+
     return(
         <div className='parent'>
-            <div className= 'Information-Bar'><InformationBar session={sessionState} timer={timerState} setSessionType={setSessionType} deleteSessionTopic={deleteSessionTopic} deleteSessionSpeaker={deleteSessionSpeaker} timerToggle={timerToggle}/>
-                <div style={{marginTop:'2vh'}} className='Zoom'><Zoom/>
-                    <div  style={{marginTop:'2vh'}} className='Buttons'>
-                        <div>
-                            <Button variant="contained" color="primary" startIcon={<ExitToAppIcon/>} >Leave Session</Button>
-                            &nbsp;&nbsp;
-                            <Button variant="contained" color="grey.300" startIcon={<DescriptionIcon/>} >Files</Button>
-                            &nbsp;&nbsp;
-                            <Button onClick={tempOnClick} variant="contained" color="secondary">TEMP BUTTON</Button>
+            {
+                connected &&
+                <div className= 'Information-Bar'>
+                    <InformationBar 
+                    session={sessionState} 
+                    timer={timerState}
+                    type={userState.type}
+                    setSessionType={setSessionType} 
+                    deleteSessionTopic={deleteSessionTopic} 
+                    deleteSessionSpeaker={deleteSessionSpeaker} 
+                    setSessionTime={setSessionTime}
+                    timerToggle={timerToggle}/>
+                    <div style={{marginTop:'2vh'}} className='Zoom'>
+
+                        <Card style={{height:"48vh",overflowY:"hidden"}}>
+                            <Paper >
+                                <Tabs
+                                    value={tabValue}
+                                    onChange={handleChange}
+                                    indicatorColor="primary"
+                                    textColor="primary"
+                                    centered
+                                >
+                                    <Tab label="Topics" />
+                                    <Tab label="GSL" />
+                                    <Tab label="RSL" />
+                                </Tabs>
+                            </Paper>
+                            <CardContent>
+                            {
+                                tabValue == 0 ?
+                                <Topics/> :
+                                tabValue == 1 ?
+                                <GSL/> :
+                                <RSL/>
+                            }                
+                            </CardContent>
+                        </Card>
+
+                        <div  style={{marginTop:'2vh'}} className='Buttons'>
+                            <div>
+                                <Button variant="contained" color="primary" startIcon={<ExitToAppIcon/>} >Leave Session</Button>
+                                &nbsp;&nbsp;
+                                <Button variant="contained" color="grey.300" startIcon={<DescriptionIcon/>} >Files</Button>
+                                &nbsp;&nbsp;
+                                <Button onClick={tempOnClick} variant="contained" color="secondary">TEMP BUTTON</Button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
+            }
             {
                 connected && 
                 <div className='Notifications'>

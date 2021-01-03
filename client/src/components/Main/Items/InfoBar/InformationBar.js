@@ -1,10 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import './InformationBar.css'
-// import { CountdownCircleTimer } from 'react-countdown-circle-timerTopic';
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-
-import { Button, Card, CardContent, List, ListItem, ButtonGroup } from '@material-ui/core';
-import EdiText from 'react-editext'
+import { Button, Card, CardContent, ButtonGroup } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
@@ -43,89 +40,82 @@ const useStyles = makeStyles((theme) => ({
 */
 
 
-export default function InformationBar ({session, timer, setSessionType, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
+export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
   const classes = useStyles();
-  const [topic, setTopic] = useState('')
-  const [timerTopic, setTimerTopic] = useState(false)
-  const [timerLinear, setTimerLinear] = useState(false)
-  const [duration, setDuration] = useState(120)
-  const [duration1, setDuration1] = useState(120)
-  const [key, setkey] = useState(0)
-  const [timer1, setTimer1] = useState(false)
-  const [progress, setProgress] = React.useState(100);
-  const [key1, setkey1] = useState(0)
-  const [mod, setMod] = useState(false);
-  const [unmod, setunMod] = useState(false);
-  const [gsl, setgsl] = useState(false);
-  const [idle, setidle] = useState(true);
+  const [timerKeyS, setTimerKeyS] = React.useState(0);
+  const [timerKeyT, setTimerKeyT] = React.useState(0);
 
+  const [speakerValue, setSpeakerValue] = React.useState(0);
+  const [topicValue, setTopicValue] = React.useState(0);
+
+  // React.useEffect(() => {
+  //   const timerSRunning = setInterval(() => {
+  //     setProgress((oldProgress) => {
+  //       if (oldProgress === 0) {
+  //         return 100;
+  //       }
+  //       const diff = Math.random() * 10;
+  //       return Math.min(oldProgress - diff, 100);
+  //     });
+  //   }, 500);
+
+  //   return () => {
+  //     clearInterval(timerSRunning);
+  //   };
+  // }, []);
+  
   React.useEffect(() => {
-    const timerTopic = setInterval(() => {
-      setProgress((oldProgress) => {
-        if (oldProgress === 0) {
-          return 100;
-        }
-        const diff = Math.random() * 10;
-        return Math.min(oldProgress - diff, 100);
-      });
-    }, 500);
+    // console.log(timer.speakerToggle, timer.speakerValue);
+    // if (timer.speakerToggle === 0) { //when reset command recieved, reset time to initial state
+    //   console.log("resetting speaker timer");
+      
+    // }
+    setTimerKeyS(timerKeyS+1);
+    setTimerKeyT(timerKeyT+1);
 
-    return () => {
-      clearInterval(timerTopic);
-    };
-  }, []);
+  }, [session, timer]);
 
-  function handlemod() {
-    setMod(true);
-    setunMod(false);
-    setgsl(false);
-    setidle(false);
-  }
-  function handleunmod() {
-    setMod(false);
-    setunMod(true);
-    setgsl(false);
-    setidle(false);
-  }
-  function handlegsl() {
-    setMod(false);
-    setunMod(false);
-    setgsl(true);
-    setidle(false);
-  }
-  function handleidle() {
-    setMod(false);
-    setunMod(false);
-    setgsl(false);
-    setidle(true);
-  }
-  function handleTopicChange(v) {
-    setTopic(v);
+  function resetTimerS() {
+    let newTopicValue = topicValue;
+    if (window.confirm("Do you want to adjust the topic time as well?")) {
+      newTopicValue += session.speakerTime - speakerValue;
+    } 
+
+    //stop S,T
+    timerToggle(true, 2, speakerValue);
+    timerToggle(false, 2, newTopicValue);
+
+    //reset S
+    timerToggle(true, 0);
   }
 
-  function handletimer() {
-    setTimerTopic(!timerTopic)
+  function stopSpeakerTimer() { //stop S,T
+    timerToggle(true, 2, speakerValue);
+    timerToggle(false, 2, topicValue);
   }
-  function handleDuration(){
-    var v=prompt('Duration');
-    setDuration(parseInt(v))
-    setkey(key+1)
+
+  function startSpeakerTimer() { //start S,T
+    timerToggle(true, 1, speakerValue);
+    timerToggle(false, 1, topicValue); 
   }
-  function handlereset(){
-    setkey(key+1)
+
+  function enterDurationS(){
+    setSessionTime('speaker', parseInt(prompt('Speaker Duration')));
+  }
+
+  function resetTimerT() {
+    //stop S,T
+    timerToggle(true, 1);
+    timerToggle(false, 1);
+
+    //reset T
+    timerToggle(false, 0);
+  }
+
+  function enterDurationT(){
+    setSessionTime('topic', parseInt(prompt('Topic Duration')));
   }
   
-  function handletimer1() {
-    setTimer1(!timer1)
-  }
-  function handleDuration1(){
-    var v=prompt('Duration');
-    setDuration1(parseInt(v))
-    setkey1(key1+1)
-  }
-  function handlereset1(){
-    setkey1(key1+1)
-  }
   
   return(
     <div >
@@ -181,56 +171,62 @@ export default function InformationBar ({session, timer, setSessionType, deleteS
             </Grid>
 
             <Grid item xs={4}>
-            {/* <ListItem className="sessionDetails"> */}
-                <div style={{marginLeft: '3vw'}}>Time Left (Speaker)</div> 
+                <div style={{marginLeft: '3vw'}}>Speaker Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
                 <div style={{marginLeft: '5vw'}}>
                   <CountdownCircleTimer
-                      key={key}
-                      isPlaying={timerTopic}
+                      key={timerKeyS}
+                      isPlaying={timer.speakerToggle === 2}
                       size={80}
-                      duration={duration}
+                      initialRemainingTime={timer.speakerToggle ? timer.speakerValue : session.speakerTime}
+                      // initialRemainingTime={timer.speakerValue}
+                      duration={session.speakerTime}
                       colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
                   >
-                    {/* {
-                      timer.speakerToggle === 0 ? {
-                        remainingTime = duration
-                        setkey(key+1)
-                      } : {({ remainingTime }) => `${parseInt(remainingTime/60)}:${remainingTime%60}`} 
-                    } */}
-                    {/* timer.speakerToggle === 1 && 
-                        {setTimerTopic(!timerTopic)}
-
-                        timer.speakerToggle === 2 && 
-                        {setTimerTopic(!timerTopic)}
-                    
-                    */}
-                    {({ remainingTime }) => `${parseInt(remainingTime/60)}:${remainingTime%60}`}
+                    {({ remainingTime }) => {
+                      setSpeakerValue(remainingTime);
+                      return `${("0" + parseInt(remainingTime/60)).slice(-2)}:${("0" + remainingTime%60).slice(-2)}`;
+                    }}
                   </CountdownCircleTimer>
                 </div>
-                <ButtonGroup style={{marginTop: 10}}>
-                    {   
-                        !timerTopic ? 
-                            <Button size="small" style={{padding: 5}} onClick={handletimer} color="secondary">Start</Button> :
-                            <Button size="small" style={{padding: 5}} onClick={handletimer} color="secondary">Pause</Button>
-                    }
-                    <Button size="small" style={{padding: 5}} onClick={handlereset} color="secondary">reset</Button>
-                    <Button size="small" style={{padding: 5}} onClick={handleDuration} color="secondary">duration</Button>
-                </ButtonGroup>
+                {
+                  type === 'dias' &&
+                  <ButtonGroup style={{marginTop: 10, marginLeft: '2vw'}}>
+                      {   
+                        (timer.speakerToggle === 2) ? //if paused state then you can start 
+                        <Button size="small" style={{padding: 5}} onClick={startSpeakerTimer} color="secondary">Pause</Button> :
+                        <Button size="small" style={{padding: 5}} onClick={stopSpeakerTimer} color="secondary">Start</Button>
+                      }
+                      <Button size="small" style={{padding: 5}} onClick={resetTimerS} color="secondary">Reset</Button>
+                      <Button size="small" style={{padding: 5}} onClick={enterDurationS} color="secondary">Duration</Button>
+                  </ButtonGroup>
+                }
                 
                 <br/>
                 <br/>
-                <h6 >Time Left (Topic)</h6> 
-                <LinearProgress variant="determinate" value={progress}/>
-                <ButtonGroup >
-                    {   
-                        !timerTopic ? 
-                            <Button size="small" onClick={handletimer} color="secondary">Start</Button> :
-                            <Button size="small" onClick={handletimer} color="secondary">Pause</Button>
-                    }
-                    <Button size="small" onClick={handlereset} color="secondary">reset</Button>
-                    <Button size="small" onClick={handleDuration} color="secondary">duration</Button>
-                </ButtonGroup>
-            {/* </ListItem> */}
+
+                <div style={{marginLeft: '3vw'}}>Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
+                <div style={{marginLeft: '5vw'}}>
+                  <CountdownCircleTimer
+                      key={timerKeyT}
+                      isPlaying={timer.speakerToggle === 2}
+                      size={80}
+                      initialRemainingTime={timer.topicToggle ? timer.topicValue : session.topicTime}
+                      duration={session.topicTime}
+                      colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
+                  >
+                    {({ remainingTime }) => {
+                      setTopicValue(remainingTime);
+                      return `${("0" + parseInt(remainingTime/60)).slice(-2)}:${("0" + remainingTime%60).slice(-2)}`;
+                    }}
+                  </CountdownCircleTimer>
+                </div>
+                {
+                  type === 'dias' &&
+                  <ButtonGroup style={{marginTop: 10, marginLeft: '3vw'}}>
+                      <Button size="small" style={{padding: 5}} onClick={resetTimerT} color="secondary">Reset</Button>
+                      <Button size="small" style={{padding: 5}} onClick={enterDurationT} color="secondary">Duration</Button>
+                  </ButtonGroup>
+                }
             </Grid>
           </Grid>
         </CardContent>

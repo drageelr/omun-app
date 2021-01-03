@@ -250,6 +250,9 @@ const validations = {
             type: Boolean,
             required: true
         },
+        value: {
+            type: Number
+        },
         toggle: {
             type: Number,
             required: true,
