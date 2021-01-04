@@ -60,9 +60,9 @@ function splitIdType(str) {
   return {id: Number(idType[0]), type: idType[1]};
 }
 
-export default function MessageBox({id, type, singleMsg, reachedTop, currentChat, chatId, setChatId, sendMsg, fetchChat, msgCounter, dias, delegates, diasList, delegatesList}) {
+export default function MessageBox({id, type, singleAddition, reachedTop, currentChat, chatId, setChatId, sendMsg, fetchChat, msgCounter, dias, delegates, diasList, delegatesList}) {
   const classes = useStyles();
-  const chatContainer = React.createRef();
+  const scrollContainer = React.createRef();
   const [fetching, setFetching] = useState(true);
 
   function handleChange(event, newUser) {
@@ -72,11 +72,11 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
 
   useEffect(() => {
     // triggers react state update whenever their is a message
-    if (singleMsg) {
-      chatContainer.current.scrollTo(0, chatContainer.current.scrollHeight); // scroll to end
+    if (singleAddition) {
+      scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end
     }
     else if (!reachedTop) { //fetch multiple and top not reached
-      chatContainer.current.scrollTo(0, chatContainer.current.clientHeight+500);
+      scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+500);
     }
     setFetching(false);
   }, [msgCounter]);
@@ -168,7 +168,7 @@ export default function MessageBox({id, type, singleMsg, reachedTop, currentChat
       >
         {({ submitForm}) => (
           <Form>
-            <Box onScroll={ handleScroll } ref={chatContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
+            <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
               {
                 fetching && !reachedTop &&
                 <Box style={{marginTop: 10, display: 'flex', justifyContent: 'center'}}>

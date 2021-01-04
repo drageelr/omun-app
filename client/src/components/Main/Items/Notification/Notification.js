@@ -16,9 +16,9 @@ import { TextField } from 'formik-material-ui';
 import Timestamp from 'react-timestamp';
 
 
-function Notification({notifications, sendNotification, reachedNotifTop, fetchNotifications, singleNotif, type}) {
+function Notification({notifications, sendNotification, reachedTop, fetchNotifications, singleAddition, type}) {
     const [open, setOpen] = React.useState(false);
-    const notifContainer = React.createRef();
+    const scrollContainer = React.createRef();
     const [fetching, setFetching] = useState(true);
 
 
@@ -33,7 +33,7 @@ function Notification({notifications, sendNotification, reachedNotifTop, fetchNo
     function handleScroll(e) {
         let element = e.target;
         if (element.scrollTop===0) {
-            if (!reachedNotifTop) {
+            if (!reachedTop) {
                 setFetching(true);
                 setTimeout(() => fetchNotifications(), 500);
             }
@@ -44,11 +44,11 @@ function Notification({notifications, sendNotification, reachedNotifTop, fetchNo
     const notifItemStyle = {padding:0, paddingLeft: 10};
     
     React.useEffect(() => {
-        if (singleNotif) {
-            notifContainer.current.scrollTo(0, notifContainer.current.scrollHeight-notifContainer.current.clientHeight);
+        if (singleAddition) {
+            scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight-scrollContainer.current.clientHeight);
         }
-        else if(!reachedNotifTop) { //fetch multiple and top not reached
-            notifContainer.current.scrollTo(0, notifContainer.current.clientHeight+300);
+        else if(!reachedTop) { //fetch multiple and top not reached
+            scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+300);
         }
         setFetching(false);
     }, [notifications])
@@ -113,9 +113,9 @@ function Notification({notifications, sendNotification, reachedNotifTop, fetchNo
             </Dialog>
             
 
-            <CardContent ref={notifContainer} onScroll={handleScroll} style={contentStyle}>
+            <CardContent ref={scrollContainer} onScroll={handleScroll} style={contentStyle}>
                 {
-                    fetching && !reachedNotifTop &&
+                    fetching && !reachedTop &&
                     <Box style={{margin: 4, display: 'flex', justifyContent: 'center'}}>
                         <CircularProgress size={30} color="secondary" />
                     </Box>

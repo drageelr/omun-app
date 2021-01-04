@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Paper, Card, CardContent, Button, List, ListItem, ListItemText, TextField, Select, FormControl, InputLabel, Typography, Input} from '@material-ui/core';
+import { Paper, Card, CardContent, Button, List, ListItem, ListItemText, TextField, Select, FormControl, InputLabel, Typography, Input, Box, CircularProgress} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Switch from '@material-ui/core/Switch';
@@ -7,7 +7,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MaskedInput from 'react-text-mask';
 import { secToMinsec } from '../InfoBar/InformationBar'
-
+import FlagIfAvailable from '../Zoom/FlagIfAvailable'
 
 const initialState = {
     mouseX: null,
@@ -89,12 +89,13 @@ function TopicRow({countryName, delegateId, description, imageName, canEdit, vis
         handleClose();
     }
 
-    const descStyle = {margin: 10, fontSize: '0.9rem', color: visible ? 'white' : '#000000', fontWeight: 500, wordWrap: "break-word"};
+    const descStyle = {margin: 10, fontSize: '0.9rem', color: visible ? 'white' : '#000000', fontWeight: 500, wordWrap: "break-word", alignSelf: 'center'};
 
     return (
     <ListItem onContextMenu={handleClick} style={{ cursor: 'context-menu' }} key={delegateId} style={{paddingLeft: 10}} dense>            
         <div style={{display: 'flex', flexDirection: 'row', marginBottom: 2}}>
-            <Paper style={{backgroundColor: visible ? '#aa9525' : 'whitesmoke', margin: 3, width: '12vw'}}>
+            <Paper style={{backgroundColor: visible ? '#aa9525' : 'whitesmoke', margin: 3, width: '12vw', display: 'flex', flexDirection: 'row'}}>
+                <FlagIfAvailable imageName={imageName}/>
                 <Typography style={descStyle}>
                     {countryName}
                 </Typography>
@@ -104,12 +105,12 @@ function TopicRow({countryName, delegateId, description, imageName, canEdit, vis
                     {description}
                 </Typography>
             </Paper>
-            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, }}>
+            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, display: 'flex' }}>
                 <Typography style={descStyle}>
                     {secToMinsec(totalTime)}
                 </Typography>
             </Paper>
-            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, }}>
+            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, display: 'flex'}}>
                 <Typography style={descStyle}>
                     {secToMinsec(speakerTime)}
                 </Typography>
@@ -152,31 +153,33 @@ function minsecToSeconds(minsec){
     return Number(min)*60+Number(sec);
 }
 
-export default function Topics({type, topicsList, delegates, delegatesList, addTopic, editTopic, setCurrentTopic}) {
+export default function Topics({type, topicsList, delegates, reachedTop, singleAddition, delegatesList, addTopic, editTopic, fetchTopics, setCurrentTopic}) {
     const classes = useStyles();
     const [selectedDelegateId, setSelectedDelegateId] = useState(0);
     const [speakerTime, setSpeakerTime] = useState('');
     const [totalTime, setTotalTime] = useState('');
     const [description, setDescription] = useState('');
+    const scrollContainer = React.createRef();
+    const [fetching, setFetching] = useState(true);
 
 
     function changeSelection(e) {
         const newSelection = e.target.value;
         setSelectedDelegateId(Number(newSelection));
-    };
+    }
 
     function handleAddTopic() {
         //add selected delegate id to GSL selectedDelegateId
         addTopic(selectedDelegateId, description, minsecToSeconds(totalTime), minsecToSeconds(speakerTime));
-    };
+    }
 
     function handleSpeakerTime(e) {
         setSpeakerTime(e.target.value);
-    };
+    }
 
     function handleTotalTime(e) {
         setTotalTime(e.target.value);
-    };
+    }
 
     function handleDescription(e) {
         if (e.target.value.length > 250) {
@@ -185,7 +188,27 @@ export default function Topics({type, topicsList, delegates, delegatesList, addT
         else {
             setDescription(e.target.value);
         }
-    };
+    }
+
+    function handleScroll(e) {
+        let element = e.target;
+        if (element.scrollTop===0) {
+            if (!reachedTop) {
+                setFetching(true);
+                setTimeout(() => fetchTopics(), 500);
+            }
+        }
+    }
+
+    React.useEffect(() => {
+        if (singleAddition) {
+            scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight-scrollContainer.current.clientHeight);
+        }
+        else if(!reachedTop) { //fetch multiple and top not reached
+            scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+300);
+        }
+        setFetching(false);
+    }, [topicsList])
 
     
     return (
@@ -238,7 +261,13 @@ export default function Topics({type, topicsList, delegates, delegatesList, addT
                     <Button className={classes.iconButton} variant="contained" startIcon={<AddIcon/>} color="primary" onClick={handleAddTopic}>Add Topic</Button>
                 </div>
             }
-            <div className={classes.contentStyle}>
+            <div ref={scrollContainer} onScroll={handleScroll} className={classes.contentStyle}>
+                {
+                    fetching && !reachedTop &&
+                    <Box style={{margin: 4, display: 'flex', justifyContent: 'center'}}>
+                        <CircularProgress size={30} color="primary" />
+                    </Box>
+                }
                 {
                     // only show certain topics that are invisible if you are dias
                     topicsList &&

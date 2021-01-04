@@ -33,6 +33,8 @@ let tempEmission = [];
 let rsList = [];
 let committee = {};
 let session = {};
+let topicsList = [];
+let gsList = [];
 
 
 export default function MainScreen() {
@@ -53,10 +55,16 @@ export default function MainScreen() {
     let [delegatesState, setDelegates] = useState({});
     let [logs, setLogs] = useState([]);
     let [msgCounter, setMsgCounter] = useState(0);
+
     let [singleMsg, setSingleMsg] = useState(true); //scroll to bottom init
-    let [singleNotif, setSingleNotif] = useState(true);
     let [reachedTop, setReachedTop] = useState(false);
+    let [singleNotif, setSingleNotif] = useState(true);
     let [reachedNotifTop, setReachedNotifTop] = useState(false);
+    let [singleGSL, setSingleGSL] = useState(true);
+    let [reachedGSLTop, setReachedGSLTop] = useState(false);
+    let [singleTopic, setSingleTopic] = useState(true);
+    let [reachedTopicTop, setReachedTopicTop] = useState(false);
+
     let [currentChatIdState, setCurrentChatId] = React.useState('');
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
@@ -64,15 +72,13 @@ export default function MainScreen() {
     let [gsListState, setGSList] = useState([]);
     let [rsListState, setRSList] = useState([]);
     let [topicsListState, setTopicsList] = useState([]);
-    const [tabValue, setTabValue] = React.useState(0);    
+    const [tabValue, setTabValue] = useState(0);    
     let tempSocket = {};
     let seats = [];
-    let topicsList = [];
     let dias = {};
     let delegates = {};
     let info = {};
     let timer = {};
-    let gsList = [];
 
     /*  
     info:
@@ -188,7 +194,6 @@ export default function MainScreen() {
     }
 
     function responseInfoStart(res) { 
-        console.log('RES|info-start:', res);
         info = res;
         // need to store states for the following as they will be updated
         Object.keys(info.seats).forEach(seatId => {
@@ -586,7 +591,6 @@ export default function MainScreen() {
         const { id, diasId, message, timestamp } = res;
         let diasName = info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A";
         notifications.push({id, diasName, message, timestamp});
-        console.log('RES|notif-send', diasName, notifications);
         setSingleNotif(true);
         setNotifications([...notifications]);
     }
@@ -676,6 +680,7 @@ export default function MainScreen() {
         console.log('RES|topic-create:', res);
         console.log(topicsList, typeof topicsList);
         topicsList.push(res);
+        setSingleTopic(true);
         setTopicsList([...topicsList]);
     }
     
@@ -729,13 +734,15 @@ export default function MainScreen() {
          */
         console.log('RES|topic-fetch:', res);
         
-        topicsList = res.topics;
+        let fetchedTopics = res.topics;
+        setReachedTopicTop((fetchedTopics.length == 0));
+        setSingleTopic(false);
+        topicsList = fetchedTopics.concat(topicsList);
         setTopicsList(topicsList);
     }
 
     function resTopicSpeakerCreate(res) {
         console.log('RES|rsl-create:', res);
-        console.log(rsList);
         rsList.push(res);
         setRSList([...rsList]);
     }
@@ -779,6 +786,7 @@ export default function MainScreen() {
          */
         console.log('RES|gsl-create:', res);
         gsList.push(res);
+        setSingleGSL(true);
         setGSList([...gsList]);
     }
 
@@ -834,7 +842,10 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|gsl-fetch:', res);
-        gsList = res.gsl;
+        let fetchedGSL = res.gsl;
+        setReachedGSLTop((fetchedGSL.length == 0));
+        setSingleGSL(false);
+        gsList = fetchedGSL.concat(gsList);
         setGSList(gsList);
     }
 
@@ -1150,12 +1161,11 @@ export default function MainScreen() {
          * This event is supposed to be emitted when the loading sign is clicked in the topics box
          */
         
-        // let req = {
-        //     // id of the oldest topic (if no topic then send 0)
-        //     lastTopicId: 0
-        // }
-
-        socket.emit('REQ|topic-fetch', {lastTopicId: 0});
+        let lastTopicId = 0;
+        if (topicsList.length) {
+            lastTopicId = topicsList[0].id;
+        }
+        socket.emit('REQ|topic-fetch', {lastTopicId});
     }
 
 
@@ -1171,7 +1181,6 @@ export default function MainScreen() {
 
     function editRSL(topicId, editParams) {
         console.log('REQ|topic-speaker-edit', topicId, editParams)
-
         socket.emit('REQ|topic-speaker-edit', {...editParams, topicId} );
     }
 
@@ -1226,12 +1235,11 @@ export default function MainScreen() {
          * This event is supposed to be emitted when the loading sign is clicked in the topics box
          */
 
-        // let req = {
-        //     // id of the oldest topic (if no topic then send 0)
-        //     lastGSLId: 0
-        // }
-
-        socket.emit('REQ|gsl-fetch', {lastGSLId: 0});
+        let lastGSLId = 0;
+        if (gsList.length) {
+            lastGSLId = gsList[0].id;
+        }
+        socket.emit('REQ|gsl-fetch', {lastGSLId});
     }
 
 
@@ -1303,6 +1311,7 @@ export default function MainScreen() {
                     session={sessionState} 
                     timer={timerState}
                     type={userState.type}
+                    delegates={infoState.delegates} 
                     setSessionType={setSessionType} 
                     deleteSessionTopic={deleteSessionTopic} 
                     deleteSessionSpeaker={deleteSessionSpeaker} 
@@ -1335,6 +1344,8 @@ export default function MainScreen() {
                                 addTopic={addTopic}
                                 editTopic={editTopic}
                                 fetchTopics={fetchTopics}
+                                singleAddition={singleTopic}
+                                reachedTop={reachedTopicTop}
                                 setCurrentTopic={setCurrentTopic}
                                 /> :
                                 tabValue == 1 ?
@@ -1346,6 +1357,8 @@ export default function MainScreen() {
                                 addToGSL={addToGSL}
                                 editGSL={editGSL}
                                 fetchGSL={fetchGSL}
+                                singleAddition={singleGSL}
+                                reachedTop={reachedGSLTop}
                                 setGSLSpeaker={setGSLSpeaker}
                                 /> :
                                 <RSL
@@ -1391,8 +1404,8 @@ export default function MainScreen() {
                     notifications={notifications}
                     sendNotification={sendNotification} 
                     fetchNotifications={fetchNotifications} 
-                    singleNotif={singleNotif}
-                    reachedNotifTop={reachedNotifTop}
+                    singleAddition={singleNotif}
+                    reachedTop={reachedNotifTop}
                     type={userState.type}
                     />
                     <div style={{marginTop:'2vh'}} className='Virtual-Aud'>
@@ -1417,7 +1430,7 @@ export default function MainScreen() {
                             delegatesList={infoState.delegatesList}
                             currentChat={chats[currentChatIdState]}
                             setChats={setChats}
-                            singleMsg={singleMsg}
+                            singleAddition={singleMsg}
                             reachedTop={reachedTop}
                             chatId={currentChatIdState}
                             setChatId={setChatId}

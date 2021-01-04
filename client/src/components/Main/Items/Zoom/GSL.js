@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Paper, Card, CardContent, Button, List, ListItem, ListItemText, Select, FormControl, InputLabel, Typography} from '@material-ui/core';
+import { Paper, Card, CardContent, Button, List, ListItem, ListItemText, Select, FormControl, InputLabel, Typography, Box, CircularProgress} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Switch from '@material-ui/core/Switch';
@@ -87,9 +87,12 @@ function GSLRow({countryName, delegateId, imageName, canEdit, visible, spoken, e
 }
 
 
-export default function GSL({type, gsList, delegates, delegatesList, addToGSL, editGSL, setGSLSpeaker}) {
+export default function GSL({type, gsList, delegates, reachedTop, singleAddition, delegatesList, addToGSL, editGSL, fetchGSL, setGSLSpeaker}) {
     const classes = useStyles();
     const [selectedDelegateId, setSelectedDelegateId] = useState(0);
+    const scrollContainer = React.createRef();
+    const [fetching, setFetching] = useState(true);
+
 
     function changeSelection(e) {
         const newSelection = e.target.value;
@@ -107,6 +110,25 @@ export default function GSL({type, gsList, delegates, delegatesList, addToGSL, e
         setGSLSpeaker(speakerId);
     };
 
+    function handleScroll(e) {
+        let element = e.target;
+        if (element.scrollTop===0) {
+            if (!reachedTop) {
+                setFetching(true);
+                setTimeout(() => fetchGSL(), 500);
+            }
+        }
+    }
+
+    React.useEffect(() => {
+        if (singleAddition) {
+            scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight-scrollContainer.current.clientHeight);
+        }
+        else if(!reachedTop) { //fetch multiple and top not reached
+            scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+300);
+        }
+        setFetching(false);
+    }, [gsList])
 
     return (
         <List>
@@ -130,7 +152,13 @@ export default function GSL({type, gsList, delegates, delegatesList, addToGSL, e
                     <Button size='small' className={classes.iconButton} variant="contained" startIcon={<AddIcon/>} color="primary" onClick={handleAddToGSL}>Add To GSL</Button>
                 </div>
             }
-            <div className={classes.contentStyle}>
+            <div ref={scrollContainer} onScroll={handleScroll}  className={classes.contentStyle}>
+                {
+                    fetching && !reachedTop &&
+                    <Box style={{margin: 4, display: 'flex', justifyContent: 'center'}}>
+                        <CircularProgress size={30} color="secondary" />
+                    </Box>
+                }
                 {
                     gsList &&
                     gsList.filter(gs => (type == 'dias' || gs.visible))

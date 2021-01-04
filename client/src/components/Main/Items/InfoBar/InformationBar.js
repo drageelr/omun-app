@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
 import Grid from '@material-ui/core/Grid';
+import FlagIfAvailable from '../Zoom/FlagIfAvailable'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -43,7 +44,7 @@ export function secToMinsec(sec){
   return `${("0" + parseInt(sec/60)).slice(-2)}:${("0" + sec%60).slice(-2)}`;
 }
 
-export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
+export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, delegates, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
   const [crossesShown, setCrossesShown] = useState(false);
 
   const [timerKeyS, setTimerKeyS] = React.useState(0);
@@ -99,7 +100,8 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   function enterDurationT(){
     setSessionTime('topic', parseInt(prompt('Topic Duration')));
   }
-  
+
+  const bgstyle ={padding: 5, width: '5vw'};
   
   return(
     <div >
@@ -124,7 +126,11 @@ export default function InformationBar ({session, timer, type, setSessionType, s
               <br></br>
               <h6>Speaker:</h6>
               <div style={{display: 'flex', flexDirection: 'row'}}>
-                <Typography variant='p' color='secondary'> {session.speakerName} </Typography>
+                {
+                  delegates[session.speakerId] &&
+                  <FlagIfAvailable imageName={delegates[session.speakerId].imageName}/>
+                }
+                <Typography variant='p' color='secondary' style={{alignSelf: 'center'}}> {session.speakerName} </Typography>
                   {
                     type == 'dias' && crossesShown &&
                     <IconButton style={{padding: 0, marginLeft: 5}} color='primary' onClick={deleteSessionSpeaker}>
@@ -187,21 +193,21 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                 </div>
                 {
                   type === 'dias' &&
-                  <ButtonGroup style={{marginTop: 10, marginLeft: '2vw'}}>
+                  <ButtonGroup style={{marginTop: 10}}>
                       {   
                         (timer.speakerToggle === 2) ? //if paused state then you can start 
-                        <Button size="small" style={{padding: 5}} onClick={startSpeakerTimer} color="secondary">Pause</Button> :
-                        <Button size="small" style={{padding: 5}} onClick={stopSpeakerTimer} color="secondary">Start</Button>
+                        <Button size="small" style={bgstyle} onClick={startSpeakerTimer} color="secondary">Pause</Button> :
+                        <Button size="small" style={bgstyle} onClick={stopSpeakerTimer} color="secondary">Start</Button>
                       }
-                      <Button size="small" style={{padding: 5}} onClick={resetTimerS} color="secondary">Reset</Button>
-                      <Button size="small" style={{padding: 5}} onClick={enterDurationS} color="secondary">Duration</Button>
+                      <Button size="small" style={bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
+                      <Button size="small" style={bgstyle} onClick={enterDurationS} color="secondary">Duration</Button>
                   </ButtonGroup>
                 }
                 
                 <br/>
                 <br/>
 
-                <div style={{marginLeft: '3vw'}}>Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
+                <div style={{marginLeft: '3.5vw'}}>Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
                 <div style={{marginLeft: '5vw'}}>
                   <CountdownCircleTimer
                       key={timerKeyT}
@@ -219,9 +225,9 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                 </div>
                 {
                   type === 'dias' &&
-                  <ButtonGroup style={{marginTop: 10, marginLeft: '3vw'}}>
-                      <Button size="small" style={{padding: 5}} onClick={resetTimerT} color="secondary">Reset</Button>
-                      <Button size="small" style={{padding: 5}} onClick={enterDurationT} color="secondary">Duration</Button>
+                  <ButtonGroup style={{marginTop: 10, marginLeft: '2.5vw'}}>
+                      <Button size="small" style={bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
+                      <Button size="small" style={bgstyle} onClick={enterDurationT} color="secondary">Duration</Button>
                   </ButtonGroup>
                 }
             </Grid>
