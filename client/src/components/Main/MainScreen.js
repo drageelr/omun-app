@@ -30,6 +30,7 @@ let socket;
 let user;
 let currentChatId = '';
 let tempEmission = [];
+let committee = {};
 
 export default function MainScreen() {
     const classes = useStyles();
@@ -65,7 +66,6 @@ export default function MainScreen() {
     let info = {};
     let session = {};
     let timer = {};
-    let committee = {};
 
     /*  
     info:
@@ -1089,6 +1089,22 @@ export default function MainScreen() {
         window.open(committee.driveLink, "_blank");
     }
 
+    function zoomButtonClick() {
+        window.open(committee.zoomLink, "_blank");
+    }
+
+    function changeFileLink(driveLink) {
+        if (user.type == "dias") {
+            socket.emit('REQ|committee-link', {driveLink});
+        }
+    }
+
+    function changeZoomLink(zoomLink) {
+        if (user.type == "dias") {
+            socket.emit('REQ|committee-link', {zoomLink});
+        }
+    }
+
     function getLogFetch() {
         /**
          * This function is used to fetch last 10 logs
@@ -1353,7 +1369,14 @@ export default function MainScreen() {
                             </div>
                         </div> */}
 
-                        <ButtonGroup tempOnClick={tempOnClick} fileButtonClick={fileButtonClick} ></ButtonGroup>
+                        <ButtonGroup 
+                        tempOnClick={tempOnClick} 
+                        fileButtonClick={fileButtonClick}
+                        zoomButtonClick={zoomButtonClick}
+                        type={userState.type} 
+                        changeFileLink={changeFileLink}
+                        changeZoomLink={changeZoomLink} 
+                        ></ButtonGroup>
                     </div>
                 </div>
             }
