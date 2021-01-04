@@ -63,3 +63,29 @@ exports.stopSession = async (req, res, next) => {
         next(err);
     }
 }
+
+exports.joinSession = async (req, res, next) => {
+    try {
+        let params = req.body;
+
+        let committeeId = params.committeeId;
+        if (params.user.type !== 'admin') {
+            let reqDias = await db.query('SELECT committeeId FROM ' + params.user.type + ' WHERE id = ' + params.user.id);
+            committeeId = reqDias[0].committeeId;
+        }
+
+        let reqSession = await db.query('SELECT id FROM session WHERE active = 1 AND committeeId = ' + committeeId);
+
+        if (!reqSession.length) { throw new customError.NotFoundError("committe session is not in progress"); }
+
+        res.json({
+            statusCode: 200,
+            statusName: httpStatus.getName(200),
+            message: "Session " + reqSession[0].id + " is in progress!",
+            sessionId: reqSession[0].id
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}

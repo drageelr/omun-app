@@ -16,6 +16,14 @@ export async function end(packet) {
     }
 };
 
+export async function join(packet) {
+    console.log("join",packet);
+    const res = await apiCaller('/api/session/join', packet, 200);//api, body, successCode, dataReturner
+    if (typeof(res)=="string"){ //error string
+        throw res;
+    }
+}
+
 export async function fetchCommittees() {
     const res = await apiCaller( '/api/account/fetch-accounts', {attributes:["id", "initials"], accountType: "committee"}, 200);//api, body, successCode, dataReturner
     if (typeof(res)=="string"){ //error string

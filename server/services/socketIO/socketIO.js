@@ -247,7 +247,8 @@ function createNameSpace(committeeId) {
                     // }
                     let user = socket.userObj;
                     if (user) {
-                        io.of("/" + committeeId).emit('RES|session-con', {
+                        let currentNsp = io.of("/" + committeeId);
+                        currentNsp.emit('RES|session-con', {
                             type: user.type,
                             userId: user.id,
                             connected: false
@@ -257,7 +258,7 @@ function createNameSpace(committeeId) {
                             let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
                             if (occupiedSeat.length) {
                                 let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
-                                if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
+                                if (unoccupySeat.changedRows) { currentNsp.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
                             }
                         }
                         let userDeleted = deleteUser("/" + committeeId, user.type, user.id);

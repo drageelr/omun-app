@@ -22,5 +22,13 @@ router.post(
     sessionController.stopSession
 );
 
+// API 1.3: Join Session
+router.post(
+    '/join',
+    validate(sessionValidation.sessionToggle, {keyByField: true}),
+    jwt.verfiyUser,
+    sessionController.joinSession
+);
+
 // Export router
 module.exports = router;
