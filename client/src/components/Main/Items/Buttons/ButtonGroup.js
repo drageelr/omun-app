@@ -6,6 +6,7 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import SendIcon from '@material-ui/icons/Send';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@material-ui/core/Typography';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -13,14 +14,34 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { withRouter } from 'react-router-dom';
-
+import clsx from 'clsx';
+import { makeStyles } from '@material-ui/core/styles';
+import Drawer from '@material-ui/core/Drawer';
+import List from '@material-ui/core/List';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import InboxIcon from '@material-ui/icons/MoveToInbox';
+import MailIcon from '@material-ui/icons/Mail';
+import SupervisedUserCircleIcon from '@material-ui/icons/SupervisedUserCircle';
 
 const initialState = {
     mouseX: null,
     mouseY: null,
 };
 
-function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink, history}) {
+const useStyles = makeStyles({
+    list: {
+        width: 250,
+    },
+    fullList: {
+        width: 'auto',
+    },
+});
+
+function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink, history, connectedDelegates, connectedAdmins, connectedDias, delegates, dias, admins}) {
+    const classes = useStyles();
     let [fileMenuState, setFileMenu] = React.useState(initialState);
     let [filePopupState, setFilePopup] = React.useState(false);
     let [zoomMenuState, setZoomMenu] = React.useState(initialState);
@@ -51,6 +72,64 @@ function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonClick, type, chang
     const closeZoomPopup = () => {
         setZoomPopup(false);
     }
+
+    React.useEffect(()=> {
+        console.log("Someone connected/disconnected!");
+        console.log("connectedAdmins : ", connectedAdmins);
+        console.log("connectedDelegates : ", connectedDelegates);
+        console.log("connectedDias : ", connectedDias);
+        console.log("delegates : ", delegates);
+        console.log("dias : ", dias);
+        console.log("admins : ", admins);
+    }, [connectedDias, connectedDelegates, connectedAdmins])
+
+    const [state, setState] = React.useState({
+        left: false,
+    });
+
+    const toggleDrawer = (anchor, open) => (event) => {
+        if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+        setState({ ...state, [anchor]: open });
+    };
+
+    const list = (anchor) => (
+        <div
+            className={clsx(classes.list, {[classes.fullList]: anchor === 'top' || anchor === 'bottom'})}
+            role="presentation"
+            onClick={toggleDrawer(anchor, false)}
+            onKeyDown={toggleDrawer(anchor, false)}
+        >
+        <List>
+            <ListItem button key={'Delegate'}>
+                <ListItemText primary={'Delegate'} />
+                {
+                    connectedDelegates.map((delegateId,i)=>
+                        <Typography key={i} variant='h6'>{delegateId}</Typography>
+                    )
+                }
+            </ListItem>
+            <Divider/>
+            <ListItem button key={'Dias'}>
+                <ListItemText primary={'Dias'} />
+                {
+                    connectedDias.map((diasId,i)=>
+                        <Typography key={i} variant='h6'>{diasId}</Typography>
+                    )
+                }
+            </ListItem>
+            <ListItem button key={'Admin'}>
+                <ListItemText primary={'Admin'} />
+                {
+                    connectedAdmins.map((adminId,i)=>
+                        <Typography key={i} variant='h6'>{adminId}</Typography>
+                    )
+                }
+            </ListItem>
+        </List>
+        </div>
+    );
 
     return (
     <div  style={{marginTop:'2vh'}} className='Buttons'>
@@ -205,12 +284,16 @@ function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonClick, type, chang
             </Dialog>
 
             &nbsp;&nbsp;
-
-            <Button 
-            onClick={tempOnClick} 
-            variant="contained" 
-            color="secondary"
-            >TEMP BUTTON</Button>
+            
+            {['left', 'right'].map((anchor) => (
+                <React.Fragment key={anchor}>
+                <Button onClick={toggleDrawer(anchor, true)}>{anchor}</Button>
+                <Drawer anchor={anchor} open={state[anchor]} onClose={toggleDrawer(anchor, false)}>
+                    {list(anchor)}
+                </Drawer>
+                </React.Fragment>
+            ))}
+            
         </div>
     </div>
     )
