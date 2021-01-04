@@ -68,7 +68,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
 
     //stop S,T
     timerToggle(true, 2, session.speakerTime);
-    timerToggle(false, 2, newTopicValue);
+    timerToggle(false, 2, newTopicValue < 0 ? session.topicTime : newTopicValue);
 
     //reset S
     timerToggle(true, 0);
@@ -85,7 +85,12 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   }
 
   function enterDurationS(){
-    setSessionTime('speaker', parseInt(prompt('Speaker Duration')));
+    if (timer.speakerToggle === 1) { //if not playing
+      const newDurationS = parseInt(prompt('Speaker Duration'));
+      if (newDurationS) {
+        setSessionTime('speaker', newDurationS);
+      }
+    }
   }
 
   function resetTimerT() {
@@ -98,7 +103,12 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   }
 
   function enterDurationT(){
-    setSessionTime('topic', parseInt(prompt('Topic Duration')));
+    if (timer.speakerToggle === 1) { //if not playing
+      const newDurationT = parseInt(prompt('Topic Duration'));
+      if (newDurationT) {
+        setSessionTime('topic', newDurationT);
+      }
+    }
   }
 
   const bgstyle ={padding: 5, width: '5vw'};
@@ -108,7 +118,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
       <Card style={{backgroundColor: "#111111", height:"38vh", overflowY:"auto"}}>
         <CardContent style={{color: "#FFFFFF"}}>
           <Grid container justify="center" direction="row" alignItems="center" item xs={12} spacing={3}>
-            <Grid item xs style={{marginTop: '-10vh', marginLeft: '2vh'}}
+            <Grid item xs style={{marginTop: type == 'dias' ? '-10vh' : '-2vh', marginLeft: '2vh'}}
             onMouseEnter={() => setCrossesShown(true)}
             onMouseLeave={() => setCrossesShown(false)}>
               <Typography variant='h5' color='#ffffff'>{session.committeeName}</Typography>
