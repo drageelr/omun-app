@@ -67,7 +67,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
     } 
 
     //stop S,T
-    timerToggle(true, 2, speakerValue);
+    timerToggle(true, 2, session.speakerTime);
     timerToggle(false, 2, newTopicValue);
 
     //reset S
@@ -90,8 +90,8 @@ export default function InformationBar ({session, timer, type, setSessionType, s
 
   function resetTimerT() {
     //stop S,T
-    timerToggle(true, 1);
-    timerToggle(false, 1);
+    timerToggle(true, 1, session.speakerTime);
+    timerToggle(false, 1, session.topicTime);
 
     //reset T
     timerToggle(false, 0);
