@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {start , end , fetchCommittees } from './Actions';
+import {start , end , join , fetchCommittees } from './Actions';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -118,7 +118,15 @@ function Home({user}){
 
     const handleJoin = async () => {
         sessionStorage.committeeId = SessionJ;
-        window.open("/main","_self");
+        try{
+            await join({committeeId: SessionEn});
+            setStatus("Joining Session.");
+            window.open("/main","_self");
+        } 
+        catch(e){
+            console.error(e);
+            setStatus(e); 
+        }
     };
 
     const override = css`
