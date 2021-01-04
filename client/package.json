@@ -27,6 +27,7 @@
     "react-scripts": "3.4.3",
     "react-scroll": "^1.8.1",
     "react-spinners": "^0.9.0",
+    "react-text-mask": "^5.4.3",
     "react-timestamp": "^5.1.0",
     "react-web-tabs": "^1.0.1",
     "react-window": "^1.8.6",

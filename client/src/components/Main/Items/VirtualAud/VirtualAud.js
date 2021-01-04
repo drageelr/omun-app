@@ -15,7 +15,7 @@ import MinimizeIcon from '@material-ui/icons/Minimize';
 function Seat({isEmpty, placard, countryName, imageName, id, onClick}) {
     let classN = (isEmpty)? 'item': (placard)?'item raised':'item occupied';
     try {
-        let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`./flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
+        let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`../flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover', backgroundPosition:'center'};
         if (countryName) {
             return (

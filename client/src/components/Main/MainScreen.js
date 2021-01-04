@@ -58,14 +58,18 @@ export default function MainScreen() {
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
     let [notifications, setNotifications] = useState([]);
+    let [gsListState, setGSList] = useState([]);
+    let [topicsListState, setTopicsList] = useState([]);
     const [tabValue, setTabValue] = React.useState(0);    
     let tempSocket = {};
     let seats = [];
+    let topicsList = [];
     let dias = {};
     let delegates = {};
     let info = {};
     let session = {};
     let timer = {};
+    let gsList = [];
 
     /*  
     info:
@@ -147,57 +151,17 @@ export default function MainScreen() {
          */
 
         // Chat Management
-        // tempEmission.push({event: 'REQ|del-chat-fetch|DEL', req: requestDelChatFetchDel()}) // Access: ["delegate"]
-        // tempEmission.push({event: 'REQ|del-chat-fetch', req: requestDelChatFetch()}); // Access: ["admin", "dias"]
-        // tempEmission.push({event: 'REQ|dias-chat-fetch|DEL', req: requestDiasChatFetchDel()}) // Access: ["delegate"]
-        // tempEmission.push({event: 'REQ|dias-chat-fetch|DIAS', req: requestDiasChatFetchDias()}) // Access: ["dias"]
-        // tempEmission.push({event: 'REQ|del-chat-send', req: requestDelChatSend()}) // Access: ["delegate"]
-        // tempEmission.push({event: 'REQ|dias-chat-send', req: requestDiasChatSend()}); // Access: ["dias", "delegate"]
-        /* 0 */tempEmission.push({event: 'REQ|del-chat-fetch|DEL', req: getDelChatFetchDel()}) // Access: ["delegate"]
         /* 1 */tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
-        /* 2 */tempEmission.push({event: 'REQ|dias-chat-fetch|DEL', req: {}}) // Access: ["delegate"]
-        /* 3 */tempEmission.push({event: 'REQ|dias-chat-fetch|DIAS', req: {}}) // Access: ["dias"]
-        /* 4 */tempEmission.push({event: 'REQ|del-chat-send', req: {}}) // Access: ["delegate"]
-        /* 5 */tempEmission.push({event: 'REQ|dias-chat-send', req: {}}); // Access: ["dias", "delegate"]
+    
 
         // Log & Notification Management
         /* 6 */tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
-        /* 7 */tempEmission.push({event: 'REQ|notif-fetch', req: getNotifFetch()}); // Access: ["admin", "dias", "delegate"]
-        /* 8 */tempEmission.push({event: 'REQ|notif-send', req: getNotifSend()}); // Access: ["dias"]
-
-        // Seat Management
-        // /* 9 */tempEmission.push({event: 'REQ|seat-sit', req: getSeatSit()}); // Access: ["delegate"]
-        // /* 10 */tempEmission.push({event: 'REQ|seat-unsit', req: getSeatUnsit()}); // Access: ["delegate"]
-        // /* 11 */tempEmission.push({event: 'REQ|seat-placard', req: getSeatPlacard()}); // Access: ["delegate"]
 
         // MOD & GSL Management
-        /* 12 */tempEmission.push({event: 'REQ|topic-create', req: getTopicCreate()}); // Access: ["dias"]
-        /* 13 */tempEmission.push({event: 'REQ|topic-edit', req: getTopicEdit()}); // Access: ["dias"]
-        /* 14 */tempEmission.push({event: 'REQ|topic-fetch', req: getTopicFetch()}); // Access: ["admin", "dias", "delegate"]
         /* 15 */tempEmission.push({event: 'REQ|topic-speaker-create', req: getTopicSpeakerCreate()}); // Access: ["dias"]
         /* 16 */tempEmission.push({event: 'REQ|topic-speaker-edit', req: getTopicSpeakerEdit()}); // Access: ["dias"]
         /* 17 */tempEmission.push({event: 'REQ|topic-speaker-fetch', req: getTopicSpeakerFetch()}); // Access: ["admin", "dias", "delegate"]
-        /* 18 */tempEmission.push({event: 'REQ|gsl-create', req: getGSLCreate()}); // Access: ["dias"]
-        /* 19 */tempEmission.push({event: 'REQ|gsl-edit', req: getGSLEdit()}); // Access: ["dias"]
-        /* 20 */tempEmission.push({event: 'REQ|gsl-fetch', req: getGSLFetch()}); // Access: ["admin", "dias", "delegate"]
 
-        // Session Management
-
-        
-        // Initial fetches
-        // if (user.type=="delegate") {
-        //     tempSocket.emit('REQ|del-chat-fetch|DEL', {})
-        //     tempSocket.emit('REQ|dias-chat-fetch|DEL', {})
-        // }
-        // else if (user.type == "dias") {
-        //     tempSocket.emit('REQ|del-chat-fetch')
-        //     tempSocket.emit('REQ|dias-chat-fetch|DIAS', {})
-        // }
-        // else { //admin
-        //     tempSocket.emit('REQ|del-chat-fetch', {})
-        // }
-        /* 21 */tempEmission.push({event: 'REQ|session-edit', req: getSessionEdit()}); // Access: ["dias"]
-        /* 22 */tempEmission.push({event: 'REQ|session-timer', req: getSessionTimer()}); // Access: ["dias"]
     }, []);
 
 
@@ -287,6 +251,8 @@ export default function MainScreen() {
         setConnected(true);
         setCommittee(committee);
         fetchNotifications();
+        fetchGSL();
+        fetchTopics();
     }
 
     function responseDelChatFetchDel(res) {
@@ -710,6 +676,9 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|topic-create:', res);
+        console.log(topicsList, typeof topicsList);
+        topicsList.push(res);
+        setTopicsList([...topicsList]);
     }
     
     function resTopicEdit(res) {
@@ -731,6 +700,16 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|topic-edit:', res);
+        let keys = Object.keys(res);
+        topicsList.forEach((gs, index) => {
+            if (gs.id == res.id){
+                for (let i = 0; i < keys.length; i++) {
+                    topicsList[index][keys[i]] = res[keys[i]];
+                }
+            }   
+        })
+        setTopicsList([...topicsList]);
+        
     }
 
     function resTopicFetch(res) {
@@ -740,7 +719,7 @@ export default function MainScreen() {
          */
         
         /**
-         * res = {
+         * res = [{
          *      id: Number, // Always sent
          *      delegateId: Number,
          *      description: String.min(0).max(250)
@@ -748,9 +727,12 @@ export default function MainScreen() {
          *      speakerTime: Number,
          *      visible: Boolean,
          *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
-         * }
+         * }]
          */
         console.log('RES|topic-fetch:', res);
+        
+        topicsList = res.topics;
+        setTopicsList(topicsList);
     }
 
     function resTopicSpeakerCreate(res) {
@@ -784,6 +766,8 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|gsl-create:', res);
+        gsList.push(res);
+        setGSList([...gsList]);
     }
 
     function resGSLEdit(res) {
@@ -806,6 +790,15 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|gsl-edit:', res);
+        let keys = Object.keys(res);
+        gsList.forEach((gs, index) => {
+            if (gs.id == res.id){
+                for (let i = 0; i < keys.length; i++) {
+                    gsList[index][keys[i]] = res[keys[i]];
+                }
+            }   
+        })
+        setGSList([...gsList]);
     }
 
     function resGSLFetch(res) {
@@ -829,6 +822,8 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|gsl-fetch:', res);
+        gsList = res.gsl;
+        setGSList(gsList);
     }
 
     function resSessionEdit(res) {
@@ -952,6 +947,10 @@ export default function MainScreen() {
         };
 
         return req;
+    }
+
+    function setCurrentTopic(topicId, topicTime, speakerTime) {
+        socket.emit('REQ|session-edit', {topicId, topicTime, speakerTime, speakerId: 0, type: 'MOD'});
     }
 
     function sit(seatId){ // Number.min(1).max(50)
@@ -1121,92 +1120,73 @@ export default function MainScreen() {
         return req;
     }
 
-    function getNotifFetch() {
-        /**
-         * This function is used to fetch last 10 notifications
-         * This event is supposed to be emitted when the loading sign is clicked in the notifications box
-         */
 
-        let req = {
-            // id of the oldest notification (if no notification then send 0)
-            lastNotifId: 0
-        };
-
-        return req;
-    }
-
-    function getNotifSend() {
-        /**
-         * This function is used to send notification
-         * This event is supposed to be emitted when the send button is pressed on the notification box
-         */
-        
-        let req = {
-            // message to send "String.min(1).max(250)"
-            message: "Hello Committee!"
-        };
-
-        return req;
-    }
+    // 'REQ|topic-create', req: getTopicCreate()}); // Access: ["dias"]
+    // 'REQ|topic-edit', req: getTopicEdit()}); // Access: ["dias"]
+    // 'REQ|topic-fetch', req: getTopicFetch()}); // Access: ["admin", "dias", "delegate"]
+    // 'REQ|topic-speaker-create', req: getTopicSpeakerCreate()}); // Access: ["dias"]
+    // 'REQ|topic-speaker-edit', req: getTopicSpeakerEdit()}); // Access: ["dias"]
+    // 'REQ|topic-speaker-fetch', req: getTopicSpeakerFetch()}); // Access: ["admin", "dias", "delegate"]
 
 
-    function getTopicCreate() {
+    function addTopic(delegateId, description, totalTime, speakerTime) {
         /**
          * Call this when a new topic is to be created
          */
 
-        let req = {
-            // id of the delegate who proposed this topic
-            delegateId: 2,
-            // desc of topic
-            description: "Topic Desc",
-            // total time for the topic
-            totalTime: 120,
-            // individual speaker time for the topic
-            speakerTime: 30
-        }
-
-        return req;
+        // let req = {
+        //     // id of the delegate who proposed this topic
+        //     delegateId: 2,
+        //     // desc of topic
+        //     description: "Topic Desc",
+        //     // total time for the topic
+        //     totalTime: 120,
+        //     // individual speaker time for the topic
+        //     speakerTime: 30
+        // }
+        console.log(delegateId, description, totalTime, speakerTime);
+        socket.emit('REQ|topic-create', {delegateId, description, totalTime, speakerTime})
     }
 
-    function getTopicEdit() {
+    function editTopic(topicId, editParams) {
         /**
          * Only "topicId" is required, rest is optional
          * This will be used to edit the topic by the dias
          */
 
 
-        let req = {
-            // id of topic to edit
-            topicId: 1, // REQUIRED
-            // id of the delegate who proposed this topic
-            delegateId: 2,
-            // desc of topic
-            description: "Topic Desc",
-            // total time for the topic
-            totalTime: 120,
-            // individual speaker time for the topic
-            speakerTime: 30,
-            // to toggle visiblity for delegates
-            visible: true
-        }
-
-        return req;
+        // let req = {
+        //     // id of topic to edit
+        //     topicId: 1, // REQUIRED
+        //     // id of the delegate who proposed this topic
+        //     delegateId: 2,
+        //     // desc of topic
+        //     description: "Topic Desc",
+        //     // total time for the topic
+        //     totalTime: 120,
+        //     // individual speaker time for the topic
+        //     speakerTime: 30,
+        //     // to toggle visiblity for delegates
+        //     visible: true
+        // }
+        
+        socket.emit('REQ|topic-edit', {topicId, ...editParams})
     }
 
-    function getTopicFetch() {
+    function fetchTopics() {
         /**
          * This function is used to fetch last 10 topics (will fetch only visible ones for "delegates" automatically)
          * This event is supposed to be emitted when the loading sign is clicked in the topics box
          */
+        
+        // let req = {
+        //     // id of the oldest topic (if no topic then send 0)
+        //     lastTopicId: 0
+        // }
 
-        let req = {
-            // id of the oldest topic (if no topic then send 0)
-            lastTopicId: 0
-        }
-
-        return req;
+        socket.emit('REQ|topic-fetch', {lastTopicId: 0});
     }
+
 
     function getTopicSpeakerCreate() {
 
@@ -1220,57 +1200,53 @@ export default function MainScreen() {
 
     }
 
-    function getGSLCreate() {
+    function addToGSL(delegateId) {
         /**
          * Call this when a new gsl is to be created
          */
-
-        let req = {
-            // id of the delegate to add
-            delegateId: 2,
-        }
-
-        return req;
+        
+        socket.emit('REQ|gsl-create', {delegateId});
     }
 
-    function getGSLEdit() {
+    function editGSL(gslId, editParams) {
         /**
          * Only "gslId" is required, rest is optional
          * This will be used to edit the gsl by the dias and some auto features
          */
 
 
-        let req = {
-            // id of gsl to edit
-            gslId: 1, // REQUIRED
-            // id of the delegate to change
-            delegateId: 2,
-            // review for speaker "String.min(0).max(500)"
-            review: "Speaker Review",
-            // time that the delegate spoke for
-            spokenTime: 30,
-            // to toggle visiblity for delegates
-            visible: true,
-            // will tell server to timestamp
-            timestampSpoken: true
-        }
+        // let req = {
+        //     // id of gsl to edit
+        //     gslId: 1, // REQUIRED
+        //     // id of the delegate to change
+        //     delegateId: 2,
+        //     // review for speaker "String.min(0).max(500)"
+        //     review: "Speaker Review",
+        //     // time that the delegate spoke for
+        //     spokenTime: 30,
+        //     // to toggle visiblity for delegates
+        //     visible: true,
+        //     // will tell server to timestamp
+        //     timestampSpoken: true
+        // }
 
-        return req;
+        socket.emit('REQ|gsl-edit', {...editParams, gslId} );
     }
 
-    function getGSLFetch() {
+    function fetchGSL() {
         /**
          * This function is used to fetch last 10 topics (will fetch only visible ones for "delegates" automatically)
          * This event is supposed to be emitted when the loading sign is clicked in the topics box
          */
 
-        let req = {
-            // id of the oldest topic (if no topic then send 0)
-            lastGSLId: 0
-        }
+        // let req = {
+        //     // id of the oldest topic (if no topic then send 0)
+        //     lastGSLId: 0
+        // }
 
-        return req;
+        socket.emit('REQ|gsl-fetch', {lastGSLId: 0});
     }
+
 
     function getSessionEdit() {
         
@@ -1297,6 +1273,12 @@ export default function MainScreen() {
     function setChatId(newChatId) {
         currentChatId = newChatId;
         setCurrentChatId(currentChatId);
+    }
+
+    function setGSLSpeaker(speakerId) { //delegate Id
+        if (user.type == 'dias') {
+            socket.emit('REQ|session-edit', {speakerId, topicId: 0, type: 'GSL'});
+        }
     }
 
     function getSessionTimer() {
@@ -1351,9 +1333,27 @@ export default function MainScreen() {
                             <CardContent>
                             {
                                 tabValue == 0 ?
-                                <Topics/> :
+                                <Topics
+                                type={userState.type} 
+                                delegates={infoState.delegates} 
+                                delegatesList={infoState.delegatesList}
+                                topicsList={topicsListState}
+                                addTopic={addTopic}
+                                editTopic={editTopic}
+                                fetchTopics={fetchTopics}
+                                setCurrentTopic={setCurrentTopic}
+                                /> :
                                 tabValue == 1 ?
-                                <GSL/> :
+                                <GSL
+                                gsList={gsListState}
+                                type={userState.type} 
+                                delegates={infoState.delegates} 
+                                delegatesList={infoState.delegatesList}
+                                addToGSL={addToGSL}
+                                editGSL={editGSL}
+                                fetchGSL={fetchGSL}
+                                setGSLSpeaker={setGSLSpeaker}
+                                /> :
                                 <RSL/>
                             }                
                             </CardContent>

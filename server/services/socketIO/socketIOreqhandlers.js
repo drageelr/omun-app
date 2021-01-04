@@ -595,15 +595,12 @@ exports.handleTopicFetch = async (socket, params, event) => {
 
         let selectQuery = 'SELECT id, delegateId, description, totalTime, speakerTime, visible, timestamp FROM (SELECT id, delegateId, description, totalTime, speakerTime, visible, timestamp FROM topic WHERE ';
         let restQuery = 'committeeId = ' + user.committeeId + ' AND id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC'
-        if (user.type == "delegate") {
-            restQuery = 'visible = 1 AND ' + restQuery;
-        }
 
         let result = await db.query(selectQuery + restQuery);
 
         let topics = [];
         for (let i = 0; i < result.length; i++) {
-            topics.push(hFuncs.duplicateObject(topics[i], ['id', 'delegateId', 'description', 'totalTime', 'speakerTime', 'visible', 'timestamp']));
+            topics.push(hFuncs.duplicateObject(result[i], ['id', 'delegateId', 'description', 'totalTime', 'speakerTime', 'visible', 'timestamp']));
         }
 
         let res = {
@@ -866,15 +863,11 @@ exports.handleGSLFetch = async (socket, params, event) => {
         let restQuery = 'committeeId = ' + user.committeeId + ' AND id < ' + fetchFrom + ' ORDER BY id DESC LIMIT 10) sub ORDER BY id ASC';
         let keys = ['id', 'delegateId', 'spokenTime', 'visible', 'timestampAdded', 'timestampSpoken'];
 
-        if (user.type == "delegate") {
-            restQuery = 'visible = 1 AND ' + restQuery;
-        } else {
+        if (user.type != "delegate") {
             keys.push('review');
         }
 
         let result = await db.query(selectQuery + restQuery);
-
-        console.log(result);
 
         let gsl = [];
         for (let i = 0; i < result.length; i++) {

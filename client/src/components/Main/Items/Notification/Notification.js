@@ -113,7 +113,7 @@ function Notification({notifications, sendNotification, reachedNotifTop, fetchNo
             </Dialog>
             
 
-            <CardContent ref={notifContainer} onScroll={handleScroll} onClick={fetchNotifications} style={contentStyle}>
+            <CardContent ref={notifContainer} onScroll={handleScroll} style={contentStyle}>
                 {
                     fetching && !reachedNotifTop &&
                     <Box style={{margin: 4, display: 'flex', justifyContent: 'center'}}>

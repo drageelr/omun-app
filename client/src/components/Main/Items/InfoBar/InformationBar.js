@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import './InformationBar.css'
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import { Button, Card, CardContent, ButtonGroup } from '@material-ui/core';
+import { Button, Card, CardContent, ButtonGroup, IconButton, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
@@ -39,37 +39,21 @@ const useStyles = makeStyles((theme) => ({
  *        0: Topic Timer's current value = session.topicTime
 */
 
+export function secToMinsec(sec){
+  return `${("0" + parseInt(sec/60)).slice(-2)}:${("0" + sec%60).slice(-2)}`;
+}
 
 export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
-  const classes = useStyles();
+  const [crossesShown, setCrossesShown] = useState(false);
+
   const [timerKeyS, setTimerKeyS] = React.useState(0);
   const [timerKeyT, setTimerKeyT] = React.useState(0);
 
   const [speakerValue, setSpeakerValue] = React.useState(0);
   const [topicValue, setTopicValue] = React.useState(0);
 
-  // React.useEffect(() => {
-  //   const timerSRunning = setInterval(() => {
-  //     setProgress((oldProgress) => {
-  //       if (oldProgress === 0) {
-  //         return 100;
-  //       }
-  //       const diff = Math.random() * 10;
-  //       return Math.min(oldProgress - diff, 100);
-  //     });
-  //   }, 500);
-
-  //   return () => {
-  //     clearInterval(timerSRunning);
-  //   };
-  // }, []);
   
   React.useEffect(() => {
-    // console.log(timer.speakerToggle, timer.speakerValue);
-    // if (timer.speakerToggle === 0) { //when reset command recieved, reset time to initial state
-    //   console.log("resetting speaker timer");
-      
-    // }
     setTimerKeyS(timerKeyS+1);
     setTimerKeyT(timerKeyT+1);
 
@@ -122,19 +106,32 @@ export default function InformationBar ({session, timer, type, setSessionType, s
       <Card style={{backgroundColor: "#111111", height:"38vh", overflowY:"auto"}}>
         <CardContent style={{color: "#FFFFFF"}}>
           <Grid container justify="center" direction="row" alignItems="center" item xs={12} spacing={3}>
-            <Grid item xs>
-              <p>Committee Name:</p>
-              {session.committeeName} 
-              <p>Topic:</p>
-              {session.topicName}
-                <CancelIcon 
-                  onClick={()=>deleteSessionTopic}
-                />
-              <p>Speaker:</p>
-              {session.speakerName}
-                <CancelIcon
-                onClick={()=>deleteSessionSpeaker}
-                />
+            <Grid item xs style={{marginTop: '-10vh', marginLeft: '2vh'}}
+            onMouseEnter={() => setCrossesShown(true)}
+            onMouseLeave={() => setCrossesShown(false)}>
+              <Typography variant='h5' color='#ffffff'>{session.committeeName}</Typography>
+              <br></br>
+              <h6>Topic:</h6>
+              <div style={{display: 'flex', flexDirection: 'row'}}>
+                <Typography variant='p' color='secondary'>{session.topicName}</Typography>
+                  {
+                    type == 'dias' && crossesShown &&
+                    <IconButton style={{padding: 0, marginLeft: 5}} color='primary' onClick={deleteSessionTopic}>
+                      <CancelIcon/>
+                    </IconButton>
+                  }
+              </div>
+              <br></br>
+              <h6>Speaker:</h6>
+              <div style={{display: 'flex', flexDirection: 'row'}}>
+                <Typography variant='p' color='secondary'> {session.speakerName} </Typography>
+                  {
+                    type == 'dias' && crossesShown &&
+                    <IconButton style={{padding: 0, marginLeft: 5}} color='primary' onClick={deleteSessionSpeaker}>
+                      <CancelIcon/>
+                    </IconButton>
+                  }
+              </div>
             </Grid>
 
             {/* Button Color basis on session type */}
@@ -184,7 +181,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                   >
                     {({ remainingTime }) => {
                       setSpeakerValue(remainingTime);
-                      return `${("0" + parseInt(remainingTime/60)).slice(-2)}:${("0" + remainingTime%60).slice(-2)}`;
+                      return secToMinsec(remainingTime);
                     }}
                   </CountdownCircleTimer>
                 </div>
@@ -216,7 +213,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                   >
                     {({ remainingTime }) => {
                       setTopicValue(remainingTime);
-                      return `${("0" + parseInt(remainingTime/60)).slice(-2)}:${("0" + remainingTime%60).slice(-2)}`;
+                      return secToMinsec(remainingTime);
                     }}
                   </CountdownCircleTimer>
                 </div>
