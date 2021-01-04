@@ -1376,16 +1376,6 @@ export default function MainScreen() {
                             </CardContent>
                         </Card>
 
-                        {/* <div  style={{marginTop:'2vh'}} className='Buttons'>
-                            <div>
-                                <Button variant="contained" color="primary" startIcon={<ExitToAppIcon/>} >Leave Session</Button>
-                                &nbsp;&nbsp;
-                                <Button component={FileButton} fileButtonClick={fileButtonClick} variant="contained" color="grey.300" startIcon={<DescriptionIcon/>} >Files</Button>
-                                &nbsp;&nbsp;
-                                <Button onClick={tempOnClick} variant="contained" color="secondary">TEMP BUTTON</Button>
-                            </div>
-                        </div> */}
-
                         <ButtonGroup 
                         tempOnClick={tempOnClick} 
                         fileButtonClick={fileButtonClick}

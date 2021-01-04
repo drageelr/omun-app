@@ -12,13 +12,15 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
+import { withRouter } from 'react-router-dom';
+
 
 const initialState = {
     mouseX: null,
     mouseY: null,
 };
 
-export default function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink}) {
+function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink, history}) {
     let [fileMenuState, setFileMenu] = React.useState(initialState);
     let [filePopupState, setFilePopup] = React.useState(false);
     let [zoomMenuState, setZoomMenu] = React.useState(initialState);
@@ -57,6 +59,7 @@ export default function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonCli
             variant="contained" 
             color="primary" 
             startIcon={<ExitToAppIcon/>}
+            onClick={()=>history.goBack()}
             >Leave Session</Button>
 
             &nbsp;&nbsp;
@@ -200,9 +203,9 @@ export default function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonCli
                     </Formik>
                 </DialogContent>
             </Dialog>
-  
+
             &nbsp;&nbsp;
-  
+
             <Button 
             onClick={tempOnClick} 
             variant="contained" 
@@ -212,3 +215,5 @@ export default function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonCli
     </div>
     )
 }
+
+export default withRouter(ButtonGroup)
