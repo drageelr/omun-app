@@ -42,7 +42,10 @@ const reqEvents = {
 
     // Session Management
     'session-edit': IOreqhandlers.handleSessionEdit,
-    'session-timer': IOreqhandlers.handleSessionTimer
+    'session-timer': IOreqhandlers.handleSessionTimer,
+
+    // Committee Management
+    'committee-link': IOreqhandlers.handleCommitteeLink
 };
 
 async function sendStartInfo(socket) {
@@ -85,7 +88,9 @@ async function sendStartInfo(socket) {
         let committee = {
             id: reqCommittee[0].id,
             name: reqCommittee[0].name,
-            intials: reqCommittee[0].intials
+            intials: reqCommittee[0].intials,
+            zoomLink: reqCommittee[0].zoomLink,
+            driveLink: reqCommittee[0].driveLink
         }
 
         let session = {

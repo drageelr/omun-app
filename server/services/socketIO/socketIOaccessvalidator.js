@@ -34,7 +34,10 @@ const eventAccess = {
 
     // Session Management
     'session-edit': ["dias"],
-    'session-timer': ["dias"]
+    'session-timer': ["dias"],
+
+    // Committee Management
+    'committee-link': ["dias"],
 };
 
 exports.validateAccess = (event, type) => {

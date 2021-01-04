@@ -993,3 +993,41 @@ exports.handleSessionTimer = async (socket, params, event) => {
         return [{}, err];
     }
 }
+
+// Committee Management
+
+exports.handleCommitteeLink = async (socket, params, event) => {
+    try {
+        let user = socket.userObj;
+
+        let res = {};
+        let updateQueryStr = 'UPDATE committee SET ';
+        let whereQueryStr = ' WHERE id = ' + user.committeeId;
+        let edits = '';
+
+        if (params.zoomLink !== undefined) { res.zoomLink = params.zoomLink; updateQueryStr += 'zoomLink = "' + params.zoomLink + '"'; edits += 'zoomLink, ' }
+        if (params.driveLink !== undefined) { 
+            res.driveLink = params.driveLink;
+            if (updateQueryStr != 'UPDATE committee SET ') { updateQueryStr += ' AND '; }
+            updateQueryStr += 'driveLink = "' + params.driveLink + '"';
+            edits += 'driveLink';
+        }
+
+        if (res.zoomLink === undefined && res.driveLink === undefined) { throw new customError.ValidationError("no value supplied for the link"); }
+
+        let timestampAltered = hFuncs.parseDate();
+
+        await db.query(updateQueryStr + whereQueryStr);
+
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res);
+        broadcastToRoom(user.nsp, user.committeeId + '|' + "delegate", event, res);
+
+        let logErr = await generateAndBroadcastLog(user.nsp, user.committeeId, user.sessionId, '|COMMITTEE|: [' + user.title + ' ' + user.name + '] updated ' + edits, timestampAltered);
+        if (logErr) { throw logErr; }
+
+        return [undefined, undefined];
+    } catch(err) {
+        return [{}, err];
+    }
+}

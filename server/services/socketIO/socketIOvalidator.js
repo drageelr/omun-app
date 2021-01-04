@@ -258,6 +258,18 @@ const validations = {
             required: true,
             size: { min: 0, max: 2 } // 0->reset 1->pause 2->play
         }
+    }),
+
+    // Committee Management
+    'committee-link': new Schema({
+        zoomLink: {
+            type: String,
+            length: { min: 0, max: 300 }
+        },
+        driveLink: {
+            type: String,
+            length: { min: 0, max: 300 }
+        }
     })
 }
 

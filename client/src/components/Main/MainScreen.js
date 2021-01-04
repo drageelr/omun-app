@@ -5,14 +5,15 @@ import Notification from './Items/Notification/Notification'
 import VirtualAud from './Items/VirtualAud/VirtualAud'
 import MessageBox from './Items/MessageBox/MessageBox'
 import io from "socket.io-client"
-import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-import DescriptionIcon from '@material-ui/icons/Description'
+// import ExitToAppIcon from '@material-ui/icons/ExitToApp'
+// import DescriptionIcon from '@material-ui/icons/Description'
 import { Button, Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles';
 import MuiAlert from '@material-ui/lab/Alert';
 import Topics from './Items/Zoom/Topics'
 import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
+import ButtonGroup from './Items/Buttons/ButtonGroup'
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -39,6 +40,7 @@ export default function MainScreen() {
     let [seated, setSeated] = useState(false);
     let [placard, setPlacard] = useState(false);
     let [sessionState, setSession] = useState({});
+    let [committeeState, setCommittee] = useState({});
     let [timerState, setTimer] = useState({});
     let [connectedDias, setConnectedDias] = useState([]);
     let [connectedDelegates, setConnectedDelegates] = useState([]);
@@ -63,6 +65,7 @@ export default function MainScreen() {
     let info = {};
     let session = {};
     let timer = {};
+    let committee = {};
 
     /*  
     info:
@@ -135,6 +138,9 @@ export default function MainScreen() {
         socket.on('RES|session-edit', resSessionEdit); // Recieved By: ["admin", "delegate", "dias"]
         socket.on('RES|session-timer', resSessionTimer); // Recieved By: ["admin", "delegate", "dias"]
         socket.on('RES|session-con', resSessionCon); // Recieved By: ["admin", "delegate", "dias"]
+
+        // Committee Management
+        socket.on('RES|committee-link', resCommitteeLink); // Recieved By: ["admin", "delegate", "dias"]
 
         /**
          * REQ Event Emission
@@ -266,6 +272,8 @@ export default function MainScreen() {
 
         timer = {topicToggle: 0, speakerToggle: 1, speakerValue: info.session.speakerTime, topicValue: info.session.topicTime};
         
+        committee = info.committee;
+
         setTimer(timer);
         setInfo(info);
         setSeated(initSeated);
@@ -277,6 +285,7 @@ export default function MainScreen() {
         setConnectedDias(info.connectedDias);
         setConnectedDelegates(info.connectedDelegates);
         setConnected(true);
+        setCommittee(committee);
         fetchNotifications();
     }
 
@@ -890,6 +899,15 @@ export default function MainScreen() {
         console.log('RES|session-con:', res);
     }
 
+    function resCommitteeLink(res) {
+        console.log('RES|committee-link:', res);
+        let keys = Object.keys(res);
+        for (let i = 0; i < keys.length; i++) {
+            committee[keys[i]] = res[keys[i]];
+        }
+        setCommittee({...committee});
+    }
+
     function getDelChatFetchDel() {
         /**
          * This function is used to fetch last 10 messages of this delegate's chat with target delegate
@@ -1065,6 +1083,10 @@ export default function MainScreen() {
             console.log('REQ|session-timer:', req);
             socket.emit('REQ|session-timer', req);
         }
+    }
+
+    function fileButtonClick() {
+        window.open(committee.driveLink, "_blank");
     }
 
     function getLogFetch() {
@@ -1321,15 +1343,17 @@ export default function MainScreen() {
                             </CardContent>
                         </Card>
 
-                        <div  style={{marginTop:'2vh'}} className='Buttons'>
+                        {/* <div  style={{marginTop:'2vh'}} className='Buttons'>
                             <div>
                                 <Button variant="contained" color="primary" startIcon={<ExitToAppIcon/>} >Leave Session</Button>
                                 &nbsp;&nbsp;
-                                <Button variant="contained" color="grey.300" startIcon={<DescriptionIcon/>} >Files</Button>
+                                <Button component={FileButton} fileButtonClick={fileButtonClick} variant="contained" color="grey.300" startIcon={<DescriptionIcon/>} >Files</Button>
                                 &nbsp;&nbsp;
                                 <Button onClick={tempOnClick} variant="contained" color="secondary">TEMP BUTTON</Button>
                             </div>
-                        </div>
+                        </div> */}
+
+                        <ButtonGroup tempOnClick={tempOnClick} fileButtonClick={fileButtonClick} ></ButtonGroup>
                     </div>
                 </div>
             }
