@@ -6,6 +6,11 @@ var customError = require('../errors/errors');
 var hFuncs = require('../services/helper-funcs');
 var { generate } = require('generate-password');
 var { sendWelcomeEmail } = require('../services/nodemailer');
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
+
+let appendFile = util.promisify(fs.appendFile);
 
 function genPass() {
     return generate({
@@ -38,10 +43,14 @@ exports.createAdmin = async (req, res, next) => {
         let result = await db.query(queryStr + valueStr);
 
         let ids = [];
+        let csvData = "";
         for (let i = 0; i < params.admins.length; i++) {
             ids.push(result.insertId + i);
+            csvData += ids[i] + ',' + params.admins[i].name + ',' + params.admins[i].email + ',' + params.admins[i].password + '\n';
             sendWelcomeEmail(params.admins[i].email, params.admins[i].name, params.admins[i].password);
         }
+
+        await appendFile(path.join(__dirname, '../files/admins.csv'), csvData);
 
         res.json({
             statusCode: 200,
@@ -149,10 +158,14 @@ exports.createDias = async (req, res, next) => {
         let result = await db.query(queryStr + valueStr);
 
         let ids = [];
+        let csvData = "";
         for (let i = 0; i < params.dias.length; i++) {
             ids.push(result.insertId + i);
+            csvData += ids[i] + ',' + params.dias[i].name + ',' + params.dias[i].email + ',' + params.dias[i].password + '\n';
             sendWelcomeEmail(params.dias[i].email, params.dias[i].name, params.dias[i].password);
         }
+
+        await appendFile(path.join(__dirname, '../files/dias.csv'), csvData);
 
         res.json({
             statusCode: 200,
@@ -186,10 +199,14 @@ exports.createDelegate = async (req, res, next) => {
         let result = await db.query(queryStr + valueStr);
 
         let ids = [];
+        let csvData = "";
         for (let i = 0; i < params.delegates.length; i++) {
             ids.push(result.insertId + i);
+            csvData += ids[i] + ',' + params.delegates[i].name + ',' + params.delegates[i].email + ',' + params.delegates[i].password + '\n';
             sendWelcomeEmail(params.delegates[i].email, params.delegates[i].name, params.delegates[i].password);
         }
+
+        await appendFile(path.join(__dirname, '../files/delegates.csv'), csvData);
 
         res.json({
             statusCode: 200,
