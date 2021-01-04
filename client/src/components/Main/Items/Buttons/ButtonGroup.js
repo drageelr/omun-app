@@ -1,30 +1,17 @@
 import React, {useState, useEffect} from 'react'
-import { Button } from '@material-ui/core'
-import DescriptionIcon from '@material-ui/icons/Description'
-import AirplayIcon from '@material-ui/icons/Airplay';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-import SendIcon from '@material-ui/icons/Send';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { withRouter } from 'react-router-dom';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
+import { Button, Menu, MenuItem, Typography, ListItem, ListItemIcon, ListItemText, Divider, List, Drawer, DialogTitle, DialogContentText, Dialog, DialogContent } from '@material-ui/core';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
+import DescriptionIcon from '@material-ui/icons/Description'
+import AirplayIcon from '@material-ui/icons/Airplay';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import MailIcon from '@material-ui/icons/Mail';
+import SendIcon from '@material-ui/icons/Send';
 import SupervisedUserCircleIcon from '@material-ui/icons/SupervisedUserCircle';
+import { makeStyles } from '@material-ui/core/styles';
 
 const initialState = {
     mouseX: null,
@@ -40,40 +27,16 @@ const useStyles = makeStyles({
     },
 });
 
+
 function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink, history, connectedDelegates, connectedAdmins, connectedDias, delegates, dias, admins}) {
     const classes = useStyles();
-    let [fileMenuState, setFileMenu] = React.useState(initialState);
-    let [filePopupState, setFilePopup] = React.useState(false);
-    let [zoomMenuState, setZoomMenu] = React.useState(initialState);
-    let [zoomPopupState, setZoomPopup] = React.useState(false);
+    const [fileMenuState, setFileMenu] = React.useState(initialState);
+    const [filePopupState, setFilePopup] = React.useState(false);
+    const [zoomMenuState, setZoomMenu] = React.useState(initialState);
+    const [zoomPopupState, setZoomPopup] = React.useState(false);
+    const [state, setState] = useState({ left: false });
 
-    const fileMenuClose = () => {
-        setFileMenu(initialState);
-    }
-
-    const fileMenuClick = () => {
-        setFileMenu(initialState);
-        setFilePopup(true);
-    }
-
-    const closeFilePopup = () => {
-        setFilePopup(false);
-    }
-
-    const zoomMenuClose = () => {
-        setZoomMenu(initialState);
-    }
-
-    const zoomMenuClick = () => {
-        setZoomMenu(initialState);
-        setZoomPopup(true);
-    }
-
-    const closeZoomPopup = () => {
-        setZoomPopup(false);
-    }
-
-    React.useEffect(()=> {
+    useEffect(()=> {
         console.log("Someone connected/disconnected!");
         console.log("connectedAdmins : ", connectedAdmins);
         console.log("connectedDelegates : ", connectedDelegates);
@@ -83,9 +46,32 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
         console.log("admins : ", admins);
     }, [connectedDias, connectedDelegates, connectedAdmins])
 
-    const [state, setState] = React.useState({
-        left: false,
-    });
+
+    function fileMenuClose(){
+        setFileMenu(initialState);
+    }
+
+    function fileMenuClick(){
+        setFileMenu(initialState);
+        setFilePopup(true);
+    }
+
+    function closeFilePopup(){
+        setFilePopup(false);
+    }
+
+    function zoomMenuClose(){
+        setZoomMenu(initialState);
+    }
+
+    function zoomMenuClick(){
+        setZoomMenu(initialState);
+        setZoomPopup(true);
+    }
+
+    function closeZoomPopup(){
+        setZoomPopup(false);
+    }
 
     const toggleDrawer = (anchor, open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -131,6 +117,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
         </div>
     );
 
+    
     return (
     <div  style={{marginTop:'2vh'}} className='Buttons'>
         <div>
