@@ -241,6 +241,7 @@ export default function Topics({type, topicsList, delegates, delegatesList, addT
             <div className={classes.contentStyle}>
                 {
                     // only show certain topics that are invisible if you are dias
+                    topicsList &&
                     topicsList.filter(topic => (type == 'dias' || topic.visible)).map(({id, description, delegateId, visible, totalTime, speakerTime},i)=> (
                         <TopicRow
                         key={i} 

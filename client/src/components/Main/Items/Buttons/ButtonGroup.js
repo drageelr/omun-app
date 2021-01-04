@@ -58,9 +58,9 @@ export default function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonCli
             color="primary" 
             startIcon={<ExitToAppIcon/>}
             >Leave Session</Button>
-  
+
             &nbsp;&nbsp;
-  
+
             <Button 
             onClick={fileButtonClick} 
             variant="contained" 
@@ -129,13 +129,13 @@ export default function ButtonGroup({tempOnClick, fileButtonClick, zoomButtonCli
                     </Formik>
                 </DialogContent>
             </Dialog>
-  
+
             &nbsp;&nbsp;
 
             <Button 
             onClick={zoomButtonClick} 
             variant="contained" 
-            color="grey.300" 
+            style={{backgroundColor:"#3473ed", color: 'white'}}
             startIcon={<AirplayIcon/>}
             onContextMenu={(event) => {
                 event.preventDefault(); 

@@ -620,7 +620,7 @@ exports.handleTopicSpeakerCreate = async (socket, params, event) => {
         let reqTopic = await db.query('SELECT id FROM topic WHERE id = ' + params.topicId + ' AND committeeId = ' + user.committeeId);
         if (!reqTopic.length) { throw new customError.NotFoundError("topic not found"); }
 
-        let reqDelegate = await db.query('SELECT id, countryId FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + params.committeeId);
+        let reqDelegate = await db.query('SELECT id, countryId FROM delegate WHERE id = ' + params.delegateId + ' AND committeeId = ' + user.committeeId);
         if (!reqDelegate.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
 
         let timestampCreated = hFuncs.parseDate();
@@ -722,9 +722,7 @@ exports.handleTopicSpeakerFetch = async (socket, params, event) => {
         let queryStr = 'SELECT id, delegateId, review, spokenTime, visible, timestamp FROM topic_speaker WHERE topicId IN (SELECT topicId FROM session WHERE id = ' + user.sessionId + ')';
         let keys = ['id', 'delegateId', 'spokenTime', 'visible', 'timestamp'];
 
-        if (user.type == "delegate") {
-            queryStr += ' AND visible = 1';
-        } else {
+        if (user.type !== "delegate") {
             keys.push('review');
         }
 

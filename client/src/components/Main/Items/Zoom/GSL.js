@@ -132,7 +132,7 @@ export default function GSL({type, gsList, delegates, delegatesList, addToGSL, e
             }
             <div className={classes.contentStyle}>
                 {
-
+                    gsList &&
                     gsList.filter(gs => (type == 'dias' || gs.visible))
                     .map(({id, delegateId, visible, spokenTime},i)=> (
                         (type == 'dias' || visible) &&
