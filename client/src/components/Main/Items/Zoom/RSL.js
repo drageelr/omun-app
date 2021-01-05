@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function RSLRow({countryName, delegateId, imageName, canEdit, visible, spoken, editRSLHelper, changeSpeaker}) {
+function RSLRow({countryName, id, topicId, delegateId, imageName, canEdit, visible, spoken, editRSL, changeSpeaker}) {
     const [state, setState] = React.useState(initialState);
 
     function handleClick(event) {
@@ -49,12 +49,12 @@ function RSLRow({countryName, delegateId, imageName, canEdit, visible, spoken, e
     };
 
     function toggleVisible() {
-        editRSLHelper({visible: !visible});
+        editRSL({topicId, topicSpeakerId: id,  delegateId, visible: !visible});
         handleClose();
     }
 
     function toggleSpoken() {
-        editRSLHelper({spokenTime: spoken ? 0 : 1});
+        editRSL({topicId, topicSpeakerId: id, delegateId, spokenTime: spoken ? 0 : 1});
         handleClose();
     }
 
@@ -143,6 +143,7 @@ export default function RSL({type, rsList, delegates, session, delegatesList, ad
                         <RSLRow
                         key={i} 
                         id={id}
+                        topicId={session.topicId}
                         countryName={delegates[delegateId].countryName} 
                         imageName={delegates[delegateId].imageName} 
                         delegateId={delegateId} 
@@ -150,7 +151,7 @@ export default function RSL({type, rsList, delegates, session, delegatesList, ad
                         spoken={spokenTime}
                         canEdit={type == 'dias'}
                         changeSpeaker={changeSpeaker}
-                        editRSLHelper={(editParams) => editRSL(id, editParams)}
+                        editRSL={editRSL}
                         />
                     ))
                 }  

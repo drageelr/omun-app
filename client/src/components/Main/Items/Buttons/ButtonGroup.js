@@ -373,17 +373,19 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                 </DialogContent>
             </Dialog>
 
-            &nbsp;&nbsp;
-            
-            <Button variant='contained' color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button>
-
-            &nbsp;&nbsp;
+                        
             
             { // only admin/dias can preview logs
                 (type == 'admin' || type == 'dias') &&
-                <Button variant='contained' style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
+                <>
+                    &nbsp;&nbsp; 
+                    <Button variant='contained' style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
+                </>
             }
 
+            &nbsp;&nbsp;
+            
+            <Button variant='contained' color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button>
 
             <Drawer anchor='right' open={onlineDrawerOpen} onClose={toggleOnlineDrawer}>
                 <OnlineList/>

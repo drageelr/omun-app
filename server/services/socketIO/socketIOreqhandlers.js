@@ -254,8 +254,8 @@ exports.handleDiasChatSend = async (socket, params, event) => {
         let recipUser = await db.query('SELECT id FROM ' + recpUserType + ' WHERE id = ' + params.userId + ' AND committeeId = ' + user.committeeId);
         if (!recipUser.length) { throw new customError.NotFoundError("delegate not found in current committee"); }
 
-        let result = await db.query('INSERT INTO chat_message_del_dias (committeeId, sessionId, diasId, delegateId, message, timestamp) VALUES ('
-            + user.committeeId + ', ' + user.sessionId + ', ' + res.diasId + ', ' + res.delegateId + ', "' + res.message + '", "' + res.timestamp + '")'
+        let result = await db.query('INSERT INTO chat_message_del_dias (committeeId, sessionId, diasSent, diasId, delegateId, message, timestamp) VALUES ('
+            + user.committeeId + ', ' + user.sessionId + ', ' + res.diasSent + ', ' + res.diasId + ', ' + res.delegateId + ', "' + res.message + '", "' + res.timestamp + '")'
         );
 
         let getId = await db.query('SELECT id FROM chat_message_del_dias WHERE '
