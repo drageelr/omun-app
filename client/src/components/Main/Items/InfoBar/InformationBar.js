@@ -46,9 +46,9 @@ export function secToMinsec(sec){
 
 export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, delegates, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
   const [crossesShown, setCrossesShown] = useState(false);
-
-  const [timerKeyS, setTimerKeyS] = React.useState(0);
-  const [timerKeyT, setTimerKeyT] = React.useState(0);
+  const [timerSEnded, setTimerSEnded] = useState(false);
+  const [timerKeyS, setTimerKeyS] = useState(0);
+  const [timerKeyT, setTimerKeyT] = useState(0);
 
   const [speakerValue, setSpeakerValue] = React.useState(0);
   const [topicValue, setTopicValue] = React.useState(0);
@@ -57,12 +57,14 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   React.useEffect(() => {
     setTimerKeyS(timerKeyS+1);
     setTimerKeyT(timerKeyT+1);
-
+    if (timer.speakerToggle === 0) {
+      setTimerSEnded(false);
+    }
   }, [session, timer]);
 
   function resetTimerS() {
     let newTopicValue = topicValue;
-    if (window.confirm("Do you want to adjust the topic time as well?")) {
+    if (session.type !== "UNMOD" && window.confirm("Do you want to adjust the topic time as well?")) {
       newTopicValue += session.speakerTime - speakerValue;
     } 
 
@@ -74,14 +76,19 @@ export default function InformationBar ({session, timer, type, setSessionType, s
     timerToggle(true, 0);
   }
 
-  function stopSpeakerTimer() { //stop S,T
+  function startSpeakerTimer() { //stop S,T
     timerToggle(true, 2, speakerValue);
     timerToggle(false, 2, topicValue);
+    setTimerSEnded(false);
   }
 
-  function startSpeakerTimer() { //start S,T
+  function stopSpeakerTimer() { //start S,T
     timerToggle(true, 1, speakerValue);
     timerToggle(false, 1, topicValue); 
+  }
+
+  function endSpeakerTimer() { //start S,T
+    setTimerSEnded(true);
   }
 
   function enterDurationS(){
@@ -149,8 +156,6 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                   }
               </div>
             </Grid>
-
-            {/* Button Color basis on session type */}
             
             <Grid item xs={2}>
             <ButtonGroup orientation="vertical">
@@ -184,7 +189,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
             </Grid>
 
             <Grid item xs={4}>
-                <div style={{marginLeft: '3vw'}}>Speaker Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
+                <div style={{marginLeft: '3vw'}}>{session.type === "UNMOD" && "Unmod" } Speaker Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
                 <div style={{marginLeft: '5vw'}}>
                   <CountdownCircleTimer
                       key={timerKeyS}
@@ -192,11 +197,15 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                       size={80}
                       initialRemainingTime={timer.speakerToggle ? timer.speakerValue : session.speakerTime}
                       // initialRemainingTime={timer.speakerValue}
+                      onComplete={endSpeakerTimer}
                       duration={session.speakerTime}
                       colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
                   >
                     {({ remainingTime }) => {
                       setSpeakerValue(remainingTime);
+                      // if (remainingTime == 0) {
+                        
+                      // }
                       return secToMinsec(remainingTime);
                     }}
                   </CountdownCircleTimer>
@@ -204,10 +213,11 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                 {
                   type === 'dias' &&
                   <ButtonGroup style={{marginTop: 10}}>
-                      {   
+                      { 
+                        (!timerSEnded) && (
                         (timer.speakerToggle === 2) ? //if paused state then you can start 
-                        <Button size="small" style={bgstyle} onClick={startSpeakerTimer} color="secondary">Pause</Button> :
-                        <Button size="small" style={bgstyle} onClick={stopSpeakerTimer} color="secondary">Start</Button>
+                        <Button size="small" style={bgstyle} onClick={stopSpeakerTimer} color="secondary">Pause</Button> :
+                        <Button size="small" style={bgstyle} onClick={startSpeakerTimer} color="secondary">Start</Button>)
                       }
                       <Button size="small" style={bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
                       <Button size="small" style={bgstyle} onClick={enterDurationS} color="secondary">Duration</Button>
@@ -216,29 +226,33 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                 
                 <br/>
                 <br/>
-
-                <div style={{marginLeft: '3.5vw'}}>Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
-                <div style={{marginLeft: '5vw'}}>
-                  <CountdownCircleTimer
-                      key={timerKeyT}
-                      isPlaying={timer.speakerToggle === 2}
-                      size={80}
-                      initialRemainingTime={timer.topicToggle ? timer.topicValue : session.topicTime}
-                      duration={session.topicTime}
-                      colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
-                  >
-                    {({ remainingTime }) => {
-                      setTopicValue(remainingTime);
-                      return secToMinsec(remainingTime);
-                    }}
-                  </CountdownCircleTimer>
-                </div>
                 {
-                  type === 'dias' &&
-                  <ButtonGroup style={{marginTop: 10, marginLeft: '2.5vw'}}>
-                      <Button size="small" style={bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
-                      <Button size="small" style={bgstyle} onClick={enterDurationT} color="secondary">Duration</Button>
-                  </ButtonGroup>
+                  session.type !== "UNMOD" && //topic timer not shown on unmod
+                  <div>
+                    <div style={{marginLeft: '3.5vw'}}> Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
+                    <div style={{marginLeft: '5vw'}}>
+                      <CountdownCircleTimer
+                          key={timerKeyT}
+                          isPlaying={!timerSEnded && timer.speakerToggle === 2}
+                          size={80}
+                          initialRemainingTime={timer.topicToggle ? timer.topicValue : session.topicTime}
+                          duration={session.topicTime}
+                          colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
+                      >
+                        {({ remainingTime }) => {
+                          setTopicValue(remainingTime);
+                          return secToMinsec(remainingTime);
+                        }}
+                      </CountdownCircleTimer>
+                    </div>
+                    {
+                      type === 'dias' &&
+                      <ButtonGroup style={{marginTop: 10, marginLeft: '2.5vw'}}>
+                          <Button size="small" style={bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
+                          <Button size="small" style={bgstyle} onClick={enterDurationT} color="secondary">Duration</Button>
+                      </ButtonGroup>
+                    }
+                  </div>
                 }
             </Grid>
           </Grid>
