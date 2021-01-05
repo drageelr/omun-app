@@ -12,6 +12,7 @@ import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
 import ButtonGroup from './Items/Buttons/ButtonGroup'
 import { makeStyles } from '@material-ui/core/styles';
+import moment from 'moment';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -47,8 +48,20 @@ let connectedDias = [];
 let connectedDelegates = [];
 let logs = [];
 
+function localizeTimestamp(ts) {
+    let momentDateFromFormat = moment.utc(ts);
+    return moment(momentDateFromFormat).local().format('YYYY-MM-DD HH:mm:ss');
+}
+
+function localizeTimestampOA(objArray) {
+    return objArray.map(obj => {
+        obj.timestamp= localizeTimestamp(obj.timestamp);
+        return obj;
+    })
+}
 
 export default function MainScreen() {
+
     const classes = useStyles();
     let [snackbarMsg, setSnackbarMsg] = useState(''); // current snackbar msg, displays snackbar when not ''
     let [connected, setConnected] = useState(false); // whether connected to socket
@@ -195,7 +208,6 @@ export default function MainScreen() {
          */
 
         tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
-        // tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
     }, []);
 
 
@@ -292,7 +304,9 @@ export default function MainScreen() {
         fetchNotifications();
         fetchGSL();
         fetchTopics();
-        fetchLogs();
+        if (user.type == 'dias' || user.type == 'admin') {
+            fetchLogs();
+        }
     }
 
 
@@ -317,7 +331,15 @@ export default function MainScreen() {
          */
         console.log('RES|del-chat-fetch|DEL:', res);
         const chatId = `${res.delegateId}|delegate`; //fetched chat with this delegate 
-        const fetchedChatMsgs = res.chat.map(chatMsg => ({...chatMsg, senderId: chatMsg.senderDelegateId, senderType: 'delegate'}));
+        let fetchedChatMsgs = res.chat.map(chatMsg => (
+            {...chatMsg, 
+                senderId: chatMsg.senderDelegateId, 
+                senderType: 'delegate'
+            }
+        ));
+
+        fetchedChatMsgs = localizeTimestampOA(fetchedChatMsgs);
+        console.log(localizeTimestampOA(fetchedChatMsgs));
         
         //fetched 10 messages now unread 10 less
         delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
@@ -375,7 +397,7 @@ export default function MainScreen() {
          */
         console.log('RES|dias-chat-fetch|DEL:', res);
         const chatId = `${res.diasId}|dias`; //fetched this dias's chat
-        const fetchedChatMsgs = res.chat.map(chatMsg => {
+        let fetchedChatMsgs = res.chat.map(chatMsg => {
             const {diasId, diasSent, delegateId} = chatMsg;
             if (diasSent) {
                 chatMsg.senderId = diasId;
@@ -387,7 +409,9 @@ export default function MainScreen() {
             }
             return chatMsg;
         });
-
+        fetchedChatMsgs = localizeTimestampOA(fetchedChatMsgs);
+        console.log(localizeTimestampOA(fetchedChatMsgs));
+        
         //fetched 10 messages now unread 10 less
         dias[res.diasId].unreadMessages = Math.max(dias[res.diasId].unreadMessages-10, 0);
         setDias(dias);
@@ -422,7 +446,7 @@ export default function MainScreen() {
          */
         console.log('RES|dias-chat-fetch|DIAS:', res);
         const chatId = `${res.delegateId}|delegate`; //fetched this dias's chat
-        const fetchedChatMsgs = res.chat.map(chatMsg => {
+        let fetchedChatMsgs = res.chat.map(chatMsg => {
             const {diasId, diasSent, delegateId} = chatMsg;
             if (!diasSent) {
                 chatMsg.senderId = diasId;
@@ -434,6 +458,8 @@ export default function MainScreen() {
             }
             return chatMsg;
         });
+        fetchedChatMsgs = localizeTimestampOA(fetchedChatMsgs);
+        console.log(localizeTimestampOA(fetchedChatMsgs));
 
         delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
         setDelegates(delegates);
@@ -490,7 +516,7 @@ export default function MainScreen() {
                 setDelegates(delegates);
             }
         }
-        pushChatMsg({ id, message, timestamp, senderId, senderType, theirChatId });
+        pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, theirChatId });
     }
 
 
@@ -532,7 +558,7 @@ export default function MainScreen() {
                 setDias(dias);
             }
         }
-        pushChatMsg({ id, message, timestamp, theirChatId, senderId, senderType });
+        pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), theirChatId, senderId, senderType });
     }
 
 
@@ -562,9 +588,12 @@ export default function MainScreen() {
          *      }]
          * }
          */
+
         console.log('RES|log-fetch:', res);
-        logs = res.logs.concat(logs);
-        setReachedLogTop(res.logs.length === 0);
+        const fetchedLogs = localizeTimestampOA(res.logs);
+        console.log(localizeTimestampOA(fetchedLogs));
+        logs = fetchedLogs.concat(logs);
+        setReachedLogTop(fetchedLogs.length === 0);
         setSingleLog(false);
         setLogs(logs);
     }
@@ -584,6 +613,7 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|log-send:', res);
+        res.timestamp = localizeTimestamp(res.timestamp);
         logs.push(res);
         setSingleLog(true);
         setLogs([...logs]);
@@ -611,6 +641,8 @@ export default function MainScreen() {
         let fetchedNotifications = res.notifications.map(notif => {
             return {id: notif.id, diasName: info.dias[notif.diasId] ? info.dias[notif.diasId].title + ' ' + info.dias[notif.diasId].name : "N/A", message: notif.message, timestamp: notif.timestamp}
         });
+        fetchedNotifications = localizeTimestampOA(fetchedNotifications);
+        console.log(localizeTimestampOA(fetchedNotifications));
         setReachedNotifTop((fetchedNotifications.length == 0)); 
         notifications = fetchedNotifications.concat(notifications);
         setSingleNotif(false);
@@ -635,7 +667,7 @@ export default function MainScreen() {
         console.log('RES|notif-send:', res);
         const { id, diasId, message, timestamp } = res;
         let diasName = info.dias[diasId] ? info.dias[diasId].title + ' ' + info.dias[diasId].name : "N/A";
-        notifications.push({id, diasName, message, timestamp});
+        notifications.push({id, diasName, message, timestamp: localizeTimestamp(res.timestamp)});
         setSingleNotif(true);
         setNotifications([...notifications]);
     }
