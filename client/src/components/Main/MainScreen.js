@@ -480,42 +480,43 @@ export default function MainScreen() {
          *      Recved by Admin:
          *          Simply store in the array you have for these 2 delegates 
          */
-
-        console.log('RES|del-chat-send:', res);
-        const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
-        /**
-         * res = {
-         *      id: Number,
-         *      delegateId: Number,
-         *      diasId: Number,
-         *      message: String.min(1).max(250),
-         *      diasSent: Boolean,
-         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
-         * }
-         */
-
-        const senderId = senderDelegateId;
-        const senderType = 'delegate';
-        let theirChatId = '';
-        const msgNotYours = !(Number(user.id) == senderId); // you are not the sender (just check id as both are delegates)
-        
-        if (Number(user.id) == senderDelegateId) {
-            theirChatId = `${recipientDelegateId}|delegate`;
-
-            if (msgNotYours && currentChatId !== theirChatId) {
-                delegates[recipientDelegateId].unreadMessages++;
-                setDelegates(delegates);
+        if (user.type == 'delegate') { // monitored
+            console.log('RES|del-chat-send:', res);
+            const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
+            /**
+             * res = {
+             *      id: Number,
+             *      delegateId: Number,
+             *      diasId: Number,
+             *      message: String.min(1).max(250),
+             *      diasSent: Boolean,
+             *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+             * }
+             */
+    
+            const senderId = senderDelegateId;
+            const senderType = 'delegate';
+            let theirChatId = '';
+            const msgNotYours = !(Number(user.id) == senderId); // you are not the sender (just check id as both are delegates)
+            
+            if (Number(user.id) == senderDelegateId) {
+                theirChatId = `${recipientDelegateId}|delegate`;
+    
+                if (msgNotYours && currentChatId !== theirChatId) {
+                    delegates[recipientDelegateId].unreadMessages++;
+                    setDelegates(delegates);
+                }
             }
-        }
-        else if (Number(user.id) == recipientDelegateId) {
-            theirChatId = `${senderDelegateId}|delegate`;
-
-            if (msgNotYours && currentChatId !== theirChatId) {
-                delegates[senderDelegateId].unreadMessages++;
-                setDelegates(delegates);
+            else if (Number(user.id) == recipientDelegateId) {
+                theirChatId = `${senderDelegateId}|delegate`;
+    
+                if (msgNotYours && currentChatId !== theirChatId) {
+                    delegates[senderDelegateId].unreadMessages++;
+                    setDelegates(delegates);
+                }
             }
+            pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, theirChatId });
         }
-        pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, theirChatId });
     }
 
 

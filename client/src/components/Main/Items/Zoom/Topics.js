@@ -186,7 +186,7 @@ export default function Topics({type, topicsList, delegates, reachedTop, singleA
             alert('Description is too long. [250 characters max]');
         }
         else {
-            setDescription(e.target.value);
+            setDescription(e.target.value.replace(/[\\\"]/g, ''));
         }
     }
 

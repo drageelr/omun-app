@@ -4,7 +4,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-// import TextField from '@material-ui/core/TextField';
+import * as Yup from 'yup'
 import Button from '@material-ui/core/Button';
 import {Card, Paper, List} from '@material-ui/core'
 import { Formik, Form, Field } from 'formik'
@@ -12,7 +12,6 @@ import { TextField } from 'formik-material-ui'
 import SendIcon from '@material-ui/icons/Send';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import NotificationBadge from 'react-notification-badge';
-import {Effect} from 'react-notification-badge';
 import Timestamp from 'react-timestamp';
 
 const useStyles = makeStyles((theme) => ({
@@ -68,6 +67,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
   const classes = useStyles();
   const scrollContainer = React.createRef();
   const [fetching, setFetching] = useState(true);
+  const inputElement = React.useRef(null);
   
   function handleChange(event, newUser) {
     setChatId(newUser); //has id, type both
@@ -155,24 +155,33 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
         </SortedTabs>
       <Formik
         validateOnChange={false} validateOnBlur={true}
-        initialValues={{newMsg: ''}}
-        validate={values => {
-          const errors = {}
-          if (values.newMsg.length > 250) {
-            errors.newMsg = 'Please do not exceed 250 characters.'
-          }
-          return errors
-        }}
-        onSubmit={(values, {setSubmitting, resetForm}) => {
+        initialValues={{Message: ''}}
+        validationSchema={Yup.object({
+          Message: Yup.string()
+            .min(1)
+            .max(250)
+        })}
+        onSubmit={(values, {setSubmitting, setFieldValue}) => {
             const userObj = splitIdType(chatId);
-            const message = values.newMsg;
-            sendMsg(Number(userObj.id), userObj.type, message);
+            const message = values.Message.replace(/[\\\"]/g, '');
+            if (message.length !== 0) {
+              sendMsg(Number(userObj.id), userObj.type, message);
+            }
             setSubmitting(false);
-            resetForm({});
+            setFieldValue('Message', '');
+            if (inputElement.current) {
+              inputElement.current.focus();
+            }
         }}
       >
         {({submitForm}) => (
-          <Form>
+          <Form onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submitForm();
+              }
+            }} 
+            >
             <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
               {
                 fetching && !reachedTop &&
@@ -186,7 +195,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
                   const isTheirMsg = !(msg.senderId == id && msg.senderType == type); //message id type does not match mine
                   return (
                   <Paper key={index} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
-                    <Typography style={{margin: 5, fontWeight: 500, wordWrap: "break-word", maxWidth: '30vw'}}>
+                    <Typography style={{margin: 5, fontWeight: 500, whiteSpace: 'pre', wordWrap: "break-word", maxWidth: '30vw'}}>
                       {msg.message}
                     </Typography>
                     <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>
@@ -205,14 +214,14 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
                   variant="outlined" 
                   fullWidth 
                   className={classes.sendBox}
-                  name="newMsg" 
-                  onKeyPress={(e) => (e.key === "Enter" && !e.shiftKey) && submitForm() }
+                  name="Message" 
+                  inputRef={inputElement}
                   label={ 'Send chat message to ' + (splitIdType(chatId).type == 'delegate' ? 
                   delegates[splitIdType(chatId).id].countryName 
                   : dias[splitIdType(chatId).id].name)}
                   />
 
-                  <Button type="submit" variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary">Send</Button>
+                  <Button type="submit" variant="contained" endIcon={<SendIcon fontSize="small"/>} onClick={submitForm} color="primary">Send</Button>
               </List>
             }
           </Form>
