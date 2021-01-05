@@ -5,8 +5,8 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-// window.serverURI = 'https://www.omun.com';
-window.serverURI = 'http://localhost:3000';
+window.serverURI = 'https://omun.lumun.live';
+// window.serverURI = 'http://localhost:3000';
 
 console.log("serverURI", window.serverURI);
 
