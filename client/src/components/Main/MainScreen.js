@@ -447,7 +447,7 @@ export default function MainScreen() {
         const chatId = `${res.delegateId}|delegate`; //fetched this dias's chat
         let fetchedChatMsgs = res.chat.map(chatMsg => {
             const {diasId, diasSent, delegateId} = chatMsg;
-            if (!diasSent) {
+            if (diasSent) {
                 chatMsg.senderId = diasId;
                 chatMsg.senderType = 'dias';
             }
@@ -1314,9 +1314,9 @@ export default function MainScreen() {
     }
 
 
-    function editRSL(topicId, editParams) {
-        console.log('REQ|topic-speaker-edit', topicId, editParams)
-        socket.emit('REQ|topic-speaker-edit', {...editParams, topicId} );
+    function editRSL(params) {
+        console.log('REQ|topic-speaker-edit', params)
+        socket.emit('REQ|topic-speaker-edit', params );
     }
 
 

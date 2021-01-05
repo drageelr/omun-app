@@ -51,8 +51,12 @@ const useStyles = makeStyles((theme) => ({
   sendBar: {
     display: 'flex', 
     flexDirection: 'row', 
-    padding: 10
-  }
+    padding: 10,
+    maxHeight: '8vh'
+  },
+  // sendBox: {
+  //   maxHeight: '2vh'
+  // }
 }));
 
 function splitIdType(str) {
@@ -64,7 +68,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
   const classes = useStyles();
   const scrollContainer = React.createRef();
   const [fetching, setFetching] = useState(true);
-
+  
   function handleChange(event, newUser) {
     setChatId(newUser); //has id, type both
     fetchChat(newUser);
@@ -120,7 +124,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
       </Tabs>
     )
   }
-  
+
   return (
     <Card className={classes.root}>
         <SortedTabs>
@@ -167,7 +171,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
             resetForm({});
         }}
       >
-        {({ submitForm}) => (
+        {({submitForm}) => (
           <Form>
             <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
               {
@@ -196,12 +200,19 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
             {
               chatId && delegates && dias  &&
               <List className={classes.sendBar}>
-                  <Field component={TextField} multiline rows={1} required variant="outlined" fullWidth name="newMsg" 
+                  <Field component={TextField} 
+                  multiline rows={2} 
+                  variant="outlined" 
+                  fullWidth 
+                  className={classes.sendBox}
+                  name="newMsg" 
+                  onKeyPress={(e) => (e.key === "Enter" && !e.shiftKey) && submitForm() }
                   label={ 'Send chat message to ' + (splitIdType(chatId).type == 'delegate' ? 
                   delegates[splitIdType(chatId).id].countryName 
                   : dias[splitIdType(chatId).id].name)}
                   />
-                  <Button variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary" onClick={submitForm}>Send</Button>
+
+                  <Button type="submit" variant="contained" endIcon={<SendIcon fontSize="small"/>} color="primary">Send</Button>
               </List>
             }
           </Form>
