@@ -10,6 +10,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import * as Yup from 'yup'
 import IconButton from '@material-ui/core/IconButton';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
@@ -79,25 +80,22 @@ function Notification({notifications, sendNotification, reachedTop, fetchNotific
                     </DialogContentText>
                     <Formik 
                         validateOnChange={false} validateOnBlur={true}
-                        initialValues={{newNotif: ''}}
-                        validate={values => {
-                        const errors = {}
-                        if (values.newNotif.length > 250) {
-                            errors.newNotif = 'Please do not exceed 250 characters.'
-                        }
-                        return errors
-                        }}
+                        initialValues={{notification: ''}}
+                        validationSchema={Yup.object({
+                        notification: Yup.string()
+                            .min(1)
+                            .max(250)
+                        })}
                         onSubmit={(values, {setSubmitting}) => {
-                            const newNotif = values.newNotif;
-                            console.log(newNotif);
-                            sendNotification(newNotif);
+                            const notification = values.notification.replace(/[\\\"]/g, '');
+                            sendNotification(notification);
                             setSubmitting(false);
                             setOpen(false);
                         }}
                     >
                         {({ submitForm}) => (
                         <Form>
-                            <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="newNotif" label={`Send notification`}/>
+                            <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="notification" label={`Send notification`}/>
                             <Button
                             style={{marginTop: 5, float: 'right', marginBottom: 10}}
                             alignRight 
@@ -125,7 +123,7 @@ function Notification({notifications, sendNotification, reachedTop, fetchNotific
                     notifications.map(({diasName, id, message, timestamp},i)=> (
                         <ListItem style={notifItemStyle} className="Notif-Text" key={i} dense>
                             <Paper key={i} style={{backgroundColor: '#ddb82f', marginBottom: 5, width: '46.7vw'}}>
-                                <Typography style={{margin: 5, fontSize: '0.9rem', fontWeight: 500, wordWrap: "break-word"}}>
+                                <Typography style={{margin: 5, whiteSpace: 'pre', fontSize: '0.9rem', fontWeight: 500, wordWrap: "break-word"}}>
                                     {message}
                                 </Typography>
                                 <Typography style={{margin: 4, marginTop: 1, marginLeft: 5, fontSize: 10}}>

@@ -3,12 +3,10 @@ import { Menu, MenuItem, Typography, Paper, ListSubheader, Dialog, DialogContent
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { withRouter } from 'react-router-dom';
-import clsx from 'clsx';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import DescriptionIcon from '@material-ui/icons/Description'
 import AirplayIcon from '@material-ui/icons/Airplay';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import MailIcon from '@material-ui/icons/Mail';
 import SendIcon from '@material-ui/icons/Send';
 import SupervisedUserCircleIcon from '@material-ui/icons/SupervisedUserCircle';
 import Timestamp from 'react-timestamp';
