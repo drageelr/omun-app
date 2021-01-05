@@ -1,22 +1,28 @@
 import React, {useState} from 'react'
+import { Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
 import './MainScreen.css'
+import io from "socket.io-client"
+import MuiAlert from '@material-ui/lab/Alert';
 import InformationBar from './Items/InfoBar/InformationBar'
 import Notification from './Items/Notification/Notification'
 import VirtualAud from './Items/VirtualAud/VirtualAud'
 import MessageBox from './Items/MessageBox/MessageBox'
-import io from "socket.io-client"
-// import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-// import DescriptionIcon from '@material-ui/icons/Description'
-import { Button, Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles';
-import MuiAlert from '@material-ui/lab/Alert';
 import Topics from './Items/Zoom/Topics'
 import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
 import ButtonGroup from './Items/Buttons/ButtonGroup'
+import { makeStyles } from '@material-ui/core/styles';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+function removeItemOnce(arr, value) {
+    var index = arr.indexOf(value);
+    if (index > -1) {
+        arr.splice(index, 1);
+    }
+    return arr;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -35,50 +41,78 @@ let committee = {};
 let session = {};
 let topicsList = [];
 let gsList = [];
+let seats = [];
+let connectedAdmins = [];
+let connectedDias = [];
+let connectedDelegates = [];
+let logs = [];
 
 
 export default function MainScreen() {
     const classes = useStyles();
-    let [snackbarMsg, setSnackbarMsg] = useState('');
-    let [chats, setChats] = useState({});
-    let [connected, setConnected] = useState(false);
+    let [snackbarMsg, setSnackbarMsg] = useState(''); // current snackbar msg, displays snackbar when not ''
+    let [connected, setConnected] = useState(false); // whether connected to socket
+    
+    //vaud
     let [seatsState, setSeats] = useState([]);
     let [seated, setSeated] = useState(false);
     let [placard, setPlacard] = useState(false);
+
+    //session
     let [sessionState, setSession] = useState({});
     let [committeeState, setCommittee] = useState({});
     let [timerState, setTimer] = useState({});
-    let [connectedDias, setConnectedDias] = useState([]);
-    let [connectedDelegates, setConnectedDelegates] = useState([]);
-    let [connectedAdmins, setConnectedAdmins] = useState({});
+    
+    // dias deleg admins
+    let [connectedDiasState, setConnectedDias] = useState([]);
+    let [connectedDelegatesState, setConnectedDelegates] = useState([]);
+    let [connectedAdminsState, setConnectedAdmins] = useState([]);
+    let [adminsState, setAdmins] = React.useState({}); //key: userId, value: name
     let [diasState, setDias] = useState({});
     let [delegatesState, setDelegates] = useState({});
-    let [logs, setLogs] = useState([]);
-    let [msgCounter, setMsgCounter] = useState(0);
+    
+    // logs, rsl
+    let [logsState, setLogs] = useState([]);
+    let [singleLog, setSingleLog] = useState(true);
+    let [reachedLogTop, setReachedLogTop] = useState(false);
 
+    let [rsListState, setRSList] = useState([]);
+    
+    // chat
+    let [chats, setChats] = useState({});
+    let [currentChatIdState, setCurrentChatId] = React.useState('');
+    let [msgCounter, setMsgCounter] = useState(0);
     let [singleMsg, setSingleMsg] = useState(true); //scroll to bottom init
     let [reachedTop, setReachedTop] = useState(false);
+    let [singleTopic, setSingleTopic] = useState(true);
+    
+    //notif
+    let [notifications, setNotifications] = useState([]);
     let [singleNotif, setSingleNotif] = useState(true);
     let [reachedNotifTop, setReachedNotifTop] = useState(false);
+    
+    //gsl
+    let [gsListState, setGSList] = useState([]);
     let [singleGSL, setSingleGSL] = useState(true);
     let [reachedGSLTop, setReachedGSLTop] = useState(false);
-    let [singleTopic, setSingleTopic] = useState(true);
+    
+    //topics
+    let [topicsListState, setTopicsList] = useState([]);
     let [reachedTopicTop, setReachedTopicTop] = useState(false);
-
-    let [currentChatIdState, setCurrentChatId] = React.useState('');
+    
+    //info, user, tab
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
-    let [notifications, setNotifications] = useState([]);
-    let [gsListState, setGSList] = useState([]);
-    let [rsListState, setRSList] = useState([]);
-    let [topicsListState, setTopicsList] = useState([]);
     const [tabValue, setTabValue] = useState(0);    
+
+    //state resolution for use in nested funcs
     let tempSocket = {};
-    let seats = [];
     let dias = {};
     let delegates = {};
+    let admins = {};
     let info = {};
     let timer = {};
+
 
     /*  
     info:
@@ -160,13 +194,8 @@ export default function MainScreen() {
          * REQ Event Emission
          */
 
-        // Chat Management
-        /* 1 */tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
-    
-
-        // Log & Notification Management
-        /* 6 */tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
-
+        tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
+        // tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
     }, []);
 
 
@@ -193,6 +222,7 @@ export default function MainScreen() {
         console.log(event + ':', req);
         tempSocket.emit(event, req);
     }
+
 
     function responseInfoStart(res) { 
         info = res;
@@ -241,7 +271,12 @@ export default function MainScreen() {
         timer = {topicToggle: 0, speakerToggle: 1, speakerValue: info.session.speakerTime, topicValue: info.session.topicTime};
         
         committee = info.committee;
-
+        connectedAdmins = Object.keys(info.connectedAdmins).map(c => Number(c)); //list of user ids of admins
+        connectedDelegates = info.connectedDelegates.map(c => Number(c));
+        connectedDias = info.connectedDias.map(c => Number(c));
+        admins = info.connectedAdmins; // userId: {name: 'Admin'}
+        
+        setAdmins(admins); 
         setTimer(timer);
         setInfo(info);
         setSeated(initSeated);
@@ -249,15 +284,17 @@ export default function MainScreen() {
         setDias(dias);
         setDelegates(delegates);
         setSession(session);
-        setConnectedAdmins(info.connectedAdmins);
-        setConnectedDias(info.connectedDias);
-        setConnectedDelegates(info.connectedDelegates);
+        setConnectedAdmins(connectedAdmins); //making sure they are all numbers
+        setConnectedDias(connectedDias);
+        setConnectedDelegates(connectedDelegates);
         setConnected(true);
         setCommittee(committee);
         fetchNotifications();
         fetchGSL();
         fetchTopics();
+        fetchLogs();
     }
+
 
     function responseDelChatFetchDel(res) {
         /**
@@ -291,9 +328,8 @@ export default function MainScreen() {
         setChats(chats); //concat older chat messages to head of specific chat
         setSingleMsg(false);
         setMsgCounter(++msgCounter);
-
-        
     }
+
 
     function responseDelChatFetch(res) {
         /**
@@ -315,6 +351,7 @@ export default function MainScreen() {
          */
         console.log('RES|del-chat-fetch:', res);
     }
+
 
     function responseDiasChatFetchDel(res) {
         /**
@@ -362,6 +399,7 @@ export default function MainScreen() {
         setMsgCounter(++msgCounter);
     }
 
+
     function responseDiasChatFetchDias(res) {
         /**
          * When this is recieved you have to append the array of the target delegate (specified by "delegateId")
@@ -400,7 +438,7 @@ export default function MainScreen() {
         delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
         setDelegates(delegates);
         
-        setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
+        setReachedTop(fetchedChatMsgs.length == 0); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
         setSingleMsg(false);
@@ -455,6 +493,7 @@ export default function MainScreen() {
         pushChatMsg({ id, message, timestamp, senderId, senderType, theirChatId });
     }
 
+
     function responseDiasChatSend(res) {
         /**
          * This is received by the delegate and dias that is communicating with each other
@@ -508,12 +547,12 @@ export default function MainScreen() {
         setMsgCounter(++msgCounter); // to trigger the chat to update
     }
 
+
     function resLogFetch(res) {
         /**
          * When this is received you have to append the array
          * use the "id" to check where to append (usually it will be in the start)
          */
-
         /**
          * res = {
          *      logs: [{
@@ -523,13 +562,13 @@ export default function MainScreen() {
          *      }]
          * }
          */
-
         console.log('RES|log-fetch:', res);
-        const recievedLogs = res.logs;
-        
-        
-        setLogs(recievedLogs.concat(logs));
+        logs = res.logs.concat(logs);
+        setReachedLogTop(res.logs.length === 0);
+        setSingleLog(false);
+        setLogs(logs);
     }
+
 
     function resLogSend(res) {
         /**
@@ -545,7 +584,11 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|log-send:', res);
+        logs.push(res);
+        setSingleLog(true);
+        setLogs([...logs]);
     }
+
 
     function resNotifFetch(res) {
         /**
@@ -574,6 +617,7 @@ export default function MainScreen() {
         setNotifications(notifications);
     }
 
+
     function resNotifSend(res) {
         /**
          * This is received by every admin, dias and/or delegate present in the committee
@@ -595,6 +639,7 @@ export default function MainScreen() {
         setSingleNotif(true);
         setNotifications([...notifications]);
     }
+
 
     function resSeatSit(res) {
         /**
@@ -619,6 +664,7 @@ export default function MainScreen() {
         }
     }
 
+
     function resSeatUnsit(res) {
         /**
          * When recieved set the seat (specified by "id") values:
@@ -641,6 +687,7 @@ export default function MainScreen() {
         setSeats([...seats]);
     }
 
+
     function resSeatPlacard(res) {
         /**
          * When recieved set the seat (specified by "id") placard value to given "placard"
@@ -660,6 +707,7 @@ export default function MainScreen() {
         seats[id].placard = res.placard;
         setSeats([...seats]);
     }
+
 
     function resTopicCreate(res) {
         /**
@@ -684,7 +732,8 @@ export default function MainScreen() {
         setSingleTopic(true);
         setTopicsList([...topicsList]);
     }
-    
+
+
     function resTopicEdit(res) {
         /**
          * This is received by every admin, dias and/or delegate present in the committee
@@ -716,6 +765,7 @@ export default function MainScreen() {
         
     }
 
+
     function resTopicFetch(res) {
         /**
          * When this is received you have to append the array
@@ -742,11 +792,13 @@ export default function MainScreen() {
         setTopicsList(topicsList);
     }
 
+
     function resTopicSpeakerCreate(res) {
         console.log('RES|rsl-create:', res);
         rsList.push(res);
         setRSList([...rsList]);
     }
+
 
     function resTopicSpeakerEdit(res) {
         console.log('RES|rsl-edit:', res);
@@ -761,11 +813,13 @@ export default function MainScreen() {
         setRSList([...rsList]);
     }
 
+
     function resTopicSpeakerFetch(res) {
         console.log('RES|rsl-fetch:', res);
         rsList = res.topicSpeakers;
         setRSList(rsList);
     }
+
 
     function resGSLCreate(res) {
         /**
@@ -790,6 +844,7 @@ export default function MainScreen() {
         setSingleGSL(true);
         setGSList([...gsList]);
     }
+
 
     function resGSLEdit(res) {
         /**
@@ -822,6 +877,7 @@ export default function MainScreen() {
         setGSList([...gsList]);
     }
 
+
     function resGSLFetch(res) {
         /**
          * When this is received you have to append the array
@@ -850,6 +906,7 @@ export default function MainScreen() {
         setGSList(gsList);
     }
 
+
     function resSessionEdit(res) {
         /**
          * This is received by every admin, dias and/or delegate present in the committee
@@ -877,6 +934,7 @@ export default function MainScreen() {
         setSession({...session});
     }
 
+
     function resSessionTimer(res) {
         /**
          * When received apply the appropraite result on the specified timer
@@ -903,6 +961,7 @@ export default function MainScreen() {
         setTimer({...timer});
     }
 
+
     function resSessionCon(res) {
         /**
          * Tells whether a member connected or disconnected
@@ -913,23 +972,40 @@ export default function MainScreen() {
          *      type: String ("admin", "dias", "delegate"),
          *      userId: Number,
          *      connected: Boolean
+         *      name: String (if "admin")
          * }
          */
         console.log('RES|session-con:', res);
         const {type, userId, connected} = res;
-        // if (type == 'admin') {
-        //     connectedAdmins.push(userId);
-        //     setConnectedAdmins(connectedAdmins);
-        // }
-        // else if (type == 'dias') {
-        //     connectedDias.push(userId);
-        //     setConnectedDias(connectedDias);
-        // }
-        // else { //delegate
-        //     connectedDelegates.push(userId);
-        //     setConnectedDelegates(connectedDelegates);
-        // }
+        
+        if (type == 'delegate') {
+            if (connected) {
+                connectedDelegates.push(userId);
+            } else {
+                connectedDelegates = removeItemOnce(connectedDelegates, userId);
+            }
+            setConnectedDelegates(connectedDelegates);
+        }
+        else if (type == 'dias') {
+            if (connected) {
+                connectedDias.push(userId);
+            } else {
+                connectedDias = removeItemOnce(connectedDias, userId);
+            }
+            setConnectedDias(connectedDias);
+        }
+        else if (type == 'admin') {
+            if (connected) {
+                connectedAdmins.push(userId);
+                admins[userId] = {name: res.name}; //also gives name, so you can update your admins dictionary
+            } else {
+                connectedAdmins = removeItemOnce(connectedAdmins, userId);
+            }
+            setAdmins(admins);
+            setConnectedAdmins(connectedAdmins);
+        }
     }
+
 
     function resCommitteeLink(res) {
         console.log('RES|committee-link:', res);
@@ -940,9 +1016,11 @@ export default function MainScreen() {
         setCommittee({...committee});
     }
 
+
     function setCurrentTopic(topicId, topicTime, speakerTime) {
         socket.emit('REQ|session-edit', {topicId, topicTime, speakerTime, speakerId: 0, type: 'MOD'});
     }
+
 
     function sit(seatId){ // Number.min(1).max(50)
         /**
@@ -951,6 +1029,7 @@ export default function MainScreen() {
         socket.emit('REQ|seat-sit', {seatId}); // Access: ["delegate"]
     }
 
+
     function unsit(){
         /**
          * Emit this when delegate wants to unsit from somewhere
@@ -958,12 +1037,14 @@ export default function MainScreen() {
         socket.emit('REQ|seat-unsit', {}); // Access: ["delegate"]
     }
 
+
     function togglePlacard(placard){
         /**
          * Called by delegate when they press on leave seat
          */
         socket.emit('REQ|seat-placard', {placard}); // Access: ["delegate"]
     }
+
 
     function fetchChat(chatId) { //userId, type = delegate / dias
         /**
@@ -1007,6 +1088,7 @@ export default function MainScreen() {
         }
     }
 
+
     function fetchNotifications() {
         /**
          * This function is used to fetch last 10 notifications
@@ -1020,6 +1102,19 @@ export default function MainScreen() {
         socket.emit('REQ|notif-fetch', {lastNotifId});
     }
 
+    function fetchLogs() {
+        /**
+         * This function is used to fetch last 10 logs
+         */
+        
+        let lastLogId = 0;
+        if (logs.length) {
+            lastLogId = logs[0].id;
+        }
+        socket.emit('REQ|log-fetch', {lastLogId});
+    }
+
+
     function sendNotification(message) {
         /**
          * This function is used to send notification
@@ -1032,6 +1127,7 @@ export default function MainScreen() {
         }
     }
 
+
     function setSessionType(type) {
         if (user.type == "dias") {
             let req = {type};
@@ -1039,6 +1135,7 @@ export default function MainScreen() {
             socket.emit('REQ|session-edit', req);
         }
     }
+
 
     function setSessionTime(type, duration) { //speaker / topic, duraton
         if (user.type == "dias") {           
@@ -1055,6 +1152,7 @@ export default function MainScreen() {
         }
     }
 
+
     function deleteSessionSpeaker() {
         if (user.type == "dias") {
             let req = {speakerId: 0};
@@ -1062,6 +1160,7 @@ export default function MainScreen() {
             socket.emit('REQ|session-edit', req);
         }
     }
+
 
     function timerToggle(speakerTimer, toggle, value=undefined) {
         if (user.type == "dias") {
@@ -1075,13 +1174,16 @@ export default function MainScreen() {
         }
     }
 
+
     function fileButtonClick() {
         window.open(committee.driveLink, "_blank");
     }
 
+
     function zoomButtonClick() {
         window.open(committee.zoomLink, "_blank");
     }
+
 
     function changeFileLink(driveLink) {
         if (user.type == "dias") {
@@ -1089,11 +1191,13 @@ export default function MainScreen() {
         }
     }
 
+
     function changeZoomLink(zoomLink) {
         if (user.type == "dias") {
             socket.emit('REQ|committee-link', {zoomLink});
         }
     }
+
 
     function getLogFetch() {
         /**
@@ -1105,8 +1209,6 @@ export default function MainScreen() {
             // id of the oldest log (if no log then send 0)
             lastLogId: 0
         };
-
-
 
         return req;
     }
@@ -1131,13 +1233,12 @@ export default function MainScreen() {
         socket.emit('REQ|topic-create', {delegateId, description, totalTime, speakerTime})
     }
 
+
     function editTopic(topicId, editParams) {
         /**
          * Only "topicId" is required, rest is optional
          * This will be used to edit the topic by the dias
          */
-
-
         // let req = {
         //     // id of topic to edit
         //     topicId: 1, // REQUIRED
@@ -1155,6 +1256,7 @@ export default function MainScreen() {
         
         socket.emit('REQ|topic-edit', {topicId, ...editParams})
     }
+
 
     function fetchTopics() {
         /**
@@ -1180,10 +1282,12 @@ export default function MainScreen() {
         }
     }
 
+
     function editRSL(topicId, editParams) {
         console.log('REQ|topic-speaker-edit', topicId, editParams)
         socket.emit('REQ|topic-speaker-edit', {...editParams, topicId} );
     }
+
 
     function fetchRSL(topicId) {
         console.log('REQ|topic-speaker-fetch', topicId)
@@ -1205,13 +1309,12 @@ export default function MainScreen() {
         socket.emit('REQ|gsl-create', {delegateId});
     }
 
+
     function editGSL(gslId, editParams) {
         /**
          * Only "gslId" is required, rest is optional
          * This will be used to edit the gsl by the dias and some auto features
          */
-
-
         // let req = {
         //     // id of gsl to edit
         //     gslId: 1, // REQUIRED
@@ -1229,6 +1332,7 @@ export default function MainScreen() {
 
         socket.emit('REQ|gsl-edit', {...editParams, gslId} );
     }
+
 
     function fetchGSL() {
         /**
@@ -1258,13 +1362,14 @@ export default function MainScreen() {
             // whenever button toggled
             type: "IDLE"
         };
-
         return req;
     }
+
 
     function handleSnackbarClose() {
         setSnackbarMsg('');
     }
+
 
     function setChatId(newChatId) {
         currentChatId = newChatId;
@@ -1276,6 +1381,7 @@ export default function MainScreen() {
             socket.emit('REQ|session-edit', {speakerId, topicId: 0, type: 'GSL'});
         }
     }
+
 
     function setRSLSpeaker(speakerId) { //delegate Id
         if (user.type == 'dias') {
@@ -1295,13 +1401,14 @@ export default function MainScreen() {
             // 0->reset 1->pause 2->play
             toggle: 0,
         };
-
         return req;
     }
 
-    function handleChange(e, newValue) {
+
+    function handleTabChange(e, newValue) {
         setTabValue(newValue);
     };
+
 
     return(
         <div className='parent'>
@@ -1324,7 +1431,7 @@ export default function MainScreen() {
                             <Paper >
                                 <Tabs
                                     value={tabValue}
-                                    onChange={handleChange}
+                                    onChange={handleTabChange}
                                     indicatorColor="primary"
                                     textColor="primary"
                                     centered
@@ -1378,12 +1485,21 @@ export default function MainScreen() {
                         </Card>
 
                         <ButtonGroup 
-                        tempOnClick={tempOnClick} 
                         fileButtonClick={fileButtonClick}
                         zoomButtonClick={zoomButtonClick}
                         type={userState.type} 
                         changeFileLink={changeFileLink}
-                        changeZoomLink={changeZoomLink} 
+                        changeZoomLink={changeZoomLink}
+                        connectedAdmins={connectedAdminsState}
+                        connectedDias={connectedDiasState}
+                        connectedDelegates={connectedDelegatesState}
+                        dias={diasState}
+                        delegates={delegatesState}
+                        admins={admins}
+                        logs={logsState}
+                        fetchLogs={fetchLogs}
+                        singleAddition={singleLog}
+                        reachedTop={reachedLogTop}
                         ></ButtonGroup>
                     </div>
                 </div>
