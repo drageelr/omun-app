@@ -13,7 +13,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 export default function MonitorBox({id, type, selectedDelegateId, setSelectedDelegateId, singleAddition, reachedTop, currentMChat, mchatOpen, setMChatOpen, mchatId, setCurrentMChatId, fetchMChat, msgCounterM, delegates, delegatesList}) {
   const classes = useStyles();
   const scrollContainer = React.createRef();
-  const [fetching, setFetching] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
   function changeSelection(e) {
     const newSelection = e.target.value;

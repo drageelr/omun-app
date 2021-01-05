@@ -10,6 +10,7 @@ import './Login.css'
 import { css } from "@emotion/core";
 import MoonLoader from "react-spinners/MoonLoader";
 import Button from '@material-ui/core/Button';
+import logo from './logo.png';
 
 function Login({setIsLoggedIn, setUser}){
     const selectedBGStyle = {backgroundColor: '#aa2e25', color: 'white'}
@@ -57,7 +58,7 @@ function Login({setIsLoggedIn, setUser}){
         {({isSubmitting, status})=> (
           
           <Form style={{textAlign:'center'}}>
-    
+            <img style={{width: '10vw', height: '10vw', alignSelf: 'center', margin: 0}} src={logo} alt="OMUN"/>
             <h3>Sign In</h3>
 
             <div className="form-group" >
@@ -108,7 +109,7 @@ function Login({setIsLoggedIn, setUser}){
               > 
               </Field>
             </div>
-            <Button type="submit" color="primary">
+            <Button type="submit" color="primary" variant='outlined'>
               <MoonLoader
                   css={override}
                   size={15}

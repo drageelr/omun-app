@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme) => ({
 let socket;
 let user;
 let currentChatId = '';
-let currentMChatId = '';
 let tempEmission = [];
 let rsList = [];
 let committee = {};
@@ -101,12 +100,11 @@ export default function MainScreen() {
     let [reachedTop, setReachedTop] = useState(false);
 
     // mchat
-    let [mchatOpen, setMChatOpen] = useState({});
+    let [mchatOpen, setMChatOpen] = useState(false);
     let [mchats, setMChats] = useState({});
     let [currentMChatIdState, setCurrentMChatId] = React.useState('');
     let [msgCounterM, setMsgCounterM] = useState(0);
     let [selectedDelegateId, setSelectedDelegateId] = useState(0);
-
     
     //notif
     let [notifications, setNotifications] = useState([]);
