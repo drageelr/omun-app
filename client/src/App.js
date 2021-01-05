@@ -19,7 +19,6 @@ const appTheme = createMuiTheme({
   }
 })
 
-
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState({})

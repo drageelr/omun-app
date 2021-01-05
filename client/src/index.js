@@ -4,10 +4,13 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-// window.serverURI = 'https://www.omun.com';
-window.serverURI = window.location.href.replace(/\/$/,"");
-if(window.serverURI.includes("localhost")){
+
+if(window.location.href.includes("localhost")){
   window.serverURI = 'http://localhost:3000'
+}
+
+else{
+  window.serverURI = 'https://omun.lumun.live'
 }
 
 
