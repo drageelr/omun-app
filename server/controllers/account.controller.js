@@ -47,7 +47,7 @@ exports.createAdmin = async (req, res, next) => {
         for (let i = 0; i < params.admins.length; i++) {
             ids.push(result.insertId + i);
             csvData += ids[i] + ',' + params.admins[i].name + ',' + params.admins[i].email + ',' + params.admins[i].password + '\n';
-            sendWelcomeEmail(params.admins[i].email, params.admins[i].name, params.admins[i].password);
+            sendWelcomeEmail(params.admins[i].email, params.admins[i].name, params.admins[i].password, "Admin");
         }
 
         await appendFile(path.join(__dirname, '../files/admins.csv'), csvData);
@@ -162,7 +162,7 @@ exports.createDias = async (req, res, next) => {
         for (let i = 0; i < params.dias.length; i++) {
             ids.push(result.insertId + i);
             csvData += ids[i] + ',' + params.dias[i].name + ',' + params.dias[i].email + ',' + params.dias[i].password + '\n';
-            sendWelcomeEmail(params.dias[i].email, params.dias[i].name, params.dias[i].password);
+            sendWelcomeEmail(params.dias[i].email, params.dias[i].name, params.dias[i].password, "Dais");
         }
 
         await appendFile(path.join(__dirname, '../files/dias.csv'), csvData);
@@ -203,7 +203,7 @@ exports.createDelegate = async (req, res, next) => {
         for (let i = 0; i < params.delegates.length; i++) {
             ids.push(result.insertId + i);
             csvData += ids[i] + ',' + params.delegates[i].name + ',' + params.delegates[i].email + ',' + params.delegates[i].password + '\n';
-            sendWelcomeEmail(params.delegates[i].email, params.delegates[i].name, params.delegates[i].password);
+            sendWelcomeEmail(params.delegates[i].email, params.delegates[i].name, params.delegates[i].password, "Delegate");
         }
 
         await appendFile(path.join(__dirname, '../files/delegates.csv'), csvData);
