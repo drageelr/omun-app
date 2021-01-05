@@ -429,7 +429,7 @@ exports.handleSeatUnSit = async (socket, params, event) => {
             + 'delegateId = ' + user.id
         ); 
 
-        if (!result.changedRows) { throw new customError.NotFoundError("unexpected error while leaving seat"); }
+        if (!result.changedRows) { throw new customError.NotFoundError("error leaving seat, maybe the seat is already unoccupied"); }
 
         let res = {
             id: seatId[0].id
@@ -936,7 +936,7 @@ exports.handleSessionEdit = async (socket, params, event) => {
 
         let result = await db.query(updateQueryStr + whereQueryStr);
 
-        if (!result.changedRows) { throw new customError.NotFoundError("unexpected error"); }
+        if (!result.changedRows) { throw new customError.NotFoundError("no new value given, value remains unchanged"); }
 
         broadcastToRoom(user.nsp, user.committeeId + '|' + "admin", event, res)
         broadcastToRoom(user.nsp, user.committeeId + '|' + "dias", event, res)
