@@ -56,7 +56,6 @@ function Home({user}){
         if (user.type == "admin") {
             fetchCommitteesForAdmin();
         }
-            
     }, []);
 
 
@@ -119,7 +118,7 @@ function Home({user}){
     const handleJoin = async () => {
         sessionStorage.committeeId = SessionJ;
         try{
-            await join({committeeId: SessionEn});
+            await join({committeeId: SessionJ});
             setStatus("Joining Session.");
             window.open("/main","_self");
         } 
@@ -284,11 +283,7 @@ function Home({user}){
             </div>
                 { status !== '' && <div className="message"> {status} </div> }
             </div>
-
     )
-
-    
-   
 }
 
 export default Home

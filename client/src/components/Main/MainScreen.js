@@ -1,19 +1,17 @@
 import React, {useState} from 'react'
+import { Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
 import './MainScreen.css'
+import io from "socket.io-client"
+import MuiAlert from '@material-ui/lab/Alert';
 import InformationBar from './Items/InfoBar/InformationBar'
 import Notification from './Items/Notification/Notification'
 import VirtualAud from './Items/VirtualAud/VirtualAud'
 import MessageBox from './Items/MessageBox/MessageBox'
-import io from "socket.io-client"
-// import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-// import DescriptionIcon from '@material-ui/icons/Description'
-import { Button, Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles';
-import MuiAlert from '@material-ui/lab/Alert';
 import Topics from './Items/Zoom/Topics'
 import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
 import ButtonGroup from './Items/Buttons/ButtonGroup'
+import { makeStyles } from '@material-ui/core/styles';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -43,6 +41,11 @@ let committee = {};
 let session = {};
 let topicsList = [];
 let gsList = [];
+let seats = [];
+let connectedAdmins = [];
+let connectedDias = [];
+let connectedDelegates = [];
+let logs = [];
 
 
 export default function MainScreen() {
@@ -69,7 +72,10 @@ export default function MainScreen() {
     let [delegatesState, setDelegates] = useState({});
     
     // logs, rsl
-    let [logs, setLogs] = useState([]);
+    let [logsState, setLogs] = useState([]);
+    let [singleLog, setSingleLog] = useState(true);
+    let [reachedLogTop, setReachedLogTop] = useState(false);
+
     let [rsListState, setRSList] = useState([]);
     
     // chat
@@ -101,16 +107,12 @@ export default function MainScreen() {
 
     //state resolution for use in nested funcs
     let tempSocket = {};
-    let seats = [];
     let dias = {};
     let delegates = {};
     let admins = {};
     let info = {};
     let timer = {};
-    let connectedAdmins = [];
-    let connectedDias = [];
-    let connectedDelegates = [];
-    
+
 
     /*  
     info:
@@ -192,7 +194,7 @@ export default function MainScreen() {
          */
 
         tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
-        tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
+        // tempEmission.push({event: 'REQ|log-fetch', req: getLogFetch()}); // Access: ["admin", "dias"]
     }, []);
 
 
@@ -289,6 +291,7 @@ export default function MainScreen() {
         fetchNotifications();
         fetchGSL();
         fetchTopics();
+        fetchLogs();
     }
 
 
@@ -434,7 +437,7 @@ export default function MainScreen() {
         delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
         setDelegates(delegates);
         
-        setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
+        setReachedTop(fetchedChatMsgs.length == 0); // if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
         setSingleMsg(false);
@@ -549,7 +552,6 @@ export default function MainScreen() {
          * When this is received you have to append the array
          * use the "id" to check where to append (usually it will be in the start)
          */
-
         /**
          * res = {
          *      logs: [{
@@ -559,12 +561,11 @@ export default function MainScreen() {
          *      }]
          * }
          */
-
         console.log('RES|log-fetch:', res);
-        const recievedLogs = res.logs;
-        
-        
-        setLogs(recievedLogs.concat(logs));
+        logs = res.logs.concat(logs);
+        setReachedLogTop(res.logs.length === 0);
+        setSingleLog(false);
+        setLogs(logs);
     }
 
 
@@ -582,6 +583,9 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|log-send:', res);
+        logs.push(res);
+        setSingleLog(true);
+        setLogs([...logs]);
     }
 
 
@@ -1097,6 +1101,18 @@ export default function MainScreen() {
         socket.emit('REQ|notif-fetch', {lastNotifId});
     }
 
+    function fetchLogs() {
+        /**
+         * This function is used to fetch last 10 logs
+         */
+        
+        let lastLogId = 0;
+        if (logs.length) {
+            lastLogId = logs[0].id;
+        }
+        socket.emit('REQ|log-fetch', {lastLogId});
+    }
+
 
     function sendNotification(message) {
         /**
@@ -1479,6 +1495,10 @@ export default function MainScreen() {
                         dias={diasState}
                         delegates={delegatesState}
                         admins={admins}
+                        logs={logsState}
+                        fetchLogs={fetchLogs}
+                        singleAddition={singleLog}
+                        reachedTop={reachedLogTop}
                         ></ButtonGroup>
                     </div>
                 </div>
