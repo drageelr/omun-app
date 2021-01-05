@@ -125,7 +125,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
       <Card style={{backgroundColor: "#111111", height:"38vh", overflowY:"auto"}}>
         <CardContent style={{color: "#FFFFFF"}}>
           <Grid container justify="center" direction="row" alignItems="center" item xs={12} spacing={3}>
-            <Grid item xs style={{marginTop: type == 'dias' ? '-10vh' : '-2vh', marginLeft: '2vh'}}
+            <Grid item xs style={{marginTop: session.type !== "UNMOD" ? (type == 'dias' ? '-10vh' : '-2vh') : '2vh', marginLeft: '2vh'}}
             onMouseEnter={() => setCrossesShown(true)}
             onMouseLeave={() => setCrossesShown(false)}>
               <Typography variant='h5' color='#ffffff'>{session.committeeName}</Typography>
@@ -189,7 +189,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
             </Grid>
 
             <Grid item xs={4}>
-                <div style={{marginLeft: '3vw'}}>{session.type === "UNMOD" && "Unmod" } Speaker Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
+                <div style={{marginLeft: '3vw'}}>{session.type === "UNMOD" ? "Unmod" : "Speaker" } Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
                 <div style={{marginLeft: '5vw'}}>
                   <CountdownCircleTimer
                       key={timerKeyS}

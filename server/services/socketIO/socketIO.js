@@ -140,9 +140,10 @@ async function sendStartInfo(socket) {
         // if (namespaceUsers[nsp.name].admin) {
         //     conAdmins = Object.values(namespaceUsers[nsp.name].admin);
         // }
-        conAdmins = Object.keys(fetchUsers(nsp.name, 'admin'));
+        conAdmins = Object.values(fetchUsers(nsp.name, 'admin'));
         for (let i = 0; i < conAdmins.length; i++) {
-            let userDetails = nsp.sockets.get(conAdmins[i]).userObj;
+            let userDetails = nsp.sockets.get(conAdmins[i]);
+            userDetails = userDetails.userObj;
             connectedAdmins[userDetails.id] = hFuncs.duplicateObject(userDetails, ['name']);
         }
 
@@ -205,13 +206,6 @@ function attachEventListeners(socket) {
 
 function createNameSpace(committeeId) {
     try {
-        // let namespaces = Object.keys(namespaceUsers);
-
-        // for (let i = 0; i < namespaces.length; i++) {
-        //     if (namespaces[i] == "/" + committeeId) { throw new customError.DuplicateResourceError("committee session already in progress"); }
-        // }
-
-        // namespaceUsers["/" + committeeId] = {};
         let namespaceCreated = createNamespaceObj('/'+committeeId);
         if (!namespaceCreated) { throw new customError.DuplicateResourceError("committee session already in progress"); }
         
@@ -224,27 +218,6 @@ function createNameSpace(committeeId) {
         nsp.on('connection', async socket => {
             try {
                 socket.on('disconnect', async (reason) => {
-                    // if (namespaceUsers["/" + committeeId]) {
-                    //     let user = socket.userObj;
-                    //     if (user) {
-                    //         if (namespaceUsers["/" + committeeId][user.type]) {
-                    //             io.of("/" + committeeId).emit('RES|session-con', {
-                    //                 type: user.type,
-                    //                 userId: user.id,
-                    //                 connected: false
-                    //             });
-                    //             if (user.type == "delegate") {
-                    //                 let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
-                    //                 if (occupiedSeat.length) {
-                    //                     let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
-                    //                     if (unoccupySeat.changedRows) { socket.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
-                    //                 }
-                    //             }
-                    //             delete namespaceUsers["/" + committeeId][user.type][user.id];
-                    //             //deleteNS
-                    //         }
-                    //     }
-                    // }
                     let user = socket.userObj;
                     if (user) {
                         let currentNsp = io.of("/" + committeeId);
@@ -261,7 +234,7 @@ function createNameSpace(committeeId) {
                                 if (unoccupySeat.changedRows) { currentNsp.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
                             }
                         }
-                        let userDeleted = deleteUser("/" + committeeId, user.type, user.id);
+                        deleteUser("/" + committeeId, user.type, user.id);
                     }
                     console.log(socket.id, "DISCONNECTED:", reason);
                 });
@@ -284,16 +257,27 @@ function createNameSpace(committeeId) {
                     if (reqUser[0].committeeId != givenCommitteeId) { throw new customError.ForbiddenAccessError("you cannot connect with this committee"); }
                 }
 
-                // if(!namespaceUsers[nsp.name][userObj.type]) { namespaceUsers[nsp.name][userObj.type] = {}; } //addNS
-                
-                // let userIdsKey = Object.keys(namespaceUsers[nsp.name][userObj.type])
-                // for (let i = 0; i < userIdsKey.length; i++) {
-                //     if (userObj.id == userIdsKey[i]) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
-                // }
-                
-                // namespaceUsers[nsp.name][userObj.type][userObj.id] = socket.id; //addNS
                 let userAdded = addUser(nsp.name, userObj.type, userObj.id, socket.id);
-                if (!userAdded) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
+                // if (!userAdded) { throw new customError.DuplicateResourceError("duplicate connection to committee"); }
+                
+                if (!userAdded) {
+                    let socketId = fetchSocketId(nsp.name, userObj.type, userObj.id);
+                    if (socketId !== undefined) {
+                        let oldSocket = nsp.sockets.get(socketId); 
+                        errorHandler(oldSocket, new customError.DuplicateResourceError("connection closed becuase of duplicate login"));
+                        oldSocket.disconnect(true);
+                    }
+                    if (userObj.type == "delegate") {
+                        let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + givenCommitteeId + ' AND delegateId = ' + userObj.id);
+                        if (occupiedSeat.length) {
+                            let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + userObj.id);
+                            if (unoccupySeat.changedRows) { nsp.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
+                        }
+                    }
+                    deleteUser(nsp.name, userObj.type, userObj.id);
+                    addUser(nsp.name, userObj.type, userObj.id, socket.id);
+                }
+
                 socket.userObj = {
                     type: userObj.type,
                     id: userObj.id,

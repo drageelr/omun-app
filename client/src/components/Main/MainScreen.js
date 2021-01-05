@@ -11,6 +11,7 @@ import Topics from './Items/Zoom/Topics'
 import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
 import ButtonGroup from './Items/Buttons/ButtonGroup'
+import MonitorBox from './Items/MessageBox/MonitorBox';
 import { makeStyles } from '@material-ui/core/styles';
 import moment from 'moment';
 
@@ -65,7 +66,7 @@ export default function MainScreen() {
     const classes = useStyles();
     let [snackbarMsg, setSnackbarMsg] = useState(''); // current snackbar msg, displays snackbar when not ''
     let [connected, setConnected] = useState(false); // whether connected to socket
-    
+
     //vaud
     let [seatsState, setSeats] = useState([]);
     let [seated, setSeated] = useState(false);
@@ -98,6 +99,10 @@ export default function MainScreen() {
     let [singleMsg, setSingleMsg] = useState(true); //scroll to bottom init
     let [reachedTop, setReachedTop] = useState(false);
     let [singleTopic, setSingleTopic] = useState(true);
+
+    // mchat
+    let [mchatOpen, setMChatOpen] = useState({});
+
     
     //notif
     let [notifications, setNotifications] = useState([]);
@@ -481,42 +486,43 @@ export default function MainScreen() {
          *      Recved by Admin:
          *          Simply store in the array you have for these 2 delegates 
          */
-
-        console.log('RES|del-chat-send:', res);
-        const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
-        /**
-         * res = {
-         *      id: Number,
-         *      delegateId: Number,
-         *      diasId: Number,
-         *      message: String.min(1).max(250),
-         *      diasSent: Boolean,
-         *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
-         * }
-         */
-
-        const senderId = senderDelegateId;
-        const senderType = 'delegate';
-        let theirChatId = '';
-        const msgNotYours = !(Number(user.id) == senderId); // you are not the sender (just check id as both are delegates)
-        
-        if (Number(user.id) == senderDelegateId) {
-            theirChatId = `${recipientDelegateId}|delegate`;
-
-            if (msgNotYours && currentChatId !== theirChatId) {
-                delegates[recipientDelegateId].unreadMessages++;
-                setDelegates(delegates);
+        if (user.type == 'delegate') { // monitored
+            console.log('RES|del-chat-send:', res);
+            const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
+            /**
+             * res = {
+             *      id: Number,
+             *      delegateId: Number,
+             *      diasId: Number,
+             *      message: String.min(1).max(250),
+             *      diasSent: Boolean,
+             *      timestamp: String.format('YYYY-MM-DD HH:mm:ss')
+             * }
+             */
+    
+            const senderId = senderDelegateId;
+            const senderType = 'delegate';
+            let theirChatId = '';
+            const msgNotYours = !(Number(user.id) == senderId); // you are not the sender (just check id as both are delegates)
+            
+            if (Number(user.id) == senderDelegateId) {
+                theirChatId = `${recipientDelegateId}|delegate`;
+    
+                if (msgNotYours && currentChatId !== theirChatId) {
+                    delegates[recipientDelegateId].unreadMessages++;
+                    setDelegates(delegates);
+                }
             }
-        }
-        else if (Number(user.id) == recipientDelegateId) {
-            theirChatId = `${senderDelegateId}|delegate`;
-
-            if (msgNotYours && currentChatId !== theirChatId) {
-                delegates[senderDelegateId].unreadMessages++;
-                setDelegates(delegates);
+            else if (Number(user.id) == recipientDelegateId) {
+                theirChatId = `${senderDelegateId}|delegate`;
+    
+                if (msgNotYours && currentChatId !== theirChatId) {
+                    delegates[senderDelegateId].unreadMessages++;
+                    setDelegates(delegates);
+                }
             }
+            pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, theirChatId });
         }
-        pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, theirChatId });
     }
 
 
@@ -1469,8 +1475,8 @@ export default function MainScreen() {
                                     centered
                                 >
                                     <Tab label="Topics" />
-                                    <Tab label="GSL" />
-                                    <Tab label="RSL" />
+                                    <Tab label="General Speakers" />
+                                    <Tab label="Recognized Speakers" />
                                 </Tabs>
                             </Paper>
                             <CardContent>
@@ -1522,6 +1528,7 @@ export default function MainScreen() {
                         type={userState.type} 
                         changeFileLink={changeFileLink}
                         changeZoomLink={changeZoomLink}
+                        setMChatOpen={setMChatOpen}
                         connectedAdmins={connectedAdminsState}
                         connectedDias={connectedDiasState}
                         connectedDelegates={connectedDelegatesState}
@@ -1532,7 +1539,26 @@ export default function MainScreen() {
                         fetchLogs={fetchLogs}
                         singleAddition={singleLog}
                         reachedTop={reachedLogTop}
-                        ></ButtonGroup>
+                        />
+                        {
+                            (user.type == 'admin' || user.type == 'dias') &&
+                            <MonitorBox
+                            id={Number(userState.id)} 
+                            type={userState.type} 
+                            delegates={delegatesState}
+                            mchatOpen={mchatOpen}
+                            setMChatOpen={setMChatOpen}
+                            delegatesList={infoState.delegatesList}
+                            currentMChat={chats[currentChatIdState]}
+                            setMChats={setChats}
+                            singleAddition={singleMsg}
+                            reachedTop={reachedTop}
+                            mchatId={currentChatIdState}
+                            setMChatId={setChatId}
+                            msgCounter={msgCounter}
+                            fetchMChat={fetchChat}
+                            />
+                        }
                     </div>
                 </div>
             }
@@ -1559,25 +1585,28 @@ export default function MainScreen() {
                         togglePlacard={togglePlacard}
                         delegates={infoState.delegates} //update does not matter so state prop not sent
                         />
-                        <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
-                            <MessageBox 
-                            id={Number(userState.id)} 
-                            type={userState.type} 
-                            dias={diasState}
-                            delegates={delegatesState}
-                            diasList={infoState.diasList} 
-                            delegatesList={infoState.delegatesList}
-                            currentChat={chats[currentChatIdState]}
-                            setChats={setChats}
-                            singleAddition={singleMsg}
-                            reachedTop={reachedTop}
-                            chatId={currentChatIdState}
-                            setChatId={setChatId}
-                            msgCounter={msgCounter}
-                            sendMsg={sendMsg}
-                            fetchChat={fetchChat}
-                            />
-                        </div>
+                        {   
+                            user.type !== 'admin' &&
+                            <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
+                                <MessageBox 
+                                id={Number(userState.id)} 
+                                type={userState.type} 
+                                dias={diasState}
+                                delegates={delegatesState}
+                                diasList={infoState.diasList} 
+                                delegatesList={infoState.delegatesList}
+                                currentChat={chats[currentChatIdState]}
+                                setChats={setChats}
+                                singleAddition={singleMsg}
+                                reachedTop={reachedTop}
+                                chatId={currentChatIdState}
+                                setChatId={setChatId}
+                                msgCounter={msgCounter}
+                                sendMsg={sendMsg}
+                                fetchChat={fetchChat}
+                                />
+                            </div>
+                        }
                     </div>
                 </div>
             }
