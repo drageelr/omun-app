@@ -105,7 +105,7 @@ function LogsList({logs, singleAddition, reachedTop, fetchLogs}) {
     )
 }
 
-function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink, history, logs, fetchLogs, singleAddition, reachedTop, connectedDelegates, connectedAdmins, connectedDias, delegates, dias, admins}) {
+function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, changeZoomLink, history, setMChatOpen, logs, fetchLogs, singleAddition, reachedTop, connectedDelegates, connectedAdmins, connectedDias, delegates, dias, admins}) {
     const classes = useStyles();
     const [fileMenuState, setFileMenu] = useState(initialState);
     const [filePopupState, setFilePopup] = useState(false);
@@ -220,8 +220,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
     
     return (
-    <div  style={{marginTop:'2vh'}} className='Buttons'>
-        <div>
+    <div style={{marginTop:'2vh'}} className='Buttons'>
             <Button 
             variant="contained" 
             color="primary" 
@@ -371,19 +370,29 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                 </DialogContent>
             </Dialog>
 
-                        
+            &nbsp;&nbsp;
+
+
+            <Button variant='contained' size={type !== 'delegate' ? "small" : "medium"}  color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button>
+            
+            
+            
+
             
             { // only admin/dias can preview logs
                 (type == 'admin' || type == 'dias') &&
                 <>
                     &nbsp;&nbsp; 
-                    <Button variant='contained' style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
+                    <Button variant='contained' size="small" style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
                 </>
             }
 
+
             &nbsp;&nbsp;
-            
-            <Button variant='contained' color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button>
+            {
+                (type == 'admin' || type == 'dias') &&
+                <Button variant="outlined" size="small" color="secondary" onClick={()=>setMChatOpen(true)}> MONITOR </Button>
+            }
 
             <Drawer anchor='right' open={onlineDrawerOpen} onClose={toggleOnlineDrawer}>
                 <OnlineList/>
@@ -392,7 +401,6 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
             <Drawer anchor='left' open={logsDrawerOpen} onClose={toggleLogsDrawer} >
                 <LogsList onClick={toggleLogsDrawer} onKeyDown={toggleLogsDrawer} logs={logs} fetchLogs={fetchLogs} singleAddition={singleAddition} reachedTop={reachedTop} />
             </Drawer>    
-        </div>
     </div>
     )
 }

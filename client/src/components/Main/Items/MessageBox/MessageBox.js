@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -13,50 +12,7 @@ import SendIcon from '@material-ui/icons/Send';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import NotificationBadge from 'react-notification-badge';
 import Timestamp from 'react-timestamp';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-    display: 'flex',
-    height: '40vh',
-    width: '49vw'
-  },
-  tabs: {
-    borderRight: `1px solid ${theme.palette.divider}`,
-  },
-  chatPaper: {
-    overflow:'auto',
-    height: '28vh',
-    width: '39vw'
-  },
-  msgPaper: {
-    padding: 2, 
-    borderRadius: 3, 
-    margin: 8,
-    width: '30vw',
-    backgroundColor: theme.palette.primary.main,
-    color: 'white'
-  },
-  msgPaperYours: {
-    padding: 2, 
-    borderRadius: 3, 
-    margin: 8,
-    marginLeft: '8vw',
-    width: '30vw',
-    backgroundColor: 'whitesmoke',
-    color: '#111111'
-  },
-  sendBar: {
-    display: 'flex', 
-    flexDirection: 'row', 
-    padding: 10,
-    maxHeight: '8vh'
-  },
-  // sendBox: {
-  //   maxHeight: '2vh'
-  // }
-}));
+import { useStyles } from './styles';
 
 function splitIdType(str) {
   const idType = str.split('|');
@@ -185,7 +141,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
             <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.chatPaper}>
               {
                 fetching && !reachedTop &&
-                <Box style={{marginTop: 10, display: 'flex', justifyContent: 'center'}}>
+                <Box className={classes.circleProg}>
                   <CircularProgress size={30} color="secondary" />
                 </Box>
               }
@@ -195,10 +151,10 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
                   const isTheirMsg = !(msg.senderId == id && msg.senderType == type); //message id type does not match mine
                   return (
                   <Paper key={index} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
-                    <Typography style={{margin: 5, fontWeight: 500, whiteSpace: 'pre', wordWrap: "break-word", maxWidth: '30vw'}}>
+                    <Typography className={classes.msgText}>
                       {msg.message}
                     </Typography>
-                    <Typography style={{margin: 4, marginLeft: 5, fontSize: 10}}>
+                    <Typography className={classes.msgTS}>
                       <Timestamp relative date={new Date(msg.timestamp)}/>
                     </Typography>
                   </Paper>

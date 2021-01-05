@@ -11,6 +11,7 @@ import Topics from './Items/Zoom/Topics'
 import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
 import ButtonGroup from './Items/Buttons/ButtonGroup'
+import MonitorBox from './Items/MessageBox/MonitorBox';
 import { makeStyles } from '@material-ui/core/styles';
 import moment from 'moment';
 
@@ -65,7 +66,7 @@ export default function MainScreen() {
     const classes = useStyles();
     let [snackbarMsg, setSnackbarMsg] = useState(''); // current snackbar msg, displays snackbar when not ''
     let [connected, setConnected] = useState(false); // whether connected to socket
-    
+
     //vaud
     let [seatsState, setSeats] = useState([]);
     let [seated, setSeated] = useState(false);
@@ -98,6 +99,10 @@ export default function MainScreen() {
     let [singleMsg, setSingleMsg] = useState(true); //scroll to bottom init
     let [reachedTop, setReachedTop] = useState(false);
     let [singleTopic, setSingleTopic] = useState(true);
+
+    // mchat
+    let [mchatOpen, setMChatOpen] = useState({});
+
     
     //notif
     let [notifications, setNotifications] = useState([]);
@@ -1522,6 +1527,7 @@ export default function MainScreen() {
                         type={userState.type} 
                         changeFileLink={changeFileLink}
                         changeZoomLink={changeZoomLink}
+                        setMChatOpen={setMChatOpen}
                         connectedAdmins={connectedAdminsState}
                         connectedDias={connectedDiasState}
                         connectedDelegates={connectedDelegatesState}
@@ -1532,7 +1538,26 @@ export default function MainScreen() {
                         fetchLogs={fetchLogs}
                         singleAddition={singleLog}
                         reachedTop={reachedLogTop}
-                        ></ButtonGroup>
+                        />
+                        {
+                            (user.type == 'admin' || user.type == 'dias') &&
+                            <MonitorBox
+                            id={Number(userState.id)} 
+                            type={userState.type} 
+                            delegates={delegatesState}
+                            mchatOpen={mchatOpen}
+                            setMChatOpen={setMChatOpen}
+                            delegatesList={infoState.delegatesList}
+                            currentMChat={chats[currentChatIdState]}
+                            setMChats={setChats}
+                            singleAddition={singleMsg}
+                            reachedTop={reachedTop}
+                            mchatId={currentChatIdState}
+                            setMChatId={setChatId}
+                            msgCounter={msgCounter}
+                            fetchMChat={fetchChat}
+                            />
+                        }
                     </div>
                 </div>
             }
