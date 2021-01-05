@@ -230,7 +230,7 @@ function createNameSpace(committeeId) {
                         if (user.type == "delegate") {
                             let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + committeeId + ' AND delegateId = ' + user.id);
                             if (occupiedSeat.length) {
-                                let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
+                                let unoccupySeat = await db.query('UPDATE seat SET delegateId = null, placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + user.id);
                                 if (unoccupySeat.changedRows) { currentNsp.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
                             }
                         }
@@ -270,7 +270,7 @@ function createNameSpace(committeeId) {
                     if (userObj.type == "delegate") {
                         let occupiedSeat = await db.query('SELECT id FROM seat WHERE committeeId = ' + givenCommitteeId + ' AND delegateId = ' + userObj.id);
                         if (occupiedSeat.length) {
-                            let unoccupySeat = await db.query('UPDATE seat SET delegateId = null AND placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + userObj.id);
+                            let unoccupySeat = await db.query('UPDATE seat SET delegateId = null, placard = 0 WHERE id = ' + occupiedSeat[0].id + ' AND delegateId = ' + userObj.id);
                             if (unoccupySeat.changedRows) { nsp.emit('RES|seat-unsit', {id: occupiedSeat[0].id}); }
                         }
                     }
