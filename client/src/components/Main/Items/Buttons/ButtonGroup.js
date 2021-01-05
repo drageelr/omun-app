@@ -1,11 +1,19 @@
+<<<<<<< HEAD
 import React, {useState} from 'react'
 import { Menu, MenuItem, Typography, Paper, ListSubheader, Dialog, DialogContent, Button, Divider, ListItem, Box, CircularProgress, ListItemText, ListItemIcon, Drawer, List, DialogTitle, DialogContentText } from '@material-ui/core'
+=======
+import React, {useState, useEffect} from 'react'
+>>>>>>> 0607c35705d505fb97530c881ea5e3e1614f7de7
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { withRouter } from 'react-router-dom';
 import clsx from 'clsx';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
+import DescriptionIcon from '@material-ui/icons/Description'
+import AirplayIcon from '@material-ui/icons/Airplay';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import MailIcon from '@material-ui/icons/Mail';
+import SendIcon from '@material-ui/icons/Send';
 import SupervisedUserCircleIcon from '@material-ui/icons/SupervisedUserCircle';
 import DescriptionIcon from '@material-ui/icons/Description'
 import AirplayIcon from '@material-ui/icons/Airplay';
@@ -117,29 +125,40 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
     const [logsDrawerOpen, setLogsDrawerOpen] = useState(false);
     
 
-    const fileMenuClose = () => {
+    useEffect(()=> {
+        console.log("Someone connected/disconnected!");
+        console.log("connectedAdmins : ", connectedAdmins);
+        console.log("connectedDelegates : ", connectedDelegates);
+        console.log("connectedDias : ", connectedDias);
+        console.log("delegates : ", delegates);
+        console.log("dias : ", dias);
+        console.log("admins : ", admins);
+    }, [connectedDias, connectedDelegates, connectedAdmins])
+
+
+    function fileMenuClose(){
         setFileMenu(initialState);
     }
 
-    const fileMenuClick = () => {
+    function fileMenuClick(){
         setFileMenu(initialState);
         setFilePopup(true);
     }
 
-    const closeFilePopup = () => {
+    function closeFilePopup(){
         setFilePopup(false);
     }
 
-    const zoomMenuClose = () => {
+    function zoomMenuClose(){
         setZoomMenu(initialState);
     }
 
-    const zoomMenuClick = () => {
+    function zoomMenuClick(){
         setZoomMenu(initialState);
         setZoomPopup(true);
     }
 
-    const closeZoomPopup = () => {
+    function closeZoomPopup(){
         setZoomPopup(false);
     }
 
@@ -209,6 +228,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
     }
 
 
+    
     return (
     <div  style={{marginTop:'2vh'}} className='Buttons'>
         <div>
