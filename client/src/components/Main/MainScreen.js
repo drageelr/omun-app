@@ -1469,8 +1469,8 @@ export default function MainScreen() {
                                     centered
                                 >
                                     <Tab label="Topics" />
-                                    <Tab label="GSL" />
-                                    <Tab label="RSL" />
+                                    <Tab label="General Speakers" />
+                                    <Tab label="Recognized Speakers" />
                                 </Tabs>
                             </Paper>
                             <CardContent>
@@ -1559,25 +1559,28 @@ export default function MainScreen() {
                         togglePlacard={togglePlacard}
                         delegates={infoState.delegates} //update does not matter so state prop not sent
                         />
-                        <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
-                            <MessageBox 
-                            id={Number(userState.id)} 
-                            type={userState.type} 
-                            dias={diasState}
-                            delegates={delegatesState}
-                            diasList={infoState.diasList} 
-                            delegatesList={infoState.delegatesList}
-                            currentChat={chats[currentChatIdState]}
-                            setChats={setChats}
-                            singleAddition={singleMsg}
-                            reachedTop={reachedTop}
-                            chatId={currentChatIdState}
-                            setChatId={setChatId}
-                            msgCounter={msgCounter}
-                            sendMsg={sendMsg}
-                            fetchChat={fetchChat}
-                            />
-                        </div>
+                        {   
+                            user.type !== 'admin' &&
+                            <div style={{marginTop:'2vh' , paddingRight:'20px'}} className='MessageBox'>
+                                <MessageBox 
+                                id={Number(userState.id)} 
+                                type={userState.type} 
+                                dias={diasState}
+                                delegates={delegatesState}
+                                diasList={infoState.diasList} 
+                                delegatesList={infoState.delegatesList}
+                                currentChat={chats[currentChatIdState]}
+                                setChats={setChats}
+                                singleAddition={singleMsg}
+                                reachedTop={reachedTop}
+                                chatId={currentChatIdState}
+                                setChatId={setChatId}
+                                msgCounter={msgCounter}
+                                sendMsg={sendMsg}
+                                fetchChat={fetchChat}
+                                />
+                            </div>
+                        }
                     </div>
                 </div>
             }
