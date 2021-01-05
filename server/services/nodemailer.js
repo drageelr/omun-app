@@ -34,7 +34,7 @@ exports.sendWelcomeEmail = (emailTarget, name, password, accountType = "") => {
         from: 'Online MUN Application <omun@lumun.live>',
         to: emailTarget,
         subject: 'Welcome to OMUN App',
-        html: emailTemplate.generateAccountCreationEmail(name, accountType, emailTarget, password);
+        html: emailTemplate.generateAccountCreationEmail(name, accountType, emailTarget, password)
     };
 
     sendEmail(mailOptions);
