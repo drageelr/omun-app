@@ -45,16 +45,18 @@ export const useStyles = makeStyles((theme) => ({
     padding: 2, 
     borderRadius: 3, 
     margin: 8,
-    width: '30vw',
+    width: '50%',
     backgroundColor: theme.palette.primary.main,
-    color: 'white'
+    color: 'white',
+    clear:'both',
   },
   msgPaperYours: {
     padding: 2, 
     borderRadius: 3, 
     margin: 8,
-    marginLeft: '8vw',
-    width: '30vw',
+    float: 'right',
+    clear:'both',
+    width: '50%',
     backgroundColor: 'whitesmoke',
     color: '#111111'
   },

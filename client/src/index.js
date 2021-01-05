@@ -1,14 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 // import {BrowserRouter} from 'react-router-dom'
-import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-window.serverURI = 'https://omun.lumun.live';
-// window.serverURI = 'http://localhost:3000';
+// window.serverURI = 'https://www.omun.com';
+window.serverURI = window.location.href.replace(/\/$/,"");
+if(window.serverURI.includes("localhost")){
+  window.serverURI = 'http://localhost:3000'
+}
 
-console.log("serverURI", window.serverURI);
 
 ReactDOM.render(
   // <BrowserRouter>

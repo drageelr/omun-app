@@ -98,11 +98,13 @@ export default function MainScreen() {
     let [msgCounter, setMsgCounter] = useState(0);
     let [singleMsg, setSingleMsg] = useState(true); //scroll to bottom init
     let [reachedTop, setReachedTop] = useState(false);
-    let [singleTopic, setSingleTopic] = useState(true);
 
     // mchat
-    let [mchatOpen, setMChatOpen] = useState({});
-
+    let [mchatOpen, setMChatOpen] = useState(false);
+    let [mchats, setMChats] = useState({});
+    let [currentMChatIdState, setCurrentMChatId] = React.useState('');
+    let [msgCounterM, setMsgCounterM] = useState(0);
+    let [selectedDelegateId, setSelectedDelegateId] = useState(0);
     
     //notif
     let [notifications, setNotifications] = useState([]);
@@ -116,12 +118,13 @@ export default function MainScreen() {
     
     //topics
     let [topicsListState, setTopicsList] = useState([]);
+    let [singleTopic, setSingleTopic] = useState(true);
     let [reachedTopicTop, setReachedTopicTop] = useState(false);
     
     //info, user, tab
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
-    const [tabValue, setTabValue] = useState(0);    
+    let [tabValue, setTabValue] = useState(0);    
 
     //state resolution for use in nested funcs
     let tempSocket = {};
@@ -207,12 +210,6 @@ export default function MainScreen() {
 
         // Committee Management
         socket.on('RES|committee-link', resCommitteeLink); // Recieved By: ["admin", "delegate", "dias"]
-
-        /**
-         * REQ Event Emission
-         */
-
-        tempEmission.push({event: 'REQ|del-chat-fetch', req: {}}); // Access: ["admin", "dias"]
     }, []);
 
 
@@ -377,6 +374,22 @@ export default function MainScreen() {
          * }
          */
         console.log('RES|del-chat-fetch:', res);
+        // currently selected delegate (impersonated as) is not the chat iddelegate
+        const mchatId = `${selectedDelegateId === res.delegate1Id ? res.delegate1Id : res.delegate2Id}|delegate`; //fetched chat with this delegate 
+        let fetchedChatMsgs = res.chat.map(chatMsg => (
+            {...chatMsg, 
+                senderId: chatMsg.senderDelegateId, 
+                senderType: 'delegate'
+            }
+        ));
+
+        fetchedChatMsgs = localizeTimestampOA(fetchedChatMsgs);
+        console.log(localizeTimestampOA(fetchedChatMsgs));
+        
+
+        mchats[mchatId] = fetchedChatMsgs.concat(mchats[mchatId] !== undefined ? mchats[mchatId] : []);
+        setMChats(mchats); //concat older chat messages to head of specific chat
+        setMsgCounterM(++msgCounterM);
     }
 
 
@@ -502,26 +515,46 @@ export default function MainScreen() {
     
             const senderId = senderDelegateId;
             const senderType = 'delegate';
-            let theirChatId = '';
+            let chatId = '';
             const msgNotYours = !(Number(user.id) == senderId); // you are not the sender (just check id as both are delegates)
             
             if (Number(user.id) == senderDelegateId) {
-                theirChatId = `${recipientDelegateId}|delegate`;
+                chatId = `${recipientDelegateId}|delegate`;
     
-                if (msgNotYours && currentChatId !== theirChatId) {
+                if (msgNotYours && currentChatId !== chatId) {
                     delegates[recipientDelegateId].unreadMessages++;
                     setDelegates(delegates);
                 }
             }
             else if (Number(user.id) == recipientDelegateId) {
-                theirChatId = `${senderDelegateId}|delegate`;
+                chatId = `${senderDelegateId}|delegate`;
     
-                if (msgNotYours && currentChatId !== theirChatId) {
+                if (msgNotYours && currentChatId !== chatId) {
                     delegates[senderDelegateId].unreadMessages++;
                     setDelegates(delegates);
                 }
             }
-            pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, theirChatId });
+            pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, chatId });
+        } else {
+            console.log('RES|del-chat-send FOR DIAS/ADMIN:', res);
+            const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
+    
+            const senderId = senderDelegateId;
+            const senderType = 'delegate';
+            let mchatId = '';
+
+            if (selectedDelegateId == senderDelegateId) {
+                mchatId = `${recipientDelegateId}|delegate`;
+            }
+            else if (selectedDelegateId == recipientDelegateId) {
+                mchatId = `${senderDelegateId}|delegate`;
+            }
+            if (!mchats[mchatId]) {
+                mchats[mchatId] = [];
+            }
+            mchats[mchatId].push({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, mchatId });
+            setMChats(mchats);
+            setMsgCounterM(++msgCounterM);
         }
     }
 
@@ -545,35 +578,35 @@ export default function MainScreen() {
          */
         const senderId = diasSent ? diasId : delegateId;
         const senderType = diasSent ? 'dias' : 'delegate';
-        let theirChatId = '';
+        let chatId = '';
         const msgNotYours = !(Number(user.id) == senderId && user.type == senderType); // you are not the sender
 
         if (Number(user.id) == diasId && user.type == 'dias') {
-            theirChatId = `${delegateId}|delegate`;
+            chatId = `${delegateId}|delegate`;
 
-            if ( msgNotYours && currentChatId !== theirChatId ) {
+            if ( msgNotYours && currentChatId !== chatId ) {
                 delegates[delegateId].unreadMessages++;
                 setDelegates(delegates);
             }
         }
         else if (Number(user.id) == delegateId && user.type == 'delegate') {
-            theirChatId = `${diasId}|dias`;
+            chatId = `${diasId}|dias`;
 
-            if ( msgNotYours && currentChatId !== theirChatId ) {
+            if ( msgNotYours && currentChatId !== chatId ) {
                 dias[diasId].unreadMessages++;
                 setDias(dias);
             }
         }
-        pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), theirChatId, senderId, senderType });
+        pushChatMsg({ id, message, timestamp: localizeTimestamp(timestamp), chatId, senderId, senderType });
     }
 
 
     function pushChatMsg(chatMsg) {
-        const theirChatId = chatMsg.theirChatId;
-        if (!chats[theirChatId]) {
-            chats[theirChatId] = [];
+        const chatId = chatMsg.chatId;
+        if (!chats[chatId]) {
+            chats[chatId] = [];
         }
-        chats[theirChatId].push(chatMsg);
+        chats[chatId].push(chatMsg);
         setChats(chats);
         setSingleMsg(true);
         setMsgCounter(++msgCounter); // to trigger the chat to update
@@ -1111,6 +1144,18 @@ export default function MainScreen() {
         }
     }
 
+    function fetchMChat(mchatId, delegate1Id) {
+        const [targetIdStr, targetType] = mchatId.split('|');
+        const targetId = Number(targetIdStr);
+
+        let lastMessageId = 0;
+        if (mchats[mchatId] && mchats[mchatId].length !== 0) { //if already chat exists
+            lastMessageId = mchats[mchatId][0].id; //first message in chat is last    
+        }
+
+        socket.emit('REQ|del-chat-fetch', {lastMessageId, delegate1Id, delegate2Id: targetId});
+    }
+
 
     function sendMsg(targetId, targetType, message) { //userId, type = delegate / dias, message to send "String.min(1).max(250)"
         /**
@@ -1234,21 +1279,6 @@ export default function MainScreen() {
         if (user.type == "dias") {
             socket.emit('REQ|committee-link', {zoomLink});
         }
-    }
-
-
-    function getLogFetch() {
-        /**
-         * This function is used to fetch last 10 logs
-         * This event is supposed to be emitted when the loading sign is clicked in the log box
-         */
-
-        let req = {
-            // id of the oldest log (if no log then send 0)
-            lastLogId: 0
-        };
-
-        return req;
     }
 
 
@@ -1428,21 +1458,6 @@ export default function MainScreen() {
     }
 
 
-    function getSessionTimer() {
-        /**
-         * Will be used to play/pause/reset both speaker and topic timers
-         */
-
-        let req = {
-            // true->SpeakerTimer false->TopicTimer
-            speakerTimer: true,
-            // 0->reset 1->pause 2->play
-            toggle: 0,
-        };
-        return req;
-    }
-
-
     function handleTabChange(e, newValue) {
         setTabValue(newValue);
     };
@@ -1549,14 +1564,16 @@ export default function MainScreen() {
                             mchatOpen={mchatOpen}
                             setMChatOpen={setMChatOpen}
                             delegatesList={infoState.delegatesList}
-                            currentMChat={chats[currentChatIdState]}
+                            currentMChat={mchats[currentMChatIdState]}
                             setMChats={setChats}
                             singleAddition={singleMsg}
                             reachedTop={reachedTop}
-                            mchatId={currentChatIdState}
-                            setMChatId={setChatId}
-                            msgCounter={msgCounter}
-                            fetchMChat={fetchChat}
+                            mchatId={currentMChatIdState}
+                            setCurrentMChatId={setCurrentMChatId}
+                            msgCounterM={msgCounterM}
+                            selectedDelegateId={selectedDelegateId}
+                            setSelectedDelegateId={setSelectedDelegateId}
+                            fetchMChat={fetchMChat}
                             />
                         }
                     </div>

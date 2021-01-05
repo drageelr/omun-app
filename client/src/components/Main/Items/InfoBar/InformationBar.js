@@ -7,6 +7,16 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
 import Grid from '@material-ui/core/Grid';
 import FlagIfAvailable from '../Zoom/FlagIfAvailable'
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import * as Yup from 'yup'
+// import IconButton from '@material-ui/core/IconButton';
+import SendIcon from '@material-ui/icons/Send';
+import { Formik, Form, Field } from 'formik';
+import { TextField } from 'formik-material-ui';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -45,6 +55,8 @@ export function secToMinsec(sec){
 }
 
 export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, delegates, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
+  const [open, setOpen] = React.useState(false);
+
   const [crossesShown, setCrossesShown] = useState(false);
   const [timerSEnded, setTimerSEnded] = useState(false);
   const [timerKeyS, setTimerKeyS] = useState(0);
@@ -53,7 +65,14 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   const [speakerValue, setSpeakerValue] = React.useState(0);
   const [topicValue, setTopicValue] = React.useState(0);
 
-  
+  function handleClickOpen() {
+    setOpen(true);
+  };
+
+  function handleClose() {
+    setOpen(false);
+  };
+
   React.useEffect(() => {
     setTimerKeyS(timerKeyS+1);
     setTimerKeyT(timerKeyT+1);
@@ -91,14 +110,14 @@ export default function InformationBar ({session, timer, type, setSessionType, s
     setTimerSEnded(true);
   }
 
-  function enterDurationS(){
-    if (timer.speakerToggle === 1) { //if not playing
-      const newDurationS = parseInt(prompt('Speaker Duration'));
-      if (newDurationS) {
-        setSessionTime('speaker', newDurationS);
-      }
-    }
-  }
+  // function enterDurationS(){
+  //   if (timer.speakerToggle !== 2) { //if not playing
+  //     const newDurationS = parseInt(prompt('Speaker Duration'));
+  //     if (newDurationS) {
+  //       setSessionTime('speaker', newDurationS);
+  //     }
+  //   }
+  // }
 
   function resetTimerT() {
     //stop S,T
@@ -110,7 +129,7 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   }
 
   function enterDurationT(){
-    if (timer.speakerToggle === 1) { //if not playing
+    if (timer.speakerToggle !== 2) { //if not playing
       const newDurationT = parseInt(prompt('Topic Duration'));
       if (newDurationT) {
         setSessionTime('topic', newDurationT);
@@ -220,7 +239,45 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                         <Button size="small" style={bgstyle} onClick={startSpeakerTimer} color="secondary">Start</Button>)
                       }
                       <Button size="small" style={bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
-                      <Button size="small" style={bgstyle} onClick={enterDurationS} color="secondary">Duration</Button>
+                      <Button size="small" style={bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
+                      
+                      <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                          <DialogTitle id="form-dialog-title">Add Notification</DialogTitle>
+                          <DialogContent style={{marginTop: -20}}>
+                              <DialogContentText>
+                                  Enter a message to notify session particpants
+                              </DialogContentText>
+                              <Formik 
+                                  validateOnChange={false} validateOnBlur={true}
+                                  initialValues={{notification: ''}}
+                                  validationSchema={Yup.object({
+                                  notification: Yup.string()
+                                      .min(1)
+                                      .max(250)
+                                  })}
+                                  onSubmit={(values, {setSubmitting}) => {
+                                      // const notification = values.notification.replace(/[\\\"]/g, '');
+                                      setSessionTime('speaker', values);
+                                      setSubmitting(false);
+                                      setOpen(false);
+                                  }}
+                              >
+                                  {({ submitForm}) => (
+                                  <Form>
+                                      <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="notification" label={`Send notification`}/>
+                                      <Button
+                                      style={{marginTop: 5, float: 'right', marginBottom: 10}}
+                                      alignRight 
+                                      variant="contained" 
+                                      endIcon={<SendIcon fontSize="small"/>} 
+                                      color="primary" 
+                                      onClick={submitForm}
+                                      >Send</Button>
+                                  </Form>
+                                  )}
+                              </Formik>
+                          </DialogContent>
+                      </Dialog>
                   </ButtonGroup>
                 }
                 
