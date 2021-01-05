@@ -156,6 +156,7 @@ export default function MainScreen() {
         let userSS = JSON.parse(sessionStorage.getItem('user')); //also extract user
         user = userSS;
         setUserState(userSS);
+        console.log(`${window.serverURI}/${committeeId}?token=${token}`)
         socket = io(`${window.serverURI}/${committeeId}?token=${token}`, {forceNew: true});
         tempSocket = socket;
 
