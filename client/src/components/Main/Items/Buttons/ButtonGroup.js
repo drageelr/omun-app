@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import React, {useState} from 'react'
-import { Menu, MenuItem, Typography, Paper, ListSubheader, Dialog, DialogContent, Button, Divider, ListItem, Box, CircularProgress, ListItemText, ListItemIcon, Drawer, List, DialogTitle, DialogContentText } from '@material-ui/core'
-=======
 import React, {useState, useEffect} from 'react'
->>>>>>> 0607c35705d505fb97530c881ea5e3e1614f7de7
+import { Menu, MenuItem, Typography, Paper, ListSubheader, Dialog, DialogContent, Button, Divider, ListItem, Box, CircularProgress, ListItemText, ListItemIcon, Drawer, List, DialogTitle, DialogContentText } from '@material-ui/core'
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { withRouter } from 'react-router-dom';
@@ -15,10 +11,6 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import MailIcon from '@material-ui/icons/Mail';
 import SendIcon from '@material-ui/icons/Send';
 import SupervisedUserCircleIcon from '@material-ui/icons/SupervisedUserCircle';
-import DescriptionIcon from '@material-ui/icons/Description'
-import AirplayIcon from '@material-ui/icons/Airplay';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-import SendIcon from '@material-ui/icons/Send';
 import Timestamp from 'react-timestamp';
 import { makeStyles } from '@material-ui/core/styles';
 
