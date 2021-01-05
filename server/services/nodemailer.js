@@ -18,24 +18,29 @@ let emailer = nodemailer.createTransport({
 });
 
 
-function sendEmail (mailOptions) {
-    emailer.sendMail(mailOptions, function(err , info) {
-        if (err) {
-        console.log(err);
-        } else {
+// function sendEmail (mailOptions) {
+//     emailer.sendMail(mailOptions, function(err , info) {
+//         if (err) {
+//             console.log(err);
+//         } else {
+//             console.log("Email sent to \"" + emailTarget + "\" " + info.response);
+//         }
+//     });
+// }
+
+
+exports.sendWelcomeEmail = async (emailTarget, name, password, accountType = "") => {
+    try {
+        let mailOptions = {
+            from: 'Online MUN Application <omun@lumun.live>',
+            to: emailTarget,
+            subject: 'Welcome to OMUN App',
+            html: emailTemplate.generateAccountCreationEmail(name, accountType, emailTarget, password)
+        };
+    
+        let info = await emailer.sendMail(mailOptions);
         console.log("Email sent to \"" + emailTarget + "\" " + info.response);
-        }
-    });
-}
-
-
-exports.sendWelcomeEmail = (emailTarget, name, password, accountType = "") => {
-    let mailOptions = {
-        from: 'Online MUN Application <omun@lumun.live>',
-        to: emailTarget,
-        subject: 'Welcome to OMUN App',
-        html: emailTemplate.generateAccountCreationEmail(name, accountType, emailTarget, password)
-    };
-
-    sendEmail(mailOptions);
+    } catch(err) {
+        console.log("EMAIL ERROR:", err);
+    }
 }
