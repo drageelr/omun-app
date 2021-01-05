@@ -16,6 +16,7 @@
     "formik-material-ui": "^3.0.1",
     "jquery": "^3.5.1",
     "material-ui": "^0.20.2",
+    "moment": "^2.29.1",
     "react": "^16.13.1",
     "react-countdown-circle-timer": "^2.3.7",
     "react-dom": "^16.13.1",

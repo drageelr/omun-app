@@ -68,6 +68,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
   function handleChange(event, newUser) {
     setChatId(newUser); //has id, type both
     fetchChat(newUser);
+    scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end when chat opened
   };
 
   useEffect(() => {
