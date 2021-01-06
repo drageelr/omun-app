@@ -291,8 +291,8 @@ function minsecToSeconds(minsec){
                       <Button size="small" style={bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
                       <Button size="small" style={bgstyle} onClick={handleClickOpen2} color="secondary">Duration</Button>
                       
-                      <Dialog open2={open2} onClose={handleClose2} aria-labelledby="form-dialog-title">
-                          <DialogTitle id="form-dialog-title">Set time Duration</DialogTitle>
+                      <Dialog open={open2} onClose={handleClose2} aria-labelledby="form-dialog-title">
+                          <DialogTitle id="form-dialog-title">Set Speaker Time Duration</DialogTitle>
                           <DialogContent style={{marginTop: -20}}>
                               <Formik 
                                   validateOnChange={false} validateOnBlur={true}
@@ -372,7 +372,7 @@ function minsecToSeconds(minsec){
                           <Button size="small" style={bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
                           
                           <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-                          <DialogTitle id="form-dialog-title">Set time Duration</DialogTitle>
+                          <DialogTitle id="form-dialog-title">Set Topic Time Duration</DialogTitle>
                           <DialogContent style={{marginTop: -20}}>
                               <Formik 
                                   validateOnChange={false} validateOnBlur={true}
