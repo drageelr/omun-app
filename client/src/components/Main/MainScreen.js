@@ -1536,7 +1536,7 @@ function MainScreen({history, setSeverity, setStatus}) {
                         connectedDelegates={connectedDelegatesState}
                         dias={diasState}
                         delegates={delegatesState}
-                        admins={admins}
+                        admins={adminsState}
                         logs={logsState}
                         fetchLogs={fetchLogs}
                         singleAddition={singleLog}
@@ -1553,8 +1553,6 @@ function MainScreen({history, setSeverity, setStatus}) {
                             delegatesList={infoState.delegatesList}
                             currentMChat={mchats[currentMChatIdState]}
                             setMChats={setChats}
-                            singleAddition={singleMsg}
-                            reachedTop={reachedTop}
                             mchatId={currentMChatIdState}
                             setCurrentMChatId={setCurrentMChatId}
                             msgCounterM={msgCounterM}

@@ -123,7 +123,7 @@ function Notification({notifications, sendNotification, reachedTop, fetchNotific
                     notifications.map(({diasName, id, message, timestamp},i)=> (
                         <ListItem style={notifItemStyle} className="Notif-Text" key={i} dense>
                             <Paper key={i} style={{backgroundColor: '#ddb82f', marginBottom: 5, width: '46.7vw'}}>
-                                <Typography style={{margin: 5, whiteSpace: 'pre', fontSize: '0.9rem', fontWeight: 500, wordWrap: "break-word"}}>
+                                <Typography style={{margin: 5, whiteSpace: 'pre-wrap', fontSize: '0.9rem', fontWeight: 500, wordWrap: "break-word"}}>
                                     {message}
                                 </Typography>
                                 <Typography style={{margin: 4, marginTop: 1, marginLeft: 5, fontSize: 10}}>

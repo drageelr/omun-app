@@ -87,24 +87,14 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
         { 
           diasList && (type == 'delegate') &&
           diasList.map((d,i)=> {
-            const unreadMessages = dias[d.id].unreadMessages;
-            let label = `${d.title} ${d.name}`;
-            // if (unreadMessages) {
-            //   label += ` (${unreadMessages})`;
-            // }
-            return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|dias`}></div>;
+            return <div label={`${d.title} ${d.name}`} um={dias[d.id].unreadMessages} key={d.id} value={`${d.id}|dias`}></div>;
           })
         }     
         {
           delegatesList &&
           delegatesList.map((d,i)=> {
             if (!(Number(d.id) === Number(id) && type==='delegate')){
-              const unreadMessages = delegates[d.id].unreadMessages;
-              let label = d.countryName;
-              // if (unreadMessages) {
-              //   label += `(${unreadMessages})`;
-              // }
-              return <div label={label} um={unreadMessages} key={d.id} value={`${d.id}|delegate`}></div>;
+              return <div label={d.countryName} um={delegates[d.id].unreadMessages} key={d.id} value={`${d.id}|delegate`}></div>;
             }
           })
         }

@@ -21,7 +21,9 @@ export const useStyles = makeStyles((theme) => ({
   },
   mtabs: {
     borderRight: `1px solid ${theme.palette.divider}`,
-    width: '30vw'
+    width: '30vw',
+    maxHeight: '5vh',
+    overflowY: 'scroll'
   },
   appBar: {
     position: 'relative',
