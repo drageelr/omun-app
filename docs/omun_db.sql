@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.22, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.22, for Linux (x86_64)
 --
 -- Host: localhost    Database: omun_db
 -- ------------------------------------------------------
@@ -29,7 +29,7 @@ CREATE TABLE `admin` (
   `password` char(64) NOT NULL,
   `active` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -149,7 +149,7 @@ CREATE TABLE `committee` (
   `zoomLink` varchar(300) NOT NULL DEFAULT 'N/A',
   `driveLink` varchar(300) NOT NULL DEFAULT 'N/A',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -188,7 +188,7 @@ CREATE TABLE `country` (
   `personality` tinyint DEFAULT '0',
   `imageName` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -211,7 +211,7 @@ CREATE TABLE `delegate` (
   KEY `COUNTRY` (`countryId`),
   CONSTRAINT `fk_delegate_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_delegate_countryId` FOREIGN KEY (`countryId`) REFERENCES `country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -250,7 +250,7 @@ CREATE TABLE `dias` (
   PRIMARY KEY (`id`),
   KEY `COMMITTEE` (`committeeId`),
   CONSTRAINT `fk_dias_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -495,38 +495,20 @@ CREATE TABLE `topic` (
   `speakerTime` int NOT NULL,
   `visible` tinyint NOT NULL DEFAULT '1',
   `timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`,`committeeId`),
+  PRIMARY KEY (`id`),
   KEY `SESSION` (`sessionId`),
   KEY `DELEGATE` (`delegateId`),
   KEY `COM-SESSION-ID` (`committeeId`,`sessionId`,`id`),
   KEY `COM-SESSION-VIS` (`committeeId`,`sessionId`,`visible`,`id`),
   KEY `fk_topic_committeeId_idx` (`committeeId`),
   KEY `COM-SESSION-TS` (`committeeId`,`sessionId`,`timestamp`),
+  KEY `COM-ID` (`committeeId`,`id`),
+  KEY `ID-COM` (`id`,`committeeId`),
   CONSTRAINT `fk_topic_committeeId` FOREIGN KEY (`committeeId`) REFERENCES `committee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_topic_delegateId` FOREIGN KEY (`delegateId`) REFERENCES `delegate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_topic_sessionId` FOREIGN KEY (`sessionId`) REFERENCES `session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`omun`@`localhost`*/ /*!50003 TRIGGER `topic_BEFORE_INSERT` BEFORE INSERT ON `topic` FOR EACH ROW BEGIN
-	SET NEW.id = (SELECT MAX(id) + 1 FROM topic WHERE committeeId = NEW.committeeId);
-	IF (NEW.id IS NULL) THEN
-		SET NEW.id = 1;
-	END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `topic_speaker`
@@ -583,4 +565,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-01-04  8:41:39
+-- Dump completed on 2021-01-07  2:01:39
