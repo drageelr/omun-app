@@ -46,13 +46,13 @@ let connectedDias = [];
 let connectedDelegates = [];
 let logs = [];
 
-async function localizeTimestamp(ts) {
-    return await moment(moment.utc(ts)).local().format('YYYY-MM-DD HH:mm:ss');
+function localizeTimestamp(ts) {
+    return moment(moment.utc(ts)).local().format('YYYY-MM-DD HH:mm:ss');
 }
 
 function localizeTimestampOA(objArray) {
-    return objArray.map(async (obj) => {
-        obj.timestamp = await localizeTimestamp(obj.timestamp);
+    return objArray.map(obj => {
+        obj.timestamp = localizeTimestamp(obj.timestamp);
         return obj;
     })
 }

@@ -69,7 +69,7 @@ export const useStyles = makeStyles((theme) => ({
   msgText: {
     margin: 5, 
     fontWeight: 500, 
-    whiteSpace: 'pre', 
+    whiteSpace: 'pre-wrap', 
     wordWrap: "break-word", 
     maxWidth: '30vw'
   },
