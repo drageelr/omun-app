@@ -12,15 +12,18 @@ import MoonLoader from "react-spinners/MoonLoader";
 import Button from '@material-ui/core/Button';
 import logo from './logo.png';
 
-function Login({setIsLoggedIn, setUser}){
+
+function Login({setIsLoggedIn, setUser, setSeverity, setStatus}){
     const selectedBGStyle = {backgroundColor: '#aa2e25', color: 'white'}
-    const normalBGStyle = {backgroundColor: '#f44336', color:"white"}
-    const [userType, setUserType] = React.useState("delegate")
+    const normalBGStyle = {backgroundColor: '#f06956', color:"white"}
+    const [userType, setUserType] = useState("delegate");
+    
     const override = css`
     display: block;
     margin: 0 auto;
     border-color: grey;
-`;
+    `;
+
     return (
       <div className="auth-inner">
         <Formik
@@ -39,23 +42,24 @@ function Login({setIsLoggedIn, setUser}){
               .required('Required')
         })}
 
-        onSubmit={ async (values, { setSubmitting, setStatus, setErrors }) => {
+        onSubmit={ async (values, { setSubmitting }) => {
             console.log(values);
             try {
               const user = await newlogin({email: values.email, password: values.password, userType:userType});
-              console.log("User logged in", user);
               setUser(user);
-              setIsLoggedIn(true);  
+              setIsLoggedIn(true);
+              setSeverity('success');
+              setStatus('Login successful.');  
             } catch (e) { // login fails
-              console.error(e);
-              setStatus({message: e});
+              setSeverity('error');
+              setStatus(e);
             }
             setSubmitting(false);
           }
         }
 
         >
-        {({isSubmitting, status})=> (
+        {({isSubmitting})=> (
           
           <Form style={{textAlign:'center'}}>
             <img style={{width: '10vw', height: '10vw', alignSelf: 'center', margin: 0}} src={logo} alt="OMUN"/>
@@ -109,16 +113,10 @@ function Login({setIsLoggedIn, setUser}){
               > 
               </Field>
             </div>
-            <Button type="submit" color="primary" variant='outlined'>
-              <MoonLoader
-                  css={override}
-                  size={15}
-                  loading={isSubmitting}
-                /> Login</Button>
-
-            {status && status.message && (
-              <div className="message">{status.message}</div>
-            )}
+            <Button type="submit" color="primary" variant='contained'>
+              <MoonLoader css={override} size={15} loading={isSubmitting} />
+              Login
+            </Button>
           </Form>
         )}
       </Formik>

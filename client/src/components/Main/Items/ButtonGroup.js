@@ -380,7 +380,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
             
             { // only admin/dias can preview logs
-                (type == 'admin' || type == 'dias') &&
+                (type !== 'delegate') &&
                 <>
                     &nbsp;&nbsp; 
                     <Button variant='contained' size="small" style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
@@ -390,7 +390,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
             &nbsp;&nbsp;
             {
-                (type == 'admin' || type == 'dias') &&
+                (type !== 'delegate') &&
                 <Button variant="outlined" size="small" color="secondary" onClick={()=>setMChatOpen(true)}> MONITOR </Button>
             }
 
