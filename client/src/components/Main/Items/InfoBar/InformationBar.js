@@ -17,6 +17,12 @@ import * as Yup from 'yup'
 import SendIcon from '@material-ui/icons/Send';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
+import { Paper, List, ListItem, ListItemText, Select, FormControl, InputLabel, Input, Box, CircularProgress} from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
+import Switch from '@material-ui/core/Switch';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MaskedInput from 'react-text-mask';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,6 +30,17 @@ const useStyles = makeStyles((theme) => ({
       margin: theme.spacing(1),
     },
   },
+  timeGetter: {
+    width: 42,
+    margin: 15,
+    fontSize: '0.5rem',
+    marginTop: -3
+    // padding: 0
+  },
+  timeGetterField: {
+      paddingTop: 10,
+  },
+
 }));
 
 /** 
@@ -55,6 +72,7 @@ export function secToMinsec(sec){
 }
 
 export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, delegates, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
+  const classes = useStyles();
   const [open, setOpen] = React.useState(false);
 
   const [crossesShown, setCrossesShown] = useState(false);
@@ -64,6 +82,8 @@ export default function InformationBar ({session, timer, type, setSessionType, s
 
   const [speakerValue, setSpeakerValue] = React.useState(0);
   const [topicValue, setTopicValue] = React.useState(0);
+  const [totalTime, setTotalTime] = useState('');
+  const [time, setTime] = useState('06:00');
 
   function handleClickOpen() {
     setOpen(true);
@@ -138,7 +158,28 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   }
 
   const bgstyle ={padding: 5, width: '5vw'};
-  
+
+  function TextMaskCustom(props) {
+    const { inputRef, ...other } = props;
+
+    return (
+        <MaskedInput
+            // style=
+            {...other}
+            ref={(ref) => {
+            inputRef(ref ? ref.inputElement : null);
+            }}
+            mask={[/\d/, /\d/, ':', /\d/, /\d/]}
+            placeholderChar={'\u2000'}
+            showMask
+        />
+    );
+}
+
+function minsecToSeconds(minsec){
+    const [min, sec] = minsec.split(':');
+    return Number(min)*60+Number(sec);
+}
   return(
     <div >
       <Card style={{backgroundColor: "#111111", height:"38vh", overflowY:"auto"}}>
@@ -242,37 +283,50 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                       <Button size="small" style={bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
                       
                       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-                          <DialogTitle id="form-dialog-title">Add Notification</DialogTitle>
+                          <DialogTitle id="form-dialog-title">Set time Duration</DialogTitle>
                           <DialogContent style={{marginTop: -20}}>
-                              <DialogContentText>
-                                  Enter a message to notify session particpants
-                              </DialogContentText>
                               <Formik 
                                   validateOnChange={false} validateOnBlur={true}
-                                  initialValues={{notification: ''}}
+                                  initialValues={{
+                                    timeMinute: '',
+                                    timeSecond: ''
+                                  }}
                                   validationSchema={Yup.object({
-                                  notification: Yup.string()
-                                      .min(1)
-                                      .max(250)
+                                  timeMinute: Yup.number()
+                                      .min(0)
+                                      .max(99),
+                                  timeSecond: Yup.number()
+                                  .min(0)
+                                  .max(99),
                                   })}
                                   onSubmit={(values, {setSubmitting}) => {
-                                      // const notification = values.notification.replace(/[\\\"]/g, '');
-                                      setSessionTime('speaker', values);
-                                      setSubmitting(false);
-                                      setOpen(false);
+                                      console.log("values.minute:  ", values.timeMinute)
+                                      console.log("values.second:  ", values.timeSecond)
+                                      const totalTime = Number(values.timeMinute)*60+Number(values.timeSecond);
+                                      if (timer.speakerToggle !== 2){
+                                        if (totalTime) {
+                                                setSessionTime('speaker', totalTime);
+                                                setSubmitting(false);
+                                                setOpen(false);
+                                              }
+                                      }
                                   }}
                               >
                                   {({ submitForm}) => (
                                   <Form>
-                                      <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="notification" label={`Send notification`}/>
+                                      <Field component={TextField} required variant="outlined" name="timeMinute" label={`Min`} style={{width: '70px'}} />
+                                      
+                                      <Field component={TextField} required variant="outlined" name="timeSecond" label={`Sec`} style={{width: '70px'}}/>
+                                      
                                       <Button
-                                      style={{marginTop: 5, float: 'right', marginBottom: 10}}
+                                      style={{marginTop: 10, float: 'right', marginBottom: 10, marginLeft: 5,}}
                                       alignRight 
                                       variant="contained" 
                                       endIcon={<SendIcon fontSize="small"/>} 
                                       color="primary" 
                                       onClick={submitForm}
-                                      >Send</Button>
+                                      size="small"
+                                      >Set</Button>
                                   </Form>
                                   )}
                               </Formik>
@@ -306,7 +360,56 @@ export default function InformationBar ({session, timer, type, setSessionType, s
                       type === 'dias' &&
                       <ButtonGroup style={{marginTop: 10, marginLeft: '2.5vw'}}>
                           <Button size="small" style={bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
-                          <Button size="small" style={bgstyle} onClick={enterDurationT} color="secondary">Duration</Button>
+                          <Button size="small" style={bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
+                          
+                          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                          <DialogTitle id="form-dialog-title">Set time Duration</DialogTitle>
+                          <DialogContent style={{marginTop: -20}}>
+                              <Formik 
+                                  validateOnChange={false} validateOnBlur={true}
+                                  initialValues={{
+                                    timeMinute: '',
+                                    timeSecond: ''
+                                  }}
+                                  validationSchema={Yup.object({
+                                  timeMinute: Yup.number()
+                                      .min(0)
+                                      .max(99),
+                                  timeSecond: Yup.number()
+                                  .min(0)
+                                  .max(99),
+                                  })}
+                                  onSubmit={(values, {setSubmitting}) => {
+                                      console.log("values.minute:  ", values.timeMinute)
+                                      console.log("values.second:  ", values.timeSecond)
+                                      const totalTime = Number(values.timeMinute)*60+Number(values.timeSecond);
+                                      if (timer.speakerToggle !== 2){
+                                        if (totalTime) {
+                                                setSessionTime('topic', totalTime);
+                                                setSubmitting(false);
+                                                setOpen(false);
+                                              }
+                                      }
+                                  }}
+                              >
+                                  {({ submitForm}) => (
+                                  <Form>
+                                      <Field component={TextField} required variant="outlined" name="timeMinute" label={`Min`} style={{width: '70px'}}/>
+                                      <Field component={TextField} required variant="outlined" name="timeSecond" label={`Sec`} style={{width: '70px'}}/>
+                                      <Button
+                                      style={{marginTop: 10, float: 'right', marginBottom: 10, marginLeft: 5,}}
+                                      alignRight 
+                                      variant="contained" 
+                                      endIcon={<SendIcon fontSize="small"/>} 
+                                      color="primary" 
+                                      onClick={submitForm}
+                                      size="small"
+                                      >Set</Button>
+                                  </Form>
+                                  )}
+                              </Formik>
+                          </DialogContent>
+                      </Dialog>
                       </ButtonGroup>
                     }
                   </div>
