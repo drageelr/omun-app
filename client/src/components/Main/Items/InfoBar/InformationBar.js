@@ -74,6 +74,7 @@ export function secToMinsec(sec){
 export default function InformationBar ({session, timer, type, setSessionType, setSessionTime, delegates, deleteSessionTopic, deleteSessionSpeaker, timerToggle}) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
+  const [open2, setOpen2] = React.useState(false);
 
   const [crossesShown, setCrossesShown] = useState(false);
   const [timerSEnded, setTimerSEnded] = useState(false);
@@ -91,6 +92,14 @@ export default function InformationBar ({session, timer, type, setSessionType, s
 
   function handleClose() {
     setOpen(false);
+  };
+
+  function handleClickOpen2() {
+    setOpen2(true);
+  };
+
+  function handleClose2() {
+    setOpen2(false);
   };
 
   React.useEffect(() => {
@@ -280,9 +289,9 @@ function minsecToSeconds(minsec){
                         <Button size="small" style={bgstyle} onClick={startSpeakerTimer} color="secondary">Start</Button>)
                       }
                       <Button size="small" style={bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
-                      <Button size="small" style={bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
+                      <Button size="small" style={bgstyle} onClick={handleClickOpen2} color="secondary">Duration</Button>
                       
-                      <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                      <Dialog open={open} onClose={handleClose2} aria-labelledby="form-dialog-title">
                           <DialogTitle id="form-dialog-title">Set time Duration</DialogTitle>
                           <DialogContent style={{marginTop: -20}}>
                               <Formik 
