@@ -38,3 +38,7 @@
     margin: 1vh 0 0 0;
 
 }
+
+#homeList > * {
+    margin: 5px;
+}

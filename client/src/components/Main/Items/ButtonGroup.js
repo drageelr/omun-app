@@ -47,6 +47,10 @@ const useStyles = makeStyles(theme => ({
     },
     listText: {
         fontSize: '0.8rem',
+    },
+    onlineBox: {
+        maxHeight: '30vh',
+        overflowY: 'scroll'
     }
 }));
 
@@ -180,28 +184,33 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
             <div className={classes.listRoot}>
                 <List role="presentation" onClick={toggleOnlineDrawer} onKeyDown={toggleOnlineDrawer} >
                     <ListSubheader className={classes.listSubheader}>Delegates</ListSubheader>
-                    {
-                        connectedDelegates.map((id,i)=>
-                            <ListItem>
-                                <Typography className={classes.listText} key={i}>
-                                    {delegates[id].countryName}
-                                </Typography>
-                            </ListItem>
-                        )
-                    }
+                    <div className={classes.onlineBox}>
+                        {
+                            connectedDelegates.map((id,i)=>
+                                <ListItem>
+                                    <Typography className={classes.listText} key={i}>
+                                        {delegates[id].countryName}
+                                    </Typography>
+                                </ListItem>
+                            )
+                        }
+                    </div>
                     <Divider className={classes.listDivider}/>
                     <ListSubheader className={classes.listSubheader}>Dais</ListSubheader>
-                    {
-                        connectedDias.map((id,i)=>
-                            <ListItem>
-                                <Typography className={classes.listText} key={i}>
-                                    {`${dias[id].title} ${dias[id].name}`}
-                                </Typography>
-                            </ListItem>
-                        )
-                    }
+                        <div className={classes.onlineBox}>
+                            {
+                                connectedDias.map((id,i)=>
+                                    <ListItem>
+                                        <Typography className={classes.listText} key={i}>
+                                            {`${dias[id].title} ${dias[id].name}`}
+                                        </Typography>
+                                    </ListItem>
+                                )
+                            }
+                        </div>
                     <Divider className={classes.listDivider}/>
                     <ListSubheader className={classes.listSubheader}>Admins</ListSubheader>
+                    <div className={classes.onlineBox}>
                     {
                         connectedAdmins.filter(id => admins[id] !== undefined).map((id,i) =>
                             <ListItem>
@@ -211,7 +220,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                             </ListItem>
                         )
                     }
-                    
+                    </div>
                 </List>
             </div>
         )
@@ -375,12 +384,8 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
             <Button variant='contained' size={type !== 'delegate' ? "small" : "medium"}  color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button>
             
-            
-            
-
-            
             { // only admin/dias can preview logs
-                (type == 'admin' || type == 'dias') &&
+                (type !== 'delegate') &&
                 <>
                     &nbsp;&nbsp; 
                     <Button variant='contained' size="small" style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
@@ -390,7 +395,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
             &nbsp;&nbsp;
             {
-                (type == 'admin' || type == 'dias') &&
+                (type !== 'delegate') &&
                 <Button variant="outlined" size="small" color="secondary" onClick={()=>setMChatOpen(true)}> MONITOR </Button>
             }
 

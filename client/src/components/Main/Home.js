@@ -1,14 +1,9 @@
 import React, {useState} from 'react'
 import {start , end , join , fetchCommittees } from './Actions';
 import { makeStyles } from '@material-ui/core/styles';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import Button from '@material-ui/core/Button';
+import {Select, Button, InputLabel, MenuItem, FormControl } from '@material-ui/core';
 import { css } from "@emotion/core";
 import FadeLoader from "react-spinners/FadeLoader";
-
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -20,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-function Home({user}){
+function Home({user, setSeverity, setStatus}){
     const classes = useStyles();
     const [SessionSt, setSessionSt] = useState('0');
     const [openSt, setOpenSt] = useState(false);
@@ -30,23 +25,16 @@ function Home({user}){
     const [openJ, setOpenJ] = useState(false);
     const [loada, setLoada] = useState(false);
     const [loadb, setLoadb] = useState(false);
-    const [status, setStatus] = useState('');
     const [sessions , setSessions] =useState([]);
     const [committeeIds , setCommitteeIds] =useState({});
 
-    async function fetchCommitteesForAdmin() {
-        try{
-            const initialIdMap = await fetchCommittees();
-            console.log(initialIdMap);
-            setSessions(Object.keys(initialIdMap)); //keys will give initials
-            setCommitteeIds(initialIdMap);
-        } 
-        catch(e){
-            console.error(e);
-            setStatus(e); 
-        }
-    }
-    
+    const override = css`
+        display: block;
+        margin: 0 auto;
+        border-color: grey;
+    `;
+
+
     React.useEffect(() => {
         let selfCommitteeId = user.committeeId;
         setSessionSt(selfCommitteeId);
@@ -58,231 +46,171 @@ function Home({user}){
         }
     }, []);
 
-
-    const handleChangeSt = (event) => {
-        setSessionSt(event.target.value);
-    };
-    const handleChangeEn = (event) => {
-        setSessionEn(event.target.value);
-    };
-    const handleChangeJ = (event) => {
-        setSessionJ(event.target.value);
-    };
-
-    const handleCloseSt = () => {
-        setOpenSt(false);
-    };
-    const handleCloseEn = () => {
-        setOpenEn(false);
-    };
-    const handleCloseJ = () => {
-        setOpenJ(false);
-    };
-
-    const handleOpenSt = () => {
-        setOpenSt(true);
-    };
-    const handleOpenEn = () => {
-        setOpenEn(true);
-    };
-    const handleOpenJ = () => {
-        setOpenJ(true);
-    };
-
-    const handleStart = async () => {
-        setLoada(true);
+    async function fetchCommitteesForAdmin() {
         try{
-            await start({committeeId: SessionSt});
-            setStatus("Session started.");
+            const initialIdMap = await fetchCommittees();
+            console.log(initialIdMap);
+            setSessions(Object.keys(initialIdMap)); //keys will give initials
+            setCommitteeIds(initialIdMap);
         } 
         catch(e){
             console.error(e);
+            setSeverity('error');
             setStatus(e); 
+        }
+    }
+
+
+    function handleChangeSt(event){
+        setSessionSt(event.target.value);
+    };
+    function handleChangeEn(event){
+        setSessionEn(event.target.value);
+    };
+    function handleChangeJ(event){
+        setSessionJ(event.target.value);
+    };
+
+    function handleCloseSt(){
+        setOpenSt(false);
+    };
+    function handleCloseEn(){
+        setOpenEn(false);
+    };
+    function handleCloseJ(){
+        setOpenJ(false);
+    };
+
+    function handleOpenSt(){
+        setOpenSt(true);
+    };
+    function handleOpenEn(){
+        setOpenEn(true);
+    };
+    function handleOpenJ(){
+        setOpenJ(true);
+    };
+
+    async function handleStart(){
+        setLoada(true);
+        try{
+            await start({committeeId: SessionSt});
+            setSeverity('success');
+            setStatus("Session started."); 
+        } 
+        catch(e){
+            setSeverity('error');
+            setStatus(e);
         }
         
         setLoada(false);
     };
-    const handleEnd = async () => {
-        setLoadb(true);
-        try{
-            await end({committeeId: SessionEn});
-            setStatus("Session ended.");
-        } 
-        catch(e){
-            console.error(e);
-            setStatus(e); 
+
+    async function handleEnd(){
+        if (window.confirm('Are you sure you wish to stop this session?')) {
+            setLoadb(true);
+            try{
+                await end({committeeId: SessionEn});
+                setSeverity('success');
+                setStatus("Session stopped.");
+            } 
+            catch(e){
+                setSeverity('error');
+                setStatus(e);
+            }
+            setLoadb(false);
         }
-        setLoadb(false);
     };
 
-    const handleJoin = async () => {
+    async function handleJoin(){
         sessionStorage.committeeId = SessionJ;
         try{
             await join({committeeId: SessionJ});
-            setStatus("Joining Session.");
+            setSeverity('success');
+            setStatus("Joining Session...");
             window.open("/main","_self");
         } 
         catch(e){
-            console.error(e);
-            setStatus(e); 
+            setSeverity('error');
+            setStatus(e);
         }
     };
 
-    const override = css`
-        display: block;
-        margin: 0 auto;
-        border-color: grey;
-    `;
-
-    const handleSignout = () => {
+    function handleSignout() {
         sessionStorage.removeItem('user');
         window.open("/","_self");
     }
 
-    function AdminPortal() {
-        return <div>
-            <h3>Admin Portal</h3>
-            <h6><i>Welcome {user.name}</i></h6>
-            
-            <FormControl className={classes.formControl}>
-                <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
-                <Select
-                labelId="demo-controlled-open-select-label"
-                id="demo-controlled-open-select"
-                open={openSt}
-                onClose={handleCloseSt}
-                onOpen={handleOpenSt}
-                value={SessionSt}
-                onChange={handleChangeSt}
-                >
-                { 
-                    sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>) //value is ID
-                } 
-                </Select>
-            </FormControl>
-            <Button className={classes.button} onClick={handleStart}>
-                Start
-            </Button>
-            <FadeLoader
-                css={override}
-                height={13}
-                width={2}
-                radius={10}
-                color={"red"}
-                loading={loada}
-            />
-            <br/>
-            <FormControl className={classes.formControl}>
-                <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
-                <Select
-                labelId="demo-controlled-open-select-label"
-                id="demo-controlled-open-select"
-                open={openEn}
-                onClose={handleCloseEn}
-                onOpen={handleOpenEn}
-                value={SessionEn}
-                onChange={handleChangeEn}
-                >
-                {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
-                </Select>
-            </FormControl>
-            <Button className={classes.button} onClick={handleEnd}>
-                Stop
-            </Button>
-            <FadeLoader
-                css={override}
-                height={13}
-                width={2}
-                radius={10}
-                margin={1}
-                color={"red"}
-                loading={loadb}
-            />
-            <br/>
-            <FormControl className={classes.formControl}>
-                <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
-                <Select
-                labelId="demo-controlled-open-select-label"
-                id="demo-controlled-open-select"
-                open={openJ}
-                onClose={handleCloseJ}
-                onOpen={handleOpenJ}
-                value={SessionJ}
-                onChange={handleChangeJ}
-                >
-                {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
-                </Select>
-            </FormControl>
-            <Button className={classes.button} onClick={handleJoin}>
-                Join
-            </Button>
-            <br/>
-            <Button color="primary" href="/Create">Create Entries</Button>
-            <br/>
-            <Button color="primary" href="/ChangePassword">Change Password</Button>
-            <br/>
-            <Button color="secondary" onClick={handleSignout}>Signout</Button>
-        </div>
-    }
-
-    function DiasPortal() {
-        return <div>
-            <h3>Dais Portal</h3>
-            
-            <Button color="default" onClick={handleStart}>Start Your Session</Button>
-            <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    color={"red"}
-                    loading={loada}
-                />
-            <br/>
-            <Button color="default" onClick={handleEnd} >Stop Your Session</Button>
-            <FadeLoader
-                    css={override}
-                    height={13}
-                    width={2}
-                    radius={10}
-                    color={"red"}
-                    loading={loadb}
-                />
-            <br/>
-            <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
-
-            <Button color="primary" href="/ChangePassword">Change Password</Button>
-            <br/>
-            <Button color="secondary" onClick={handleSignout}>Signout</Button>
-        </div>
-    }
-
-    function DelegatePortal() {
-        return <div >
-            <h3>Delegate Portal</h3>
-            <h6><i>Welcome {user.name}</i></h6>
-            <Button color="primary" onClick={handleJoin}>Join Your Session</Button>
-            <br/>
-            <Button color="primary" href="/ChangePassword">Change Password</Button>
-            <br/>
-            <Button color="secondary" onClick={handleSignout}>Signout</Button>
-        </div>
-    }
 
     return( 
-        <div className="auth-inner">
-            <div style={{textAlign:'center'}}>
-                
-            {   
-                (user.type === 'admin') ? 
-                <AdminPortal/> : 
-                (user.type === 'dias') ? 
-                <DiasPortal/> : 
-                <DelegatePortal/>
+        <div className="auth-inner" id="homeList" style={{textAlign:'center'}}>
+            <h3>{user.type == "dias" ? "Dais" : user.type == "admin" ? "Admin" : "Delegate"} Portal</h3>
+            <h6><i>Welcome {user.name}</i></h6>
+            {
+                user.type !== "admin" && //DIAS AND DELEGATE ONLY
+                <Button color="secondary" variant="contained" onClick={handleJoin}>Join Your Session</Button>
             }
-            </div>
-                { status !== '' && <div className="message"> {status} </div> }
-            </div>
+            {   // DIAS ONLY
+                user.type === 'dias' &&
+                <>
+                    <Button color="primary" variant="contained" onClick={handleStart}>Start Your Session</Button>
+                    <FadeLoader
+                        css={override}
+                        height={13}
+                        width={2}
+                        radius={10}
+                        color={"red"}
+                        loading={loada}
+                    />
+                    <Button color="primary" variant="contained" onClick={handleEnd} >Stop Your Session</Button>
+                    <FadeLoader
+                        css={override}
+                        height={13}
+                        width={2}
+                        radius={10}
+                        color={"red"}
+                        loading={loadb}
+                    />
+                </>
+            }
+            {   // ADMIN ONLY
+                user.type === 'admin' &&
+                <>
+                    <FormControl className={classes.formControl}>
+                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
+                        <Select open={openSt} onClose={handleCloseSt} onOpen={handleOpenSt} value={SessionSt} onChange={handleChangeSt}>
+                        { 
+                            sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>) //value is ID
+                        } 
+                        </Select>
+                    </FormControl>
+                    <Button color="primary" variant="contained" onClick={handleStart}> Start </Button>
+                    <FadeLoader css={override} height={13} width={2} radius={10} color={"red"} loading={loada}/>
+                    <br/>
+                    <FormControl className={classes.formControl}>
+                        <InputLabel id="demo-controlled-open-select-label">Committee</InputLabel>
+                        <Select open={openEn} onClose={handleCloseEn} onOpen={handleOpenEn} value={SessionEn} onChange={handleChangeEn}>
+                        {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <Button color="primary" variant="contained" onClick={handleEnd}> Stop </Button>
+                    <FadeLoader css={override} height={13} width={2} radius={10} margin={1} color={"red"} loading={loadb}/>
+                    <br/>
+                    <FormControl className={classes.formControl}>
+                        <InputLabel>Committee</InputLabel>
+                        <Select open={openJ} onClose={handleCloseJ} onOpen={handleOpenJ} value={SessionJ} onChange={handleChangeJ}>
+                        {sessions.map((value, index)=> <MenuItem key={index} value={committeeIds[value]}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <Button color="primary" variant="contained" onClick={handleJoin}> Join </Button>
+                    <br/>
+                    <Button color="secondary" variant="contained" href="/Create">Create Entries</Button>
+                </>
+            }
+            <Button color="primary" variant="outlined" href="/ChangePassword">Change Password</Button>
+            <br/>
+            <Button color="primary" variant="outlined" onClick={handleSignout}>Sign Out</Button>        
+        </div>
     )
 }
 

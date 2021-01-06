@@ -21,7 +21,9 @@ export const useStyles = makeStyles((theme) => ({
   },
   mtabs: {
     borderRight: `1px solid ${theme.palette.divider}`,
-    width: '30vw'
+    width: '30vw',
+    maxHeight: '5vh',
+    overflowY: 'scroll'
   },
   appBar: {
     position: 'relative',
@@ -69,7 +71,7 @@ export const useStyles = makeStyles((theme) => ({
   msgText: {
     margin: 5, 
     fontWeight: 500, 
-    whiteSpace: 'pre', 
+    whiteSpace: 'pre-wrap', 
     wordWrap: "break-word", 
     maxWidth: '30vw'
   },

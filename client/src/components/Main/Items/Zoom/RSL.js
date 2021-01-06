@@ -144,8 +144,8 @@ export default function RSL({type, rsList, delegates, session, delegatesList, ad
                         key={i} 
                         id={id}
                         topicId={session.topicId}
-                        countryName={delegates[delegateId].countryName} 
-                        imageName={delegates[delegateId].imageName} 
+                        countryName={delegates[delegateId] && delegates[delegateId].countryName} 
+                        imageName={delegates[delegateId] && delegates[delegateId].imageName} 
                         delegateId={delegateId} 
                         visible={visible} 
                         spoken={spokenTime}

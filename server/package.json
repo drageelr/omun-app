@@ -20,6 +20,8 @@
     "mysql": "^2.18.1",
     "nodemailer": "^6.4.11",
     "p-queue": "^6.6.2",
+    "react": "^16.13.1",
+    "react-dom": "^17.0.1",
     "react-scroll": "^1.8.1",
     "socket.io": "^3.0.4",
     "validate": "^5.1.0"

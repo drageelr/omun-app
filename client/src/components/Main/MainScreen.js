@@ -1,8 +1,7 @@
 import React, {useState} from 'react'
-import { Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop, Snackbar } from '@material-ui/core'
+import { Tab, Tabs, Card, CardContent, Paper, CircularProgress, Backdrop } from '@material-ui/core'
 import './MainScreen.css'
 import io from "socket.io-client"
-import MuiAlert from '@material-ui/lab/Alert';
 import InformationBar from './Items/InfoBar/InformationBar'
 import Notification from './Items/Notification/Notification'
 import VirtualAud from './Items/VirtualAud/VirtualAud'
@@ -10,14 +9,12 @@ import MessageBox from './Items/MessageBox/MessageBox'
 import Topics from './Items/Zoom/Topics'
 import GSL from './Items/Zoom/GSL'
 import RSL from './Items/Zoom/RSL'
-import ButtonGroup from './Items/Buttons/ButtonGroup'
+import ButtonGroup from './Items/ButtonGroup'
 import MonitorBox from './Items/MessageBox/MonitorBox';
 import { makeStyles } from '@material-ui/core/styles';
+import { withRouter } from 'react-router-dom';
 import moment from 'moment';
 
-function Alert(props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
 
 function removeItemOnce(arr, value) {
     var index = arr.indexOf(value);
@@ -50,21 +47,19 @@ let connectedDelegates = [];
 let logs = [];
 
 function localizeTimestamp(ts) {
-    let momentDateFromFormat = moment.utc(ts);
-    return moment(momentDateFromFormat).local().format('YYYY-MM-DD HH:mm:ss');
+    return moment(moment.utc(ts)).local().format('YYYY-MM-DD HH:mm:ss');
 }
 
 function localizeTimestampOA(objArray) {
     return objArray.map(obj => {
-        obj.timestamp= localizeTimestamp(obj.timestamp);
+        obj.timestamp = localizeTimestamp(obj.timestamp);
         return obj;
     })
 }
 
-export default function MainScreen() {
+function MainScreen({history, setSeverity, setStatus}) {
 
     const classes = useStyles();
-    let [snackbarMsg, setSnackbarMsg] = useState(''); // current snackbar msg, displays snackbar when not ''
     let [connected, setConnected] = useState(false); // whether connected to socket
 
     //vaud
@@ -160,18 +155,16 @@ export default function MainScreen() {
         socket = io(`${window.serverURI}/${committeeId}?token=${token}`, {forceNew: true});
         tempSocket = socket;
 
-        // Emitted by Server on Join
+        
+        // On Join
         socket.on('RES|info-start', responseInfoStart);
-
+        
         // Error Handler
-        socket.on('err', (err) => {
-            console.error('err:', err);
-            setSnackbarMsg(`${err.name}: ${err.details}`);
-        });
-
-        /**
-         * RES Event Handlers
-         */
+        socket.on('err', (err) => setStatus(`${err.name}: ${err.details}`) );
+        
+        // On Disconnect
+        socket.on('RES|disconnect', ()=>history.goBack());
+        
 
         // Chat Management
         socket.on('RES|del-chat-fetch|DEL', responseDelChatFetchDel); // Recieved By: ["delegate"]
@@ -306,7 +299,7 @@ export default function MainScreen() {
         fetchNotifications();
         fetchGSL();
         fetchTopics();
-        if (user.type == 'dias' || user.type == 'admin') {
+        if (user.type !== 'delegate') { //logs fetched for both admin and dias
             fetchLogs();
         }
     }
@@ -1346,7 +1339,7 @@ export default function MainScreen() {
             socket.emit('REQ|topic-speaker-create', {delegateId, topicId: session.topicId});
         }
         else {
-            setSnackbarMsg('No current topic set.');
+            setStatus('No current topic set.');
         }
     }
 
@@ -1432,12 +1425,6 @@ export default function MainScreen() {
         };
         return req;
     }
-
-
-    function handleSnackbarClose() {
-        setSnackbarMsg('');
-    }
-
 
     function setChatId(newChatId) {
         currentChatId = newChatId;
@@ -1549,14 +1536,14 @@ export default function MainScreen() {
                         connectedDelegates={connectedDelegatesState}
                         dias={diasState}
                         delegates={delegatesState}
-                        admins={admins}
+                        admins={adminsState}
                         logs={logsState}
                         fetchLogs={fetchLogs}
                         singleAddition={singleLog}
                         reachedTop={reachedLogTop}
                         />
                         {
-                            (user.type == 'admin' || user.type == 'dias') &&
+                            (user.type !== 'delegate') &&
                             <MonitorBox
                             id={Number(userState.id)} 
                             type={userState.type} 
@@ -1566,8 +1553,6 @@ export default function MainScreen() {
                             delegatesList={infoState.delegatesList}
                             currentMChat={mchats[currentMChatIdState]}
                             setMChats={setChats}
-                            singleAddition={singleMsg}
-                            reachedTop={reachedTop}
                             mchatId={currentMChatIdState}
                             setCurrentMChatId={setCurrentMChatId}
                             msgCounterM={msgCounterM}
@@ -1630,13 +1615,10 @@ export default function MainScreen() {
             <Backdrop className={classes.backdrop} open={!connected}>
                 <CircularProgress color="inherit" />
             </Backdrop>
-            <Snackbar open={snackbarMsg !== ''} onClose={handleSnackbarClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}} autoHideDuration={6000}>
-                <Alert onClose={handleSnackbarClose} severity="error">
-                    {snackbarMsg}
-                </Alert>
-            </Snackbar>
         </div>
         
     )
     
 }
+
+export default withRouter(MainScreen)
