@@ -719,7 +719,7 @@ exports.handleTopicSpeakerFetch = async (socket, params, event) => {
     try {
         let user = socket.userObj;
 
-        let queryStr = 'SELECT id, delegateId, review, spokenTime, visible, timestamp FROM topic_speaker WHERE topicId IN (SELECT topicId FROM session WHERE id = ' + user.sessionId + ')';
+        let queryStr = 'SELECT id, delegateId, review, spokenTime, visible, timestamp FROM topic_speaker WHERE topicId IN (SELECT topicId FROM session WHERE id = ' + user.sessionId + ' AND committeeId =  ' + user.committeeId + ')';
         let keys = ['id', 'delegateId', 'spokenTime', 'visible', 'timestamp'];
 
         if (user.type !== "delegate") {
