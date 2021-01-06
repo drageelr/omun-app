@@ -71,7 +71,7 @@ export default function MonitorBox({id, type, selectedDelegateId, setSelectedDel
             </Typography>
           </Toolbar>
         </AppBar>
-        <div style={{marginTop:30}}>
+        <div style={{marginTop:50}}>
 
         <FormControl className={classes.formControl}>
           <InputLabel>Select Delegate To Monitor</InputLabel>
