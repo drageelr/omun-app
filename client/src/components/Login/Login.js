@@ -13,7 +13,7 @@ import Button from '@material-ui/core/Button';
 import logo from './logo.png';
 
 
-function Login({setIsLoggedIn, setUser, setSeverity, setStatus}){
+function Login({setIsLoggedIn, setUser, /*setSeverity, setStatus*/}){
     const selectedBGStyle = {backgroundColor: '#aa2e25', color: 'white'}
     const normalBGStyle = {backgroundColor: '#f06956', color:"white"}
     const [userType, setUserType] = useState("delegate");
@@ -48,11 +48,11 @@ function Login({setIsLoggedIn, setUser, setSeverity, setStatus}){
               const user = await newlogin({email: values.email, password: values.password, userType:userType});
               setUser(user);
               setIsLoggedIn(true);
-              setSeverity('success');
-              setStatus('Login successful.');  
+            //   setSeverity('success');
+            //   setStatus('Login successful.');  
             } catch (e) { // login fails
-              setSeverity('error');
-              setStatus(e);
+            //   setSeverity('error');
+            //   setStatus(e);
             }
             setSubmitting(false);
           }

@@ -30,12 +30,12 @@ function Alert(props) {
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState({});
-  const [status, setStatus] = useState('');
-  const [severity, setSeverity] = useState('error');
+//   const [status, setStatus] = useState('');
+//   const [severity, setSeverity] = useState('error');
 
-  function handleSnackbarClose() {
-    setStatus('');
-  }
+//   function handleSnackbarClose() {
+//     setStatus('');
+//   }
 
   return (      
     <Router>
@@ -43,21 +43,21 @@ function App() {
         <div className="App">
           <div className="auth-wrapper">
               <Switch>
-                <Route exact path='/main' component={()=><MainScreen setStatus={setStatus} setSeverity={setSeverity}/>}/>
+                <Route exact path='/main' component={()=><MainScreen /*setStatus={setStatus} setSeverity={setSeverity}*//>}/>
                   <Route exact path='/' component={ 
                     isLoggedIn ?                           
-                    () => <Home user={user} setStatus={setStatus} setSeverity={setSeverity} />
-                    : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser} setStatus={setStatus} setSeverity={setSeverity}/>
+                    () => <Home user={user} /*setStatus={setStatus} setSeverity={setSeverity}*/ />
+                    : () => <Login setIsLoggedIn={setIsLoggedIn} setUser={setUser} /*setStatus={setStatus} setSeverity={setSeverity}*//>
                   }/>
                   <Route exact path='/Create' component={Create}/>
                   <Route exact path='/ChangePassword' component={ChangePassword}/>
               </Switch>
           </div>
-          <Snackbar open={status !== ''} onClose={handleSnackbarClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}} autoHideDuration={6000}>
+          {/* <Snackbar open={status !== ''} onClose={handleSnackbarClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}} autoHideDuration={6000}>
             <Alert onClose={handleSnackbarClose} severity={severity}>
                 {status}
             </Alert>
-          </Snackbar>
+          </Snackbar> */}
         </div>
       </ThemeProvider>
     </Router>

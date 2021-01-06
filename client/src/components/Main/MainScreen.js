@@ -14,6 +14,8 @@ import MonitorBox from './Items/MessageBox/MonitorBox';
 import { makeStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
 import moment from 'moment';
+import Snackbar from '@material-ui/core/Snackbar'
+import MuiAlert from '@material-ui/lab/Alert';
 
 
 function removeItemOnce(arr, value) {
@@ -57,7 +59,11 @@ function localizeTimestampOA(objArray) {
     })
 }
 
-function MainScreen({history, setSeverity, setStatus}) {
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+function MainScreen({history, /*setSeverity, setStatus*/}) {
 
     const classes = useStyles();
     let [connected, setConnected] = useState(false); // whether connected to socket
@@ -119,7 +125,15 @@ function MainScreen({history, setSeverity, setStatus}) {
     //info, user, tab
     let [infoState, setInfo] = useState({});
     let [userState, setUserState] = useState({});
-    let [tabValue, setTabValue] = useState(0);    
+    let [tabValue, setTabValue] = useState(0);
+    
+    // snack bar
+    const [status, setStatus] = useState('');
+    const [severity, setSeverity] = useState('error');
+
+    function handleSnackbarClose() {
+        setStatus('');
+    }
 
     //state resolution for use in nested funcs
     let tempSocket = {};
@@ -160,10 +174,11 @@ function MainScreen({history, setSeverity, setStatus}) {
         socket.on('RES|info-start', responseInfoStart);
         
         // Error Handler
-        socket.on('err', (err) => setStatus(`${err.name}: ${err.details}`) );
+        socket.on('err', (err) => {setStatus(`${err.name}: ${err.details}`) /*console.log(err);*/} );
         
         // On Disconnect
-        socket.on('RES|disconnect', ()=>history.goBack());
+        socket.on('disconnect', ()=>{window.serverURI == "http://localhost:3000" ? window.open("http://localhost:3001", "_self") : window.open(window.serverURI, "_self")});
+        // socket.on('disconnect', ()=>history.goBack());
         
 
         // Chat Management
@@ -1452,6 +1467,11 @@ function MainScreen({history, setSeverity, setStatus}) {
 
     return(
         <div className='parent'>
+            <Snackbar open={status !== ''} onClose={handleSnackbarClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}} autoHideDuration={6000}>
+                <Alert onClose={handleSnackbarClose} severity={severity}>
+                    {status}
+                </Alert>
+            </Snackbar>
             {
                 connected &&
                 <div className= 'Information-Bar'>

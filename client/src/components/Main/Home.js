@@ -4,6 +4,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import {Select, Button, InputLabel, MenuItem, FormControl } from '@material-ui/core';
 import { css } from "@emotion/core";
 import FadeLoader from "react-spinners/FadeLoader";
+import MuiAlert from '@material-ui/lab/Alert';
+import Snackbar from '@material-ui/core/Snackbar'
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -15,7 +17,12 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-function Home({user, setSeverity, setStatus}){
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }
+  
+
+function Home({user, /*setSeverity, setStatus*/}){
     const classes = useStyles();
     const [SessionSt, setSessionSt] = useState('0');
     const [openSt, setOpenSt] = useState(false);
@@ -27,12 +34,18 @@ function Home({user, setSeverity, setStatus}){
     const [loadb, setLoadb] = useState(false);
     const [sessions , setSessions] =useState([]);
     const [committeeIds , setCommitteeIds] =useState({});
+    const [status, setStatus] = useState('');
+    const [severity, setSeverity] = useState('error');
 
     const override = css`
         display: block;
         margin: 0 auto;
         border-color: grey;
     `;
+
+      function handleSnackbarClose() {
+        setStatus('');
+      }
 
 
     React.useEffect(() => {
@@ -143,6 +156,12 @@ function Home({user, setSeverity, setStatus}){
 
 
     return( 
+        <>
+        <Snackbar open={status !== ''} onClose={handleSnackbarClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}} autoHideDuration={6000}>
+            <Alert onClose={handleSnackbarClose} severity={severity}>
+                {status}
+            </Alert>
+        </Snackbar>
         <div className="auth-inner" id="homeList" style={{textAlign:'center'}}>
             <h3>{user.type == "dias" ? "Dais" : user.type == "admin" ? "Admin" : "Delegate"} Portal</h3>
             <h6><i>Welcome {user.name}</i></h6>
@@ -211,6 +230,7 @@ function Home({user, setSeverity, setStatus}){
             <br/>
             <Button color="primary" variant="outlined" onClick={handleSignout}>Sign Out</Button>        
         </div>
+        </>
     )
 }
 
