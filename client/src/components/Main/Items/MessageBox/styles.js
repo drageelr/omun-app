@@ -12,7 +12,7 @@ export const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.paper,
     display: 'flex',
-    height: '90vh',
+    height: '80vh',
     width: '100vw',
     alignSelf: 'center'
   },

@@ -73,56 +73,57 @@ export default function MonitorBox({selDelegateId, setSelDelegateId, singleAddit
             </Typography>
           </Toolbar>
         </AppBar>
-        <FormControl className={classes.formControl}>
-          <InputLabel>Select Delegate To Monitor</InputLabel>
-          <Select
-          value={selDelegateId}
-          onChange={changeSelection}
-          className={classes.delegateSelector}
-          >
-          {
+        <div style={{position: 'absolute', marginTop: '9vh'}}>
+          <FormControl className={classes.formControl}>
+            <InputLabel>Select Delegate To Monitor</InputLabel>
+            <Select
+            value={selDelegateId}
+            onChange={changeSelection}
+            className={classes.delegateSelector}
+            >
+            {
               delegatesList.map((d, i) => (
-                  <MenuItem key={i} value={d.id}>{d.countryName}</MenuItem>
+                <MenuItem key={i} value={d.id}>{d.countryName}</MenuItem>
               ))
-          }
-          </Select>
-        </FormControl>
-        <Card className={classes.mroot}>
-          <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
-            value={mchatId} 
-            onChange={handleChange} 
-            className={classes.tabs} >
-            {
-              delegatesList && selDelegateId &&
-              [...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList]
-              .map((d,i)=> d.id !== selDelegateId && <Tab key={i} className={classes.chatTab} label={d.countryName} value={`${d.id}|delegate`}/>)
             }
-          </Tabs>
-          <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.mchatPaper}>
-            {
-              fetching && !reachedTop &&
-              <Box className={classes.circleProg}>
-                <CircularProgress size={30} color="secondary" />
-              </Box>
-            }
-            {
-              currentMChat && mchatId !== '' &&
-              currentMChat.map((msg, i) => {
-                const isTheirMsg = Number(msg.senderId) !== Number(selDelegateId); //message id type does not match mine
-                return (
-                <Paper key={i} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
-                  <Typography className={classes.msgText}>
-                    {msg.message}
-                  </Typography>
-                  <Typography className={classes.msgTS}>
-                    <Timestamp relative date={new Date(msg.timestamp)}/>
-                  </Typography>
-                </Paper>
-                )
-              })
-            }
-          </Box>
-        </Card>
+            </Select>
+          </FormControl>
+          <Card className={classes.mroot}>
+            <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
+              value={mchatId} 
+              onChange={handleChange} 
+              className={classes.tabs} >
+              {
+                delegatesList && selDelegateId &&
+                delegatesList.map((d,i)=> d.id !== selDelegateId && <Tab key={i} className={classes.chatTab} label={d.countryName} value={`${d.id}|delegate`}/>)
+              }
+            </Tabs>
+            <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.mchatPaper}>
+              {
+                fetching && !reachedTop &&
+                <Box className={classes.circleProg}>
+                  <CircularProgress size={30} color="secondary" />
+                </Box>
+              }
+              {
+                currentMChat && mchatId !== '' &&
+                currentMChat.map((msg, i) => {
+                  const isTheirMsg = Number(msg.senderId) !== Number(selDelegateId); //message id type does not match mine
+                  return (
+                  <Paper key={i} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
+                    <Typography className={classes.msgText}>
+                      {msg.message}
+                    </Typography>
+                    <Typography className={classes.msgTS}>
+                      <Timestamp relative date={new Date(msg.timestamp)}/>
+                    </Typography>
+                  </Paper>
+                  )
+                })
+              }
+            </Box>
+          </Card>
+        </div>
       </Dialog>
     </div>
   );
