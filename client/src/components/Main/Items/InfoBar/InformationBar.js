@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import './InformationBar.css'
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import { Button, Card, CardContent, ButtonGroup, IconButton, Typography } from '@material-ui/core';
+import { Button, Card, List, CardContent, ButtonGroup, IconButton, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
@@ -33,7 +33,25 @@ const useStyles = makeStyles((theme) => ({
     width: '90%'
   },
   horizontal: {display: 'flex', flexDirection: 'row'},
-  bgstyle: {padding: 3, width: '5.3vw', fontSize: '0.7rem'}
+  bgstyle: {padding: 3, width: '5.3vw', fontSize: '0.7rem'},
+  lthird: {
+    width: '30%',
+    height: '20vh',
+    alignItems: 'center',
+    alignContent: 'center',
+    verticalAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  lthirdL: {
+    width: '30%',
+    height: '20vh',
+    alignItems: 'left',
+    alignContent: 'left',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  
 }));
 
 /** 
@@ -156,13 +174,13 @@ function minsecToSeconds(minsec){
     <div >
       <Card className={classes.cardRoot}>
         <CardContent style={{color: "#FFFFFF"}}>
-          <Grid container justify="center" direction="row" alignItems="center" item xs={12} spacing={3}>
-            <Grid item xs style={{marginTop: session.type !== "UNMOD" ? (type == 'dias' ? '-10vh' : '-2vh') : '2vh', marginLeft: '2vh'}}
+          <Grid container justify="center" direction="row" alignItems="center" >
+            <List
+            className={classes.lthirdL}
             onMouseEnter={() => setCrossesShown(true)}
             onMouseLeave={() => setCrossesShown(false)}>
-              <Typography variant='h5' color='#ffffff'>{session.committeeName}</Typography>
-              <br></br>
-              <h6>Topic:</h6>
+              <Typography style={{fontSize: '1.3rem'}} variant='h5' color='#ffffff'>{session.committeeName}</Typography>
+              <h6 style={{marginTop: 20}}>Topic:</h6>
               <div className={classes.horizontal}>
                 <Typography variant='p' color='secondary'>{session.topicName}</Typography>
                   {
@@ -172,8 +190,7 @@ function minsecToSeconds(minsec){
                     </IconButton>
                   }
               </div>
-              <br></br>
-              <h6>Speaker:</h6>
+              <h6 style={{marginTop: 5}}>Speaker:</h6>
               <div className={classes.horizontal}>
                 {
                   delegates[session.speakerId] &&
@@ -187,10 +204,10 @@ function minsecToSeconds(minsec){
                     </IconButton>
                   }
               </div>
-            </Grid>
+            </List>
             
-            <Grid item xs={2}>
-              <ButtonGroup orientation="vertical">
+            <List className={classes.lthird}>
+              <ButtonGroup orientation="vertical" style={{alignSelf: 'center', verticalAlign: 'center', marginTop: '30%'}}>
               <Button 
               variant={session.type === "MOD" ?  "contained" : "outlined"} 
               size="small"
@@ -218,17 +235,18 @@ function minsecToSeconds(minsec){
               onClick={()=>setSessionType("IDLE")}
               >idle</Button>
               </ButtonGroup>
-            </Grid>
+            </List>
 
-            <Grid item xs={4}>
-                <div className={classes.timerHeadText}>{session.type === "UNMOD" ? "Unmod" : "Speaker" } Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
-                <div style={{marginLeft: '5vw'}}>
+            <List className={classes.lthird}>
+                  <div style={{ marginBottom: 10}} className={classes.timerHeadText}>
+                  {session.type === "UNMOD" ? "Unmod" : "Speaker" } Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}
+                  ]</div> 
                   <CountdownCircleTimer
+                      style={{alignSelf: 'center'}}
                       key={timerKeyS}
                       isPlaying={timer.speakerToggle === 2}
                       size={80}
                       initialRemainingTime={timer.speakerToggle ? timer.speakerValue : session.speakerTime}
-                      // initialRemainingTime={timer.speakerValue}
                       onComplete={endSpeakerTimer}
                       duration={session.speakerTime}
                       colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
@@ -238,10 +256,9 @@ function minsecToSeconds(minsec){
                       return secToMinsec(remainingTime);
                     }}
                   </CountdownCircleTimer>
-                </div>
                 {
                   type === 'dias' &&
-                  <ButtonGroup style={{marginTop: 10}}>
+                  <ButtonGroup style={{alignSelf: 'center', marginTop: 10}}>
                       { 
                         (!timerSEnded) && (
                         (timer.speakerToggle === 2) ? //if paused state then you can start 
@@ -267,14 +284,15 @@ function minsecToSeconds(minsec){
                   </ButtonGroup>
                 }
                 
-                <br/>
-                <br/>
+                
                 {
                   session.type !== "UNMOD" && //topic timer not shown on unmod
-                  <div>
-                    <div className={classes.timerHeadText}> Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
-                    <div style={{marginLeft: '5vw'}}>
+                  <>
+                    <div style={{alignSelf:'center', marginTop: 20, marginBottom: 10}}className={classes.timerHeadText}> 
+                    Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]
+                    </div> 
                       <CountdownCircleTimer
+                          style={{alignSelf: 'center', margin: '5 0'}}
                           key={timerKeyT}
                           isPlaying={!timerSEnded && timer.speakerToggle === 2}
                           size={80}
@@ -287,10 +305,9 @@ function minsecToSeconds(minsec){
                           return secToMinsec(remainingTime);
                         }}
                       </CountdownCircleTimer>
-                    </div>
                     {
                       type === 'dias' &&
-                      <ButtonGroup style={{marginTop: 10, marginLeft: '2.5vw'}}>
+                      <ButtonGroup style={{alignSelf: 'center', marginTop: 10}}>
                           <Button size="small" className={classes.bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
                           <Button size="small" className={classes.bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
                           
@@ -310,9 +327,9 @@ function minsecToSeconds(minsec){
 
                       </ButtonGroup>
                     }
-                  </div>
+                  </>
                 }
-            </Grid>
+            </List>
           </Grid>
         </CardContent>
       </Card>

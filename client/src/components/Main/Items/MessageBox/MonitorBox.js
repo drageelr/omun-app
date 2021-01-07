@@ -94,7 +94,7 @@ export default function MonitorBox({selDelegateId, setSelDelegateId, singleAddit
             className={classes.tabs} >
             {
               delegatesList && selDelegateId &&
-              delegatesList
+              [...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList, ...delegatesList]
               .map((d,i)=> d.id !== selDelegateId && <Tab key={i} className={classes.chatTab} label={d.countryName} value={`${d.id}|delegate`}/>)
             }
           </Tabs>
