@@ -155,7 +155,7 @@ function minsecToSeconds(minsec){
 
 export default function Topics({type, topicsList, delegates, reachedTop, singleAddition, delegatesList, addTopic, editTopic, fetchTopics, setCurrentTopic}) {
     const classes = useStyles();
-    const [selectedDelegateId, setSelectedDelegateId] = useState(0);
+    const [selDelegateId, setSelectedDelegateId] = useState(0);
     const [speakerTime, setSpeakerTime] = useState('');
     const [totalTime, setTotalTime] = useState('');
     const [description, setDescription] = useState('');
@@ -169,8 +169,8 @@ export default function Topics({type, topicsList, delegates, reachedTop, singleA
     }
 
     function handleAddTopic() {
-        //add selected delegate id to GSL selectedDelegateId
-        addTopic(selectedDelegateId, description, minsecToSeconds(totalTime), minsecToSeconds(speakerTime));
+        //add sel delegate id to GSL selDelegateId
+        addTopic(selDelegateId, description, minsecToSeconds(totalTime), minsecToSeconds(speakerTime));
     }
 
     function handleSpeakerTime(e) {
@@ -219,7 +219,7 @@ export default function Topics({type, topicsList, delegates, reachedTop, singleA
                     <FormControl className={classes.formControl}>
                         <InputLabel>Select Delegate</InputLabel>
                         <Select
-                        value={selectedDelegateId}
+                        value={selDelegateId}
                         onChange={changeSelection}
                         className={classes.delegateSelector}
                         >

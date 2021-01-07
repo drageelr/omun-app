@@ -38,9 +38,9 @@ export const useStyles = makeStyles((theme) => ({
     width: '39vw'
   },
   mchatPaper: {
-    overflow:'auto',
     height: '70vh',
     width: '80vw',
+    overflowY:'scroll',
     alignSelf:'center'
   },
   msgPaper: {

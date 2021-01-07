@@ -10,40 +10,42 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function MonitorBox({id, type, selectedDelegateId, setSelectedDelegateId, singleAddition, reachedTop, currentMChat, mchatOpen, setMChatOpen, mchatId, setCurrentMChatId, fetchMChat, msgCounterM, delegates, delegatesList}) {
+export default function MonitorBox({selDelegateId, setSelectedDelegateId, singleAddition, reachedTop, currentMChat, mchatOpen, setMChatOpen, mchatId, setCurrentMChatId, fetchMChat, msgCounterM, delegates, delegatesList}) {
   const classes = useStyles();
   const scrollContainer = React.createRef();
   const [fetching, setFetching] = useState(true);
-
-  function changeSelection(e) {
-    const newSelection = e.target.value;
-    setSelectedDelegateId(Number(newSelection));
-    setCurrentMChatId('');
-  }
-
 
 
   function handleClose() {
     setMChatOpen(false);
   };
 
+  const changeSelection = (e) => {
+    const newSelection = e.target.value;
+    setSelectedDelegateId(Number(newSelection));
+    setCurrentMChatId('');
+  }
+
 
   function handleChange(event, newUser) {
-    if (selectedDelegateId !== 0 && Number(newUser.split('|')[0]) !== selectedDelegateId) {
+    if (selDelegateId !== 0 && Number(newUser.split('|')[0]) !== selDelegateId) {
       setCurrentMChatId(newUser); //has id, type both
-      fetchMChat(newUser, selectedDelegateId); //newUser contains ID for delegate 2, while selectedDelegateId is delegate 1
-      // scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end when mchat opened
+      fetchMChat(newUser, selDelegateId); //newUser contains ID for delegate 2, while selDelegateId is delegate 1
     }
+    scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end when mchat opened
   };
+
 
   useEffect(() => {
     // triggers react state update whenever their is a message
-    // if (singleAddition) {
-    //   scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end
-    // }
-    // else if (!reachedTop) { //fetch multiple and top not reached
-    //   scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+500);
-    // }
+    if (scrollContainer.current !== null) {
+      if (singleAddition) {
+        scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end
+      }
+      else if (!reachedTop) { //fetch multiple and top not reached
+        scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+500);
+      }
+    }
     setFetching(false);
   }, [msgCounterM]);
   
@@ -52,7 +54,7 @@ export default function MonitorBox({id, type, selectedDelegateId, setSelectedDel
     if (element.scrollTop===0) {
       if (!reachedTop) {
         setFetching(true);
-        setTimeout(() => fetchMChat(mchatId, selectedDelegateId), 500);
+        setTimeout(() => fetchMChat(mchatId, selDelegateId), 500);
       }
     }
   }
@@ -71,12 +73,10 @@ export default function MonitorBox({id, type, selectedDelegateId, setSelectedDel
             </Typography>
           </Toolbar>
         </AppBar>
-        <div style={{marginTop:50}}>
-
         <FormControl className={classes.formControl}>
           <InputLabel>Select Delegate To Monitor</InputLabel>
           <Select
-          value={selectedDelegateId}
+          value={selDelegateId}
           onChange={changeSelection}
           className={classes.delegateSelector}
           >
@@ -93,8 +93,9 @@ export default function MonitorBox({id, type, selectedDelegateId, setSelectedDel
             onChange={handleChange} 
             className={classes.tabs} >
             {
-              delegatesList &&
-              delegatesList.map((d,i)=> <Tab key={i} label={d.countryName} value={`${d.id}|delegate`}/>)
+              delegatesList && selDelegateId &&
+              delegatesList
+              .map((d,i)=> d.id !== selDelegateId && <Tab key={i} label={d.countryName} value={`${d.id}|delegate`}/>)
             }
           </Tabs>
           <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.mchatPaper}>
@@ -105,9 +106,10 @@ export default function MonitorBox({id, type, selectedDelegateId, setSelectedDel
               </Box>
             }
             {
-              currentMChat &&
+              currentMChat && mchatId !== '' &&
               currentMChat.map((msg, i) => {
-                const isTheirMsg = !(msg.senderId == selectedDelegateId); //message id type does not match mine
+                console.log(msg.senderId,selDelegateId);
+                const isTheirMsg = Number(msg.senderId) !== Number(selDelegateId); //message id type does not match mine
                 return (
                 <Paper key={i} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >
                   <Typography className={classes.msgText}>
@@ -122,7 +124,6 @@ export default function MonitorBox({id, type, selectedDelegateId, setSelectedDel
             }
           </Box>
         </Card>
-        </div>
       </Dialog>
     </div>
   );

@@ -87,7 +87,7 @@ function RSLRow({countryName, id, topicId, delegateId, imageName, canEdit, visib
 
 export default function RSL({type, rsList, delegates, session, delegatesList, addToRSL, editRSL, fetchRSL, setRSLSpeaker}) {
     const classes = useStyles();
-    const [selectedDelegateId, setSelectedDelegateId] = useState(0);
+    const [selDelegateId, setSelectedDelegateId] = useState(0);
 
     function changeSelection(e) {
         const newSelection = e.target.value;
@@ -96,7 +96,7 @@ export default function RSL({type, rsList, delegates, session, delegatesList, ad
     };
 
     function handleAddToRSL() {
-        addToRSL(selectedDelegateId);
+        addToRSL(selDelegateId);
     };
 
     function changeSpeaker(speakerId) {
@@ -120,7 +120,7 @@ export default function RSL({type, rsList, delegates, session, delegatesList, ad
                     <FormControl className={classes.formControl}>
                         <InputLabel>Select Delegate</InputLabel>
                         <Select
-                        value={selectedDelegateId}
+                        value={selDelegateId}
                         onChange={changeSelection}
                         className={classes.delegateSelector}
                         >

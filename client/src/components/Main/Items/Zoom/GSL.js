@@ -89,7 +89,7 @@ function GSLRow({countryName, delegateId, imageName, canEdit, visible, spoken, e
 
 export default function GSL({type, gsList, delegates, reachedTop, singleAddition, delegatesList, addToGSL, editGSL, fetchGSL, setGSLSpeaker}) {
     const classes = useStyles();
-    const [selectedDelegateId, setSelectedDelegateId] = useState(0);
+    const [selDelegateId, setSelectedDelegateId] = useState(0);
     const scrollContainer = React.createRef();
     const [fetching, setFetching] = useState(true);
 
@@ -101,9 +101,9 @@ export default function GSL({type, gsList, delegates, reachedTop, singleAddition
     };
 
     function handleAddToGSL() {
-        //add selected delegate id to GSL selectedDelegateId
-        console.log(selectedDelegateId);
-        addToGSL(selectedDelegateId);
+        //add sel delegate id to GSL selDelegateId
+        console.log(selDelegateId);
+        addToGSL(selDelegateId);
     };
 
     function changeSpeaker(speakerId) {
@@ -138,7 +138,7 @@ export default function GSL({type, gsList, delegates, reachedTop, singleAddition
                     <FormControl className={classes.formControl}>
                         <InputLabel>Select Delegate</InputLabel>
                         <Select
-                        value={selectedDelegateId}
+                        value={selDelegateId}
                         onChange={changeSelection}
                         className={classes.delegateSelector}
                         >

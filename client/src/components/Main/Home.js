@@ -7,6 +7,7 @@ import FadeLoader from "react-spinners/FadeLoader";
 import MuiAlert from '@material-ui/lab/Alert';
 import Snackbar from '@material-ui/core/Snackbar'
 
+
 const useStyles = makeStyles((theme) => ({
     button: {
         marginTop: theme.spacing(2),
@@ -19,10 +20,10 @@ const useStyles = makeStyles((theme) => ({
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
-  }
-  
+}
 
-function Home({user, /*setSeverity, setStatus*/}){
+
+function Home({user}){
     const classes = useStyles();
     const [SessionSt, setSessionSt] = useState('0');
     const [openSt, setOpenSt] = useState(false);
@@ -43,9 +44,9 @@ function Home({user, /*setSeverity, setStatus*/}){
         border-color: grey;
     `;
 
-      function handleSnackbarClose() {
+    function handleSnackbarClose() {
         setStatus('');
-      }
+    }
 
 
     React.useEffect(() => {
@@ -228,7 +229,7 @@ function Home({user, /*setSeverity, setStatus*/}){
             }
             <Button color="primary" variant="outlined" href="/ChangePassword">Change Password</Button>
             <br/>
-            <Button color="primary" variant="outlined" onClick={handleSignout}>Sign Out</Button>        
+            <Button color="primary" variant="outlined" onClick={handleSignout}>Sign Out</Button>
         </div>
         </>
     )

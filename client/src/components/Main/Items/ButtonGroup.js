@@ -233,6 +233,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
             <Button 
             variant="contained" 
             color="primary" 
+            size={type !== 'delegate' ? "small" : "medium"}
             startIcon={<ExitToAppIcon/>}
             onClick={()=>history.goBack()}
             >Leave Session</Button>
@@ -243,6 +244,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
             onClick={fileButtonClick} 
             variant="contained" 
             color="grey.300" 
+            size={type !== 'delegate' ? "small" : "medium"}
             startIcon={<DescriptionIcon/>}
             onContextMenu={(event) => {
                 event.preventDefault(); 
@@ -312,7 +314,8 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
             <Button 
             onClick={zoomButtonClick} 
-            variant="contained" 
+            variant="contained"
+            size={type !== 'delegate' ? "small" : "medium"} 
             style={{backgroundColor:"#3473ed", color: 'white'}}
             startIcon={<AirplayIcon/>}
             onContextMenu={(event) => {

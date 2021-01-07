@@ -11,18 +11,26 @@ import { css } from "@emotion/core";
 import MoonLoader from "react-spinners/MoonLoader";
 import Button from '@material-ui/core/Button';
 import logo from './logo.png';
+import StatusSnackbar from '../Main/Items/StatusSnackbar'
 
-
-function Login({setIsLoggedIn, setUser, /*setSeverity, setStatus*/}){
-    const selectedBGStyle = {backgroundColor: '#aa2e25', color: 'white'}
+function Login({setIsLoggedIn, setUser}){
+    const selBGStyle = {backgroundColor: '#aa2e25', color: 'white'}
     const normalBGStyle = {backgroundColor: '#f06956', color:"white"}
     const [userType, setUserType] = useState("delegate");
-    
+    const [status, setStatus] = useState('');
+    const [severity, setSeverity] = useState('error');
+  
     const override = css`
     display: block;
     margin: 0 auto;
     border-color: grey;
     `;
+
+
+    function handleSnackbarClose() {
+      setStatus('');
+    }
+    
 
     return (
       <div className="auth-inner">
@@ -48,11 +56,11 @@ function Login({setIsLoggedIn, setUser, /*setSeverity, setStatus*/}){
               const user = await newlogin({email: values.email, password: values.password, userType:userType});
               setUser(user);
               setIsLoggedIn(true);
-            //   setSeverity('success');
-            //   setStatus('Login successful.');  
+              setSeverity('success');
+              setStatus('Login successful.');  
             } catch (e) { // login fails
-            //   setSeverity('error');
-            //   setStatus(e);
+              setSeverity('error');
+              setStatus(e);
             }
             setSubmitting(false);
           }
@@ -70,19 +78,19 @@ function Login({setIsLoggedIn, setUser, /*setSeverity, setStatus*/}){
                 <ToggleButton 
                 value="delegate" 
                 onClick={()=>setUserType("delegate")}
-                style={userType==="delegate" ? selectedBGStyle : normalBGStyle}>
+                style={userType==="delegate" ? selBGStyle : normalBGStyle}>
                     Delegate
                 </ToggleButton>,
                 <ToggleButton
                 value="dias" 
                 onClick={()=>setUserType("dias")} 
-                style={userType==="dias" ? selectedBGStyle : normalBGStyle}>
+                style={userType==="dias" ? selBGStyle : normalBGStyle}>
                     Dais
                 </ToggleButton>,
                 <ToggleButton
                 value="admin" 
                 onClick={()=>setUserType("admin")} 
-                style={userType==="admin" ? selectedBGStyle : normalBGStyle}>
+                style={userType==="admin" ? selBGStyle : normalBGStyle}>
                     Admin
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -120,6 +128,7 @@ function Login({setIsLoggedIn, setUser, /*setSeverity, setStatus*/}){
           </Form>
         )}
       </Formik>
+      <StatusSnackbar status={status} severity={severity} handleSnackbarClose={handleSnackbarClose}></StatusSnackbar>
       </div>
     );
 }

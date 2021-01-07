@@ -63,7 +63,7 @@ function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-function MainScreen({history, /*setSeverity, setStatus*/}) {
+function MainScreen({history}) {
 
     const classes = useStyles();
     let [connected, setConnected] = useState(false); // whether connected to socket
@@ -105,7 +105,10 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
     let [mchats, setMChats] = useState({});
     let [currentMChatIdState, setCurrentMChatId] = React.useState('');
     let [msgCounterM, setMsgCounterM] = useState(0);
-    let [selectedDelegateId, setSelectedDelegateId] = useState(0);
+    let [selDelegateId, setSelectedDelegateId] = useState(0);
+    let [singleMsgM, setSingleMsgM] = useState(true);
+    let [reachedTopM, setReachedTopM] = useState(false);
+
     
     //notif
     let [notifications, setNotifications] = useState([]);
@@ -166,7 +169,7 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
         user = userSS;
         setUserState(userSS);
         console.log("Socket Connection Path:", `${window.serverURI}/${committeeId}?token=${token}`);
-        socket = io(`${window.serverURI}/${committeeId}?token=${token}`, {forceNew: true});
+        socket = io(`${window.serverURI}/${committeeId}?token=${token}`, {forceNew: true}); //TRANSPORT PARAM
         tempSocket = socket;
 
         
@@ -309,7 +312,6 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
         setConnectedAdmins(connectedAdmins); //making sure they are all numbers
         setConnectedDias(connectedDias);
         setConnectedDelegates(connectedDelegates);
-        setConnected(true);
         setCommittee(committee);
         fetchNotifications();
         fetchGSL();
@@ -317,6 +319,7 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
         if (user.type !== 'delegate') { //logs fetched for both admin and dias
             fetchLogs();
         }
+        setConnected(true);
     }
 
 
@@ -382,8 +385,9 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
          * }
          */
         console.log('RES|del-chat-fetch:', res);
-        // currently selected delegate (impersonated as) is not the chat iddelegate
-        const mchatId = `${selectedDelegateId === res.delegate1Id ? res.delegate1Id : res.delegate2Id}|delegate`; //fetched chat with this delegate 
+        // currently sel delegate (impersonated as) is not the chat id delegate
+        console.log(selDelegateId);
+        const mchatId = `${selDelegateId === res.delegate1Id ? res.delegate1Id : res.delegate2Id}|delegate`; //fetched chat with this delegate 
         let fetchedChatMsgs = res.chat.map(chatMsg => (
             {...chatMsg, 
                 senderId: chatMsg.senderDelegateId, 
@@ -394,8 +398,10 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
         fetchedChatMsgs = localizeTimestampOA(fetchedChatMsgs);
         console.log(localizeTimestampOA(fetchedChatMsgs));
         
-
+        console.log("mchatId fetched for", mchatId);
         mchats[mchatId] = fetchedChatMsgs.concat(mchats[mchatId] !== undefined ? mchats[mchatId] : []);
+        setSingleMsgM(false);
+        setReachedTopM(fetchedChatMsgs.length !== 0);
         setMChats(mchats); //concat older chat messages to head of specific chat
         setMsgCounterM(++msgCounterM);
     }
@@ -498,7 +504,7 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
     }
 
 
-    function responseDelChatSend(res) {
+    const responseDelChatSend = (res) => {
         /**
          * This is received by all admins, all dias but only sender and reciever delegates
          * When received, append in the chat array of the target delegate which can be checked by:
@@ -507,6 +513,7 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
          *      Recved by Admin:
          *          Simply store in the array you have for these 2 delegates 
          */
+
         if (user.type == 'delegate') { // monitored
             console.log('RES|del-chat-send:', res);
             const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
@@ -547,20 +554,21 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
             console.log('RES|del-chat-send FOR DIAS/ADMIN:', res);
             const { id, message, timestamp, senderDelegateId, recipientDelegateId } = res;
     
+            const mchatId1 = `${recipientDelegateId}|delegate`;
+            const mchatId2 = `${senderDelegateId}|delegate`;
             const senderId = senderDelegateId;
-            const senderType = 'delegate';
-            let mchatId = '';
 
-            if (selectedDelegateId == senderDelegateId) {
-                mchatId = `${recipientDelegateId}|delegate`;
+            if (!mchats[mchatId1]) {
+                mchats[mchatId1] = [];
             }
-            else if (selectedDelegateId == recipientDelegateId) {
-                mchatId = `${senderDelegateId}|delegate`;
+            if (!mchats[mchatId2]) {
+                mchats[mchatId2] = [];
             }
-            if (!mchats[mchatId]) {
-                mchats[mchatId] = [];
-            }
-            mchats[mchatId].push({ id, message, timestamp: localizeTimestamp(timestamp), senderId, senderType, mchatId });
+
+            mchats[mchatId1].push({ id, message, timestamp: localizeTimestamp(timestamp), senderId });
+            mchats[mchatId2].push({ id, message, timestamp: localizeTimestamp(timestamp), senderId });
+
+            setSingleMsgM(true);
             setMChats(mchats);
             setMsgCounterM(++msgCounterM);
         }
@@ -619,6 +627,7 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
         setSingleMsg(true);
         setMsgCounter(++msgCounter); // to trigger the chat to update
     }
+    
 
 
     function resLogFetch(res) {
@@ -1497,8 +1506,8 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
                                     centered
                                 >
                                     <Tab label="Topics" />
-                                    <Tab label="General Speakers" />
-                                    <Tab label="Recognized Speakers" />
+                                    <Tab label="GSL" />
+                                    <Tab label="RSL" />
                                 </Tabs>
                             </Paper>
                             <CardContent>
@@ -1576,9 +1585,11 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
                             mchatId={currentMChatIdState}
                             setCurrentMChatId={setCurrentMChatId}
                             msgCounterM={msgCounterM}
-                            selectedDelegateId={selectedDelegateId}
+                            selDelegateId={selDelegateId}
                             setSelectedDelegateId={setSelectedDelegateId}
                             fetchMChat={fetchMChat}
+                            singleAddition={singleMsgM}
+                            reachedTop={reachedTopM}
                             />
                         }
                     </div>
@@ -1602,6 +1613,9 @@ function MainScreen({history, /*setSeverity, setStatus*/}) {
                         seats={seatsState}
                         seated={seated}
                         placard={placard}
+                        setChatId={setChatId}
+                        addToGSL={addToGSL}
+                        addToRSL={addToRSL}
                         sit={sit}
                         unsit={unsit}
                         togglePlacard={togglePlacard}

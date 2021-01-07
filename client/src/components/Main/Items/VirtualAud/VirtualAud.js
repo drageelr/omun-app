@@ -1,42 +1,74 @@
 import React, { useState, useEffect } from 'react';
-// import {Card, CardBody } from 'reactstrap';
 import './VirtualAud.css';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import AccessibilityNewIcon from '@material-ui/icons/AccessibilityNew';
+import { Button, Card, CardActions, CardContent, Typography, Tooltip, Menu, MenuItem } from '@material-ui/core';
 import AirlineSeatLegroomNormalIcon from '@material-ui/icons/AirlineSeatLegroomNormal';
 import CropLandscapeIcon from '@material-ui/icons/CropLandscape';
 import MinimizeIcon from '@material-ui/icons/Minimize';
 
-function Seat({isEmpty, placard, countryName, imageName, id, onClick}) {
+const initialState = {
+    mouseX: null,
+    mouseY: null,
+};
+
+function Seat({isEmpty, placard, countryName, imageName, id, delegateId, onClick, canEdit, notYou, setChatId, addToGSL, addToRSL}) {
     let classN = (isEmpty)? 'item': (placard)?'item raised':'item occupied';
+    const [state, setState] = useState(initialState);
+
+    function handleClick(event) {
+        event.preventDefault(); // right click
+        setState({ mouseX: event.clientX - 2, mouseY: event.clientY - 4 });
+    };
+
+    function handleClose() {
+        setState(initialState);
+    };
+
+    function SeatDiv({imageN}) {
+        return (
+            
+            <>
+                <div id={id} className={classN} onContextMenu={handleClick} onClick={onClick} style={imageN}></div>
+                {
+                    (notYou || canEdit) && !isEmpty &&
+                    <Menu keepMounted open={state.mouseY !== null} onClose={handleClose} anchorReference="anchorPosition"
+                    anchorPosition={ state.mouseY !== null && state.mouseX !== null ? { top: state.mouseY, left: state.mouseX } : undefined }>
+                    <MenuItem onClick={()=>{ setChatId(`${delegateId}|delegate`); handleClose(); }}>Chat {countryName && 'with ' + countryName}</MenuItem>   
+                    {
+                        canEdit &&
+                        <>
+                        <MenuItem onClick={()=>{ addToGSL(delegateId); handleClose();}}>Add to GSL</MenuItem>
+                        <MenuItem onClick={()=>{ addToRSL(delegateId); handleClose();}}>Add to RSL</MenuItem>
+                        </>
+                    }
+                    </Menu>
+                }
+            </>
+        )
+    }
+
     try {
         let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`../flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover', backgroundPosition:'center'};
         if (countryName) {
             return (
                 <Tooltip title={countryName}>
-                    <div id={id} className={classN} onClick={onClick} style={imageN}></div>
+                    <SeatDiv imageN={imageN}/>
                 </Tooltip>
             );
         }
         else {
-            return <div id={id} className={classN} onClick={onClick} style={imageN}></div>
+            return <SeatDiv imageN={imageN}/>
         }
     }
     catch { // image not found
         return (
-            <div id={id} className={classN} onClick={onClick}>{countryName}</div>
+            <SeatDiv imageN={{}}/>
         );
     }
     
 }
 
-export default function VirtualAud({id, type, seats, placard, delegates, seated, sit, unsit, togglePlacard}) {
+export default function VirtualAud({id, type, seats, placard, delegates, seated, sit, unsit, togglePlacard, setChatId, addToGSL, addToRSL}) {
     const [placement, setPlacement] = useState([]);
     const [placardsRaised, setPlacardsRaised] = useState(0);
     const [seatedCount, setSeatedCount] = useState(0);
@@ -89,6 +121,12 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
                     <Seat 
                     key={s.id} 
                     id={s.id}
+                    notYou={s.delegateId !== id}
+                    delegateId={s.delegateId}
+                    setChatId={setChatId}
+                    addToGSL={addToGSL}
+                    addToRSL={addToRSL}
+                    canEdit={type==='dias'}
                     countryName={s.countryName}
                     isEmpty={s.delegateId === null} //no one sitting
                     imageName={s.imageName} 

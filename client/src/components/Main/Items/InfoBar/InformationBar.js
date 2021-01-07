@@ -17,11 +17,6 @@ import * as Yup from 'yup'
 import SendIcon from '@material-ui/icons/Send';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
-import { Paper, List, ListItem, ListItemText, Select, FormControl, InputLabel, Input, Box, CircularProgress} from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import Switch from '@material-ui/core/Switch';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import MaskedInput from 'react-text-mask';
 
 const useStyles = makeStyles((theme) => ({
@@ -30,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
       margin: theme.spacing(1),
     },
   },
+  cardRoot: {backgroundColor: "#111111", height:"38vh", overflowY:"auto"},
   timeGetter: {
     width: 42,
     margin: 15,
@@ -40,7 +36,13 @@ const useStyles = makeStyles((theme) => ({
   timeGetterField: {
       paddingTop: 10,
   },
-
+  timerHeadText: {
+    fontSize: '0.9rem', 
+    marginLeft: '3.5vw',
+    width: '90%'
+  },
+  horizontal: {display: 'flex', flexDirection: 'row'},
+  bgstyle: {padding: 3, width: '5.3vw', fontSize: '0.7rem'}
 }));
 
 /** 
@@ -166,8 +168,6 @@ export default function InformationBar ({session, timer, type, setSessionType, s
     }
   }
 
-  const bgstyle ={padding: 5, width: '5vw'};
-
   function TextMaskCustom(props) {
     const { inputRef, ...other } = props;
 
@@ -191,7 +191,7 @@ function minsecToSeconds(minsec){
 }
   return(
     <div >
-      <Card style={{backgroundColor: "#111111", height:"38vh", overflowY:"auto"}}>
+      <Card className={classes.cardRoot}>
         <CardContent style={{color: "#FFFFFF"}}>
           <Grid container justify="center" direction="row" alignItems="center" item xs={12} spacing={3}>
             <Grid item xs style={{marginTop: session.type !== "UNMOD" ? (type == 'dias' ? '-10vh' : '-2vh') : '2vh', marginLeft: '2vh'}}
@@ -200,7 +200,7 @@ function minsecToSeconds(minsec){
               <Typography variant='h5' color='#ffffff'>{session.committeeName}</Typography>
               <br></br>
               <h6>Topic:</h6>
-              <div style={{display: 'flex', flexDirection: 'row'}}>
+              <div className={classes.horizontal}>
                 <Typography variant='p' color='secondary'>{session.topicName}</Typography>
                   {
                     type == 'dias' && crossesShown &&
@@ -211,7 +211,7 @@ function minsecToSeconds(minsec){
               </div>
               <br></br>
               <h6>Speaker:</h6>
-              <div style={{display: 'flex', flexDirection: 'row'}}>
+              <div className={classes.horizontal}>
                 {
                   delegates[session.speakerId] &&
                   <FlagIfAvailable imageName={delegates[session.speakerId].imageName}/>
@@ -258,7 +258,7 @@ function minsecToSeconds(minsec){
             </Grid>
 
             <Grid item xs={4}>
-                <div style={{marginLeft: '3vw'}}>{session.type === "UNMOD" ? "Unmod" : "Speaker" } Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
+                <div className={classes.timerHeadText}>{session.type === "UNMOD" ? "Unmod" : "Speaker" } Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}]</div> 
                 <div style={{marginLeft: '5vw'}}>
                   <CountdownCircleTimer
                       key={timerKeyS}
@@ -272,9 +272,6 @@ function minsecToSeconds(minsec){
                   >
                     {({ remainingTime }) => {
                       setSpeakerValue(remainingTime);
-                      // if (remainingTime == 0) {
-                        
-                      // }
                       return secToMinsec(remainingTime);
                     }}
                   </CountdownCircleTimer>
@@ -285,11 +282,11 @@ function minsecToSeconds(minsec){
                       { 
                         (!timerSEnded) && (
                         (timer.speakerToggle === 2) ? //if paused state then you can start 
-                        <Button size="small" style={bgstyle} onClick={stopSpeakerTimer} color="secondary">Pause</Button> :
-                        <Button size="small" style={bgstyle} onClick={startSpeakerTimer} color="secondary">Start</Button>)
+                        <Button size="small" className={classes.bgstyle} onClick={stopSpeakerTimer} color="secondary">Pause</Button> :
+                        <Button size="small" className={classes.bgstyle} onClick={startSpeakerTimer} color="secondary">Start</Button>)
                       }
-                      <Button size="small" style={bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
-                      <Button size="small" style={bgstyle} onClick={handleClickOpen2} color="secondary">Duration</Button>
+                      <Button size="small" className={classes.bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
+                      <Button size="small" className={classes.bgstyle} onClick={handleClickOpen2} color="secondary">Duration</Button>
                       
                       <Dialog open={open2} onClose={handleClose2} aria-labelledby="form-dialog-title">
                           <DialogTitle id="form-dialog-title">Set Speaker Time Duration</DialogTitle>
@@ -314,10 +311,10 @@ function minsecToSeconds(minsec){
                                       const totalTime = Number(values.timeMinute)*60+Number(values.timeSecond);
                                       if (timer.speakerToggle !== 2){
                                         if (totalTime) {
-                                                setSessionTime('speaker', totalTime);
-                                                setSubmitting(false);
-                                                setOpen2(false);
-                                              }
+                                          setSessionTime('speaker', totalTime);
+                                          setSubmitting(false);
+                                          setOpen2(false);
+                                        }
                                       }
                                   }}
                               >
@@ -349,7 +346,7 @@ function minsecToSeconds(minsec){
                 {
                   session.type !== "UNMOD" && //topic timer not shown on unmod
                   <div>
-                    <div style={{marginLeft: '3.5vw'}}> Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
+                    <div className={classes.timerHeadText}> Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]</div> 
                     <div style={{marginLeft: '5vw'}}>
                       <CountdownCircleTimer
                           key={timerKeyT}
@@ -368,8 +365,8 @@ function minsecToSeconds(minsec){
                     {
                       type === 'dias' &&
                       <ButtonGroup style={{marginTop: 10, marginLeft: '2.5vw'}}>
-                          <Button size="small" style={bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
-                          <Button size="small" style={bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
+                          <Button size="small" className={classes.bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
+                          <Button size="small" className={classes.bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
                           
                           <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                           <DialogTitle id="form-dialog-title">Set Topic Time Duration</DialogTitle>
