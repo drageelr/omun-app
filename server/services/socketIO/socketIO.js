@@ -8,7 +8,7 @@ var { errorHandler } = require('./socketIOerrorhandler');
 var { validate } = require('./socketIOvalidator');
 var { validateAccess } = require('./socketIOaccessvalidator');
 var IOreqhandlers = require('./socketIOreqhandlers');
-const { namespaceUsers, addUser, deleteUser, fetchSocketId, fetchUsers, createNamespaceObj, deleteNamespaceObj, attachFunc } = require('./socketIOusers');
+const { namespaceUsers, addUser, deleteUser, fetchSocketId, fetchUsers, /*createNamespaceObj,*/ deleteNamespaceObj, attachFunc } = require('./socketIOusers');
 
 const reqEvents = {
     // Chat Management
@@ -130,7 +130,7 @@ async function sendStartInfo(socket) {
         // if (namespaceUsers[nsp.name].delegate){
         //     conDel = Object.keys(namespaceUsers[nsp.name].delegate);
         // }
-        conDel = Object.keys(fetchUsers(nsp.name, 'delegate'));
+        conDel = Object.keys(await fetchUsers(nsp.name, 'delegate'));
         for (let i = 0; i < conDel.length; i++) {
             connectedDelegates.push(conDel[i]);
         }
@@ -140,7 +140,7 @@ async function sendStartInfo(socket) {
         // if (namespaceUsers[nsp.name].admin) {
         //     conAdmins = Object.values(namespaceUsers[nsp.name].admin);
         // }
-        conAdmins = Object.values(fetchUsers(nsp.name, 'admin'));
+        conAdmins = Object.values(await fetchUsers(nsp.name, 'admin'));
         for (let i = 0; i < conAdmins.length; i++) {
             let userDetails = nsp.sockets.get(conAdmins[i]);
             userDetails = userDetails.userObj;
@@ -152,7 +152,7 @@ async function sendStartInfo(socket) {
         // if (namespaceUsers[nsp.name].dias) {
         //     conDias = Object.keys(namespaceUsers[nsp.name].dias);
         // }
-        conDias = Object.keys(fetchUsers(nsp.name, 'dias'));
+        conDias = Object.keys(await fetchUsers(nsp.name, 'dias'));
         for (let i = 0; i < conDias.length; i++) {
             connectedDias.push(conDias[i]);
         }

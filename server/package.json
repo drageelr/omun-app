@@ -9,10 +9,12 @@
     "@hapi/joi": "^17.1.1",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "debug": "~2.6.9",
     "event": "^1.0.0",
     "express": "~4.16.1",
     "express-validation": "^3.0.5",
+    "farmhash": "^3.2.0",
     "generate-password": "^1.5.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
@@ -25,6 +27,7 @@
     "react-scroll": "^1.8.1",
     "redis": "^3.0.2",
     "socket.io": "^3.0.4",
+    "socket.io-redis": "^6.0.1",
     "validate": "^5.1.0"
   },
   "publishConfig": {

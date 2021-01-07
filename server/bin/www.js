@@ -1,100 +1,95 @@
-#!/usr/bin/env node
+var express = require('express'),
+    cluster = require('cluster'),
+    net = require('net'),
+    sio = require('socket.io'),
+    sio_redis = require('socket.io-redis'),
+    farmhash = require('farmhash');
 
-/**
- * Module dependencies.
- */
+var port = 3000,
+    num_processes = require('os').cpus().length;
 
-var app = require('../app');
-var debug = require('debug')('men-crud:server');
-var http = require('http');
+let socketIO = undefined;
 
-/**
- * Get port from environment and store in Express.
- */
+if (cluster.isMaster) {
+    // This stores our workers. We need to keep them to be able to reference
+    // them based on source IP address. It's also useful for auto-restart,
+    // for example.
+    var workers = [];
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+    // Helper function for spawning worker at index 'i'.
+    var spawn = function(i) {
+        workers[i] = cluster.fork();
 
-/**
- * Create HTTP server.
- */
+        // Optional: Restart worker on exit
+        workers[i].on('exit', function(code, signal) {
+            console.log('respawning worker', i);
+            spawn(i);
+        });
+    };
 
-var server = http.createServer(app);
-var io = require('socket.io')(server, {
-  cors: {
-    origin: "*",
-    credentials: true
-  },
-  pingTimeout: 40000,
-  pingInterval: 60000
-});
+    // Spawn workers.
+    console.log("Processes:", num_processes);
+    for (var i = 0; i < num_processes; i++) {
+        spawn(i);
+    }
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+    // Helper function for getting a worker index based on IP address.
+    // This is a hot path so it should be really fast. The way it works
+    // is by converting the IP address to a number by removing non numeric
+  // characters, then compressing it to the number of slots we have.
+    //
+    // Compared against "real" hashing (from the sticky-session code) and
+    // "real" IP number conversion, this function is on par in terms of
+    // worker index distribution only much faster.
+    var worker_index = function(ip, len) {
+        return farmhash.fingerprint32(ip) % len; // Farmhash is the fastest and works with IPv6, too
+    };
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+    // Create the outside facing server listening on our port.
+    var server = net.createServer({ pauseOnConnect: true }, function(connection) {
+        // We received a connection and need to pass it to the appropriate
+        // worker. Get the worker for this connection's source IP and pass
+        // it the connection.
+        var worker = workers[worker_index(connection.remoteAddress, num_processes)];
+        worker.send('sticky-session:connection', connection);
+    }).listen(port);
+} else {
+    // Note we don't use a port here because the master listens on it for us.
+    var app = require('../app');
 
-/**
- * Normalize a port into a number, string, or false.
- */
+    // Here you might use middleware, attach routes, etc.
 
-function normalizePort(val) {
-  var port = parseInt(val, 10);
+    // Don't expose our internal server to the outside.
+    var server = app.listen(0, 'localhost'),
+        io = sio(server, {
+            cors: {
+              origin: "*",
+              credentials: true
+            },
+            pingTimeout: 40000,
+            pingInterval: 60000
+        });
+    socketIO = io;
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
+    // Tell Socket.IO to use the redis adapter. By default, the redis
+    // server is assumed to be on localhost:6379. You don't have to
+    // specify them explicitly unless you want to change them.
+    io.adapter(sio_redis({ host: 'localhost', port: 6379 }));
 
-  if (port >= 0) {
-    // port number
-    return port;
-  }
+    // Here you might use Socket.IO middleware for authorization etc.
 
-  return false;
+    // Listen to messages sent from the master. Ignore everything else.
+    process.on('message', function(message, connection) {
+        if (message !== 'sticky-session:connection') {
+            return;
+        }
+
+        // Emulate a connection event on the server by emitting the
+        // event with the connection the master sent us.
+        server.emit('connection', connection);
+
+        connection.resume();
+    });
 }
 
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-}
-
-module.exports.io = io;
+exports.io = socketIO;

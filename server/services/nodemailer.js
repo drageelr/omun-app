@@ -9,11 +9,10 @@ var emailTemplate = require('../resources/email-template');
 
 // Varaibles:
 let emailer = nodemailer.createTransport({
-    host: "mail.lumun.live",
-    port: 587,
+    service: 'gmail',
     auth: {
-        user: "omun@lumun.live",
-        pass: "@.omun99.@"
+        user: 'omun.app17@gmail.com',
+        pass: 'omun12345'
     }
 });
 
@@ -32,7 +31,7 @@ let emailer = nodemailer.createTransport({
 exports.sendWelcomeEmail = async (emailTarget, name, password, accountType = "") => {
     try {
         let mailOptions = {
-            from: 'Online MUN Application <omun@lumun.live>',
+            from: 'OMUN App <omun.app17@gmail.com>',
             to: emailTarget,
             subject: 'Welcome to OMUN App',
             html: emailTemplate.generateAccountCreationEmail(name, accountType, emailTarget, password)

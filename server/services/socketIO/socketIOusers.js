@@ -1,5 +1,24 @@
 'use strict'
 
+const redis = require('redis');
+const redis_client = redis.createClient();
+const util = require('util');
+
+redis_client.on('error', function(err) {
+    console.log(err);
+});
+
+redis_client.on('connect', function() {
+    console.log("Connected!");
+})
+
+let getKey = util.promisify(redis_client.hget).bind(redis_client);
+let setKey = util.promisify(redis_client.hset).bind(redis_client);
+let delKey = util.promisify(redis_client.hdel).bind(redis_client);
+let getAllKey = util.promisify(redis_client.hgetall).bind(redis_client);
+let delAllKey = util.promisify(redis_client.del).bind(redis_client);
+
+
 /**
  * '/committeeId': { 'type': {id: 'socketId'} }
  * "committeeId" is an integer which denotes namespace
@@ -20,76 +39,57 @@ exports.attachFunc = (nspName) => {
     return false;
 }
 
-exports.fetchSocketId = (nspName, userType, userId) => {
-    if (namespaceUsers[nspName]) {
-        if (namespaceUsers[nspName][userType]) {
-            return namespaceUsers[nspName][userType][userId];
-        }
-    }
-    return undefined;
+exports.fetchSocketId = async (nspName, userType, userId) => {
+    return await getKey(nspName, userType + '|' + userId);
 }
 
-exports.addUser = (nspName, userType, userId, socketId) => {
-    if (namespaceUsers[nspName] === undefined) {
-        namespaceUsers[nspName] = {};
-    }
-
-    if (namespaceUsers[nspName][userType] === undefined) {
-        namespaceUsers[nspName][userType] = {};
-    }
-
-    if (namespaceUsers[nspName][userType][userId] === undefined) {
-        namespaceUsers[nspName][userType][userId] = socketId;
+exports.addUser = async (nspName, userType, userId, socketId) => {
+    let oldsocketId = await getKey(nspName, userType + "|" + userId);
+    if (!oldsocketId) {
+        await setKey(nspName, userType + '|' + userId, socketId);
         return true;
     }
-    
+
     return false;
 }
 
 exports.deleteUser = (nspName, userType, userId) => {
-    if (namespaceUsers[nspName] === undefined) {
-        return false;
-    }
+    let oldsocketId = await getKey(nspName, userType + '|' + userId);
+    if (!oldsocketId) { return false; }
+    await delKey(nspName, userType + '|' + userId);
 
-    if (namespaceUsers[nspName][userType] === undefined) {
-        return false;
-    }
-
-    if (namespaceUsers[nspName][userType][userId] === undefined) {
-        return false;
-    }
-
-    delete namespaceUsers[nspName][userType][userId];
     return true;
 }
 
 exports.fetchUsers = (nspName, userType) => {
-    if (namespaceUsers[nspName] === undefined) {
-        return {};
+    let allUsers = await getAllKey(nspName);
+    let typeAndId = Object.keys(allUsers);
+    let result = [];
+    for (let i = 0; i < typeAndId.length; i++) {
+        let splitValues = typeAndId[i].split("|");
+        if (splitValues[0] == userType) { result.push(splitValues[1]); }
     }
 
-    if (namespaceUsers[nspName][userType] === undefined) {
-        return {};
-    }
-
-    return namespaceUsers[nspName][userType];
+    return result;
 }
 
-exports.createNamespaceObj = (nspName) => {
-    if (namespaceUsers[nspName] === undefined){
-        namespaceUsers[nspName] = {};
-        return true;
-    }
+// exports.createNamespaceObj = (nspName) => {
+//     if (namespaceUsers[nspName] === undefined){
+//         namespaceUsers[nspName] = {};
+//         return true;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 exports.deleteNamespaceObj = (nspName) => {
-    if (namespaceUsers[nspName] === undefined){
+    let allUsers = await getAllKey(nspName);
+    console.log(allUsers);
+    if (!allUsers) {
         return false;
     }
 
-    delete namespaceUsers[nspName];
+    await delAllKey(nspName);
     return true;
 }
 
