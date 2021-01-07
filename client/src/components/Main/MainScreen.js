@@ -105,7 +105,7 @@ function MainScreen({history}) {
     let [mchats, setMChats] = useState({});
     let [currentMChatIdState, setCurrentMChatId] = React.useState('');
     let [msgCounterM, setMsgCounterM] = useState(0);
-    let [selDelegateId, setSelectedDelegateId] = useState(0);
+    let [selDelegateId, setSelDelegateId] = useState(0);
     let [singleMsgM, setSingleMsgM] = useState(true);
     let [reachedTopM, setReachedTopM] = useState(false);
 
@@ -357,8 +357,8 @@ function MainScreen({history}) {
         //fetched 10 messages now unread 10 less
         delegates[res.delegateId].unreadMessages = Math.max(delegates[res.delegateId].unreadMessages-10, 0);
         setDelegates(delegates);
-
-        setReachedTop((fetchedChatMsgs.length == 0)); // if no more messages then reached top
+        
+        setReachedTop((fetchedChatMsgs.length == 0));// if no more messages then reached top
         chats[chatId] = fetchedChatMsgs.concat(chats[chatId] !== undefined ? chats[chatId] : []);
         setChats(chats); //concat older chat messages to head of specific chat
         setSingleMsg(false);
@@ -386,7 +386,6 @@ function MainScreen({history}) {
          */
         console.log('RES|del-chat-fetch:', res);
         // currently sel delegate (impersonated as) is not the chat id delegate
-        console.log(selDelegateId);
         const mchatId = `${selDelegateId === res.delegate1Id ? res.delegate1Id : res.delegate2Id}|delegate`; //fetched chat with this delegate 
         let fetchedChatMsgs = res.chat.map(chatMsg => (
             {...chatMsg, 
@@ -394,14 +393,13 @@ function MainScreen({history}) {
                 senderType: 'delegate'
             }
         ));
+        setReachedTopM((fetchedChatMsgs.length == 0));
 
         fetchedChatMsgs = localizeTimestampOA(fetchedChatMsgs);
         console.log(localizeTimestampOA(fetchedChatMsgs));
         
-        console.log("mchatId fetched for", mchatId);
         mchats[mchatId] = fetchedChatMsgs.concat(mchats[mchatId] !== undefined ? mchats[mchatId] : []);
         setSingleMsgM(false);
-        setReachedTopM(fetchedChatMsgs.length !== 0);
         setMChats(mchats); //concat older chat messages to head of specific chat
         setMsgCounterM(++msgCounterM);
     }
@@ -1432,24 +1430,6 @@ function MainScreen({history}) {
         socket.emit('REQ|gsl-fetch', {lastGSLId});
     }
 
-
-    function getSessionEdit() {
-        
-        let req = {
-            // to change topic
-            topicId: 1,
-            // to change current speaker
-            speakerId: 1,
-            // whenever speaker total duration changed
-            speakerTime: 1,
-            // whenever topic total duration changed
-            topicTime: 1,
-            // whenever button toggled
-            type: "IDLE"
-        };
-        return req;
-    }
-
     function setChatId(newChatId) {
         currentChatId = newChatId;
         setCurrentChatId(currentChatId);
@@ -1473,6 +1453,10 @@ function MainScreen({history}) {
         setTabValue(newValue);
     };
 
+    function monitorDelegate(delegateId) {
+        setSelDelegateId(delegateId); 
+        setMChatOpen(true);
+    }
 
     return(
         <div className='parent'>
@@ -1586,7 +1570,7 @@ function MainScreen({history}) {
                             setCurrentMChatId={setCurrentMChatId}
                             msgCounterM={msgCounterM}
                             selDelegateId={selDelegateId}
-                            setSelectedDelegateId={setSelectedDelegateId}
+                            setSelDelegateId={setSelDelegateId}
                             fetchMChat={fetchMChat}
                             singleAddition={singleMsgM}
                             reachedTop={reachedTopM}
@@ -1618,6 +1602,7 @@ function MainScreen({history}) {
                         addToRSL={addToRSL}
                         sit={sit}
                         unsit={unsit}
+                        monitorDelegate={monitorDelegate}
                         togglePlacard={togglePlacard}
                         delegates={infoState.delegates} //update does not matter so state prop not sent
                         />

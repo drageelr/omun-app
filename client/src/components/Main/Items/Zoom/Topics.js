@@ -155,7 +155,7 @@ function minsecToSeconds(minsec){
 
 export default function Topics({type, topicsList, delegates, reachedTop, singleAddition, delegatesList, addTopic, editTopic, fetchTopics, setCurrentTopic}) {
     const classes = useStyles();
-    const [selDelegateId, setSelectedDelegateId] = useState(0);
+    const [selDelegateId, setSelDelegateId] = useState(0);
     const [speakerTime, setSpeakerTime] = useState('');
     const [totalTime, setTotalTime] = useState('');
     const [description, setDescription] = useState('');
@@ -165,7 +165,7 @@ export default function Topics({type, topicsList, delegates, reachedTop, singleA
 
     function changeSelection(e) {
         const newSelection = e.target.value;
-        setSelectedDelegateId(Number(newSelection));
+        setSelDelegateId(Number(newSelection));
     }
 
     function handleAddTopic() {

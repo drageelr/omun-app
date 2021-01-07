@@ -10,9 +10,9 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function MonitorBox({selDelegateId, setSelectedDelegateId, singleAddition, reachedTop, currentMChat, mchatOpen, setMChatOpen, mchatId, setCurrentMChatId, fetchMChat, msgCounterM, delegates, delegatesList}) {
+export default function MonitorBox({selDelegateId, setSelDelegateId, singleAddition, reachedTop, currentMChat, mchatOpen, setMChatOpen, mchatId, setCurrentMChatId, fetchMChat, msgCounterM, delegates, delegatesList}) {
   const classes = useStyles();
-  const scrollContainer = React.createRef();
+  let scrollContainer = React.useRef(null);
   const [fetching, setFetching] = useState(true);
 
 
@@ -22,7 +22,7 @@ export default function MonitorBox({selDelegateId, setSelectedDelegateId, single
 
   const changeSelection = (e) => {
     const newSelection = e.target.value;
-    setSelectedDelegateId(Number(newSelection));
+    setSelDelegateId(Number(newSelection));
     setCurrentMChatId('');
   }
 
@@ -32,18 +32,18 @@ export default function MonitorBox({selDelegateId, setSelectedDelegateId, single
       setCurrentMChatId(newUser); //has id, type both
       fetchMChat(newUser, selDelegateId); //newUser contains ID for delegate 2, while selDelegateId is delegate 1
     }
-    scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end when mchat opened
   };
 
 
   useEffect(() => {
     // triggers react state update whenever their is a message
     if (scrollContainer.current !== null) {
+      console.log("reachedTop", reachedTop);
       if (singleAddition) {
         scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end
       }
       else if (!reachedTop) { //fetch multiple and top not reached
-        scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight+500);
+        scrollContainer.current.scrollTo(0, scrollContainer.current.clientHeight);
       }
     }
     setFetching(false);
@@ -95,7 +95,7 @@ export default function MonitorBox({selDelegateId, setSelectedDelegateId, single
             {
               delegatesList && selDelegateId &&
               delegatesList
-              .map((d,i)=> d.id !== selDelegateId && <Tab key={i} label={d.countryName} value={`${d.id}|delegate`}/>)
+              .map((d,i)=> d.id !== selDelegateId && <Tab key={i} className={classes.chatTab} label={d.countryName} value={`${d.id}|delegate`}/>)
             }
           </Tabs>
           <Box onScroll={ handleScroll } ref={scrollContainer} border={1} borderColor="grey.400" className={classes.mchatPaper}>
@@ -108,7 +108,6 @@ export default function MonitorBox({selDelegateId, setSelectedDelegateId, single
             {
               currentMChat && mchatId !== '' &&
               currentMChat.map((msg, i) => {
-                console.log(msg.senderId,selDelegateId);
                 const isTheirMsg = Number(msg.senderId) !== Number(selDelegateId); //message id type does not match mine
                 return (
                 <Paper key={i} className={isTheirMsg ? classes.msgPaper : classes.msgPaperYours } >

@@ -87,12 +87,12 @@ function RSLRow({countryName, id, topicId, delegateId, imageName, canEdit, visib
 
 export default function RSL({type, rsList, delegates, session, delegatesList, addToRSL, editRSL, fetchRSL, setRSLSpeaker}) {
     const classes = useStyles();
-    const [selDelegateId, setSelectedDelegateId] = useState(0);
+    const [selDelegateId, setSelDelegateId] = useState(0);
 
     function changeSelection(e) {
         const newSelection = e.target.value;
         console.log(newSelection);
-        setSelectedDelegateId(Number(newSelection));
+        setSelDelegateId(Number(newSelection));
     };
 
     function handleAddToRSL() {

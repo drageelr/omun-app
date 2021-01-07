@@ -10,69 +10,13 @@ const initialState = {
     mouseY: null,
 };
 
-function Seat({isEmpty, placard, countryName, imageName, id, delegateId, onClick, canEdit, notYou, setChatId, addToGSL, addToRSL}) {
-    let classN = (isEmpty)? 'item': (placard)?'item raised':'item occupied';
-    const [state, setState] = useState(initialState);
 
-    function handleClick(event) {
-        event.preventDefault(); // right click
-        setState({ mouseX: event.clientX - 2, mouseY: event.clientY - 4 });
-    };
-
-    function handleClose() {
-        setState(initialState);
-    };
-
-    function SeatDiv({imageN}) {
-        return (
-            
-            <>
-                <div id={id} className={classN} onContextMenu={handleClick} onClick={onClick} style={imageN}></div>
-                {
-                    (notYou || canEdit) && !isEmpty &&
-                    <Menu keepMounted open={state.mouseY !== null} onClose={handleClose} anchorReference="anchorPosition"
-                    anchorPosition={ state.mouseY !== null && state.mouseX !== null ? { top: state.mouseY, left: state.mouseX } : undefined }>
-                    <MenuItem onClick={()=>{ setChatId(`${delegateId}|delegate`); handleClose(); }}>Chat {countryName && 'with ' + countryName}</MenuItem>   
-                    {
-                        canEdit &&
-                        <>
-                        <MenuItem onClick={()=>{ addToGSL(delegateId); handleClose();}}>Add to GSL</MenuItem>
-                        <MenuItem onClick={()=>{ addToRSL(delegateId); handleClose();}}>Add to RSL</MenuItem>
-                        </>
-                    }
-                    </Menu>
-                }
-            </>
-        )
-    }
-
-    try {
-        let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`../flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover', backgroundPosition:'center'};
-        if (countryName) {
-            return (
-                <Tooltip title={countryName}>
-                    <SeatDiv imageN={imageN}/>
-                </Tooltip>
-            );
-        }
-        else {
-            return <SeatDiv imageN={imageN}/>
-        }
-    }
-    catch { // image not found
-        return (
-            <SeatDiv imageN={{}}/>
-        );
-    }
-    
-}
-
-export default function VirtualAud({id, type, seats, placard, delegates, seated, sit, unsit, togglePlacard, setChatId, addToGSL, addToRSL}) {
+export default function VirtualAud({id, type, seats, placard, delegates, seated, sit, unsit, togglePlacard, setChatId, addToGSL, addToRSL, monitorDelegate}) {
     const [placement, setPlacement] = useState([]);
     const [placardsRaised, setPlacardsRaised] = useState(0);
     const [seatedCount, setSeatedCount] = useState(0);
-
+    const [state, setState] = useState(initialState);
+    
 
     React.useEffect(() => {
         let numPlacards = 0;
@@ -96,10 +40,18 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
         setSeatedCount(numSeated);
     }, [seats])
 
+    function handleClick(event) {
+        event.preventDefault(); // right click
+        setState({ mouseX: event.clientX - 2, mouseY: event.clientY - 4 });
+    };
+
+    function handleClose() {
+        setState(initialState);
+    };
+
     function clickSeat(e) {
         if (type == 'delegate') { // function only works for delegates
             const seatId = parseInt(e.target.id);
-            console.log('clickSeat', seatId, placement[seatId])
             if(placement[seatId-1] && placement[seatId-1].delegateId === null) { //seat clicked exists and is empty   
                 if (seated) {
                     alert('You are already seated.');
@@ -110,6 +62,57 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
                 }    
             }
         }
+    }
+
+    function Seat({isEmpty, placard, countryName, imageName, id, delegateId, onClick, initials, canEdit, notYou}) {
+        let classN = (isEmpty)? 'item': (placard)?'item raised':'item occupied';
+
+    
+        function SeatDiv({imageN}) {
+            return (
+                
+                <>  
+                    {   
+                        isEmpty 
+                        ? <div id={id} className={classN} onContextMenu={handleClick} onClick={onClick}></div>
+                        : 
+                        <Tooltip title={countryName}>
+                            <div id={id} className={classN} onContextMenu={handleClick} onClick={onClick} style={imageN ? imageN : {}}>{!imageN && initials}</div>
+                        </Tooltip>
+                    }
+                    
+                    {
+                        (notYou || canEdit) && !isEmpty &&
+                        <Menu keepMounted open={state.mouseY !== null} onClose={handleClose} anchorReference="anchorPosition"
+                        anchorPosition={ state.mouseY !== null && state.mouseX !== null ? { top: state.mouseY, left: state.mouseX } : undefined }>
+                        <MenuItem onClick={()=>{ setChatId(`${delegateId}|delegate`); handleClose(); }}>Chat {countryName && 'with ' + countryName}</MenuItem>   
+                        {
+                            canEdit &&
+                            <>
+                            <MenuItem onClick={()=>{ addToGSL(delegateId); handleClose();}}>Add to GSL</MenuItem>
+                            <MenuItem onClick={()=>{ addToRSL(delegateId); handleClose();}}>Add to RSL</MenuItem>
+                            <MenuItem onClick={()=>{ monitorDelegate(delegateId); handleClose();}}>Monitor Chat</MenuItem>
+                            </>
+                        }
+                        </Menu>
+                    }
+                </>
+            )
+        }
+    
+        try {
+            let imageN = (isEmpty)? {}: {backgroundImage:`url("${require(`../flag/${imageName}.png`)}")`,backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover', backgroundPosition:'center'};
+            return (
+                <SeatDiv imageN={imageN}/>
+            );
+        }
+        catch { // image not found
+            return (
+                <SeatDiv/>
+            );
+        }
+        
     }
 
     return ( 
@@ -123,13 +126,11 @@ export default function VirtualAud({id, type, seats, placard, delegates, seated,
                     id={s.id}
                     notYou={s.delegateId !== id}
                     delegateId={s.delegateId}
-                    setChatId={setChatId}
-                    addToGSL={addToGSL}
-                    addToRSL={addToRSL}
                     canEdit={type==='dias'}
                     countryName={s.countryName}
                     isEmpty={s.delegateId === null} //no one sitting
                     imageName={s.imageName} 
+                    initials={delegates[s.delegateId] && delegates[s.delegateId].initials}
                     person={s.personality} 
                     placard={s.placard} 
                     onClick={clickSeat}

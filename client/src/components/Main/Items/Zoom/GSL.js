@@ -89,7 +89,7 @@ function GSLRow({countryName, delegateId, imageName, canEdit, visible, spoken, e
 
 export default function GSL({type, gsList, delegates, reachedTop, singleAddition, delegatesList, addToGSL, editGSL, fetchGSL, setGSLSpeaker}) {
     const classes = useStyles();
-    const [selDelegateId, setSelectedDelegateId] = useState(0);
+    const [selDelegateId, setSelDelegateId] = useState(0);
     const scrollContainer = React.createRef();
     const [fetching, setFetching] = useState(true);
 
@@ -97,7 +97,7 @@ export default function GSL({type, gsList, delegates, reachedTop, singleAddition
     function changeSelection(e) {
         const newSelection = e.target.value;
         console.log(newSelection);
-        setSelectedDelegateId(Number(newSelection));
+        setSelDelegateId(Number(newSelection));
     };
 
     function handleAddToGSL() {

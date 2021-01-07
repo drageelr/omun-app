@@ -93,4 +93,7 @@ export const useStyles = makeStyles((theme) => ({
     height: '4vh',
     width: '20vw',
   },
+  chatTab: {
+    lineHeight: 1  
+  }
 }));

@@ -73,8 +73,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
           React.Children.toArray(children) // Sort and render the children based on unread messages
           .sort((t1, t2) => (t2.props.um - t1.props.um))
           .map(div => (
-            <Tab label={div.props.label} value={div.props.value} um={div.props.um} component={NotifBadge}/>
-
+            <Tab className={classes.chatTab} label={div.props.label} value={div.props.value} um={div.props.um} component={NotifBadge}/>
           ))
         }
       </Tabs>
