@@ -45,7 +45,10 @@ const reqEvents = {
     'session-timer': IOreqhandlers.handleSessionTimer,
 
     // Committee Management
-    'committee-link': IOreqhandlers.handleCommitteeLink
+    'committee-link': IOreqhandlers.handleCommitteeLink,
+
+    //Network Management
+    'net-ping': IOreqhandlers.handleNetPing,
 };
 
 async function sendStartInfo(socket) {

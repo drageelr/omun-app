@@ -38,6 +38,9 @@ const eventAccess = {
 
     // Committee Management
     'committee-link': ["dias"],
+
+    // Network Management
+    'net-ping': ["dias", "admin", "delegate"],
 };
 
 exports.validateAccess = (event, type) => {

@@ -270,7 +270,9 @@ const validations = {
             type: String,
             length: { min: 0, max: 300 }
         }
-    })
+    }),
+
+    'net-ping': undefined
 }
 
 exports.validate = (event, obj) => {

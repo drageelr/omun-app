@@ -1022,3 +1022,17 @@ exports.handleCommitteeLink = async (socket, params, event) => {
         return [{}, err];
     }
 }
+
+exports.handleNetPing = async (socket, params, event) => {
+    try {
+        let user = socket.userObj;
+
+        let res = {
+            timestamp: hFuncs.parseDate(),
+        };
+
+        return [res, undefined];
+    } catch(err) {
+        return [{}, err];
+    }
+}

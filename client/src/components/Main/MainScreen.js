@@ -221,6 +221,10 @@ function MainScreen({history}) {
 
         // Committee Management
         socket.on('RES|committee-link', resCommitteeLink); // Recieved By: ["admin", "delegate", "dias"]
+
+        socket.on('RES|net-ping', (res) => console.log('ping', res.timestamp));
+
+        setInterval(() => socket.emit('REQ|net-ping', {}), 7000); //keep pinging
     }, []);
 
 
