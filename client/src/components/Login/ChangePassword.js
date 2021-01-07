@@ -94,14 +94,13 @@ function ChangePassword(){
                     <Button  href="/" > Back </Button>
                     <Button type="submit"> Reset </Button>
                 </ButtonGroup>
-
+                <br></br>
                 {status && status.message && (
                   <div className="message">{status.message}</div>
                 )}
               </Form>
             )}
           </Formik>
-       
         </div>
     )}
     else {

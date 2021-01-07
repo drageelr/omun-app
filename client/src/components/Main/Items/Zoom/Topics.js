@@ -8,6 +8,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MaskedInput from 'react-text-mask';
 import { secToMinsec } from '../InfoBar/InformationBar'
 import FlagIfAvailable from '../Zoom/FlagIfAvailable'
+import TimeInputDialog from '../InfoBar/TimeInputDialog'
 
 const initialState = {
     mouseX: null,
@@ -54,6 +55,9 @@ const useStyles = makeStyles((theme) => ({
 
 function TopicRow({countryName, delegateId, description, imageName, canEdit, visible, totalTime, speakerTime, editTopicHelper, setCurrentTopic}) {
     const [state, setState] = useState(initialState);
+    const [open, setOpen] = React.useState(false);
+    const [open2, setOpen2] = React.useState(false);
+
 
     function handleClick(event) {
         event.preventDefault(); // right click
@@ -80,13 +84,11 @@ function TopicRow({countryName, delegateId, description, imageName, canEdit, vis
     }
 
     function changeSpeakerTime() {
-        editTopicHelper({speakerTime: minsecToSeconds(prompt('Enter new speaker time. [mm:ss]'))});
-        handleClose();
+        setOpen2(true);
     }
 
     function changeTotalTime() {
-        editTopicHelper({totalTime: minsecToSeconds(prompt('Enter new total time. [mm:ss]'))});
-        handleClose();
+        setOpen(true);
     }
 
     const descStyle = {margin: 10, fontSize: '0.9rem', color: visible ? 'white' : '#000000', fontWeight: 500, wordWrap: "break-word", alignSelf: 'center'};
@@ -115,6 +117,27 @@ function TopicRow({countryName, delegateId, description, imageName, canEdit, vis
                     {secToMinsec(speakerTime)}
                 </Typography>
             </Paper>
+            <TimeInputDialog 
+            title={"Set Topic Duration"} 
+            submitFunc={(time)=> {
+                editTopicHelper({totalTime: time});
+                handleClose();
+                setOpen(false);
+            }} 
+            handleClose={()=>setOpen(false)} 
+            open={open}
+            />
+            <TimeInputDialog 
+            title={"Set Speaker Duration"} 
+            submitFunc={(time)=> {
+                editTopicHelper({speakerTime: time});
+                handleClose();
+                setOpen2(false);
+
+            }} 
+            handleClose={()=>setOpen2(false)} 
+            open={open2}
+            />
         </div>
         {
             canEdit &&
@@ -201,7 +224,7 @@ export default function Topics({type, topicsList, delegates, reachedTop, singleA
     }
 
     React.useEffect(() => {
-        if (singleAddition) {
+        if (singleAddition || reachedTop) {
             scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight-scrollContainer.current.clientHeight);
         }
         else if(!reachedTop) { //fetch multiple and top not reached

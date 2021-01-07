@@ -63,6 +63,27 @@ function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
+const setRandomInterval = (intervalFunction, minDelay, maxDelay) => {
+    let timeout;
+
+    const runInterval = () => {
+        const timeoutFunction = () => {
+        intervalFunction();
+        runInterval();
+        };
+
+        const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+        timeout = setTimeout(timeoutFunction, delay);
+    };
+
+    runInterval();
+
+    return {
+        clear() { clearTimeout(timeout) },
+    };
+};
+
 function MainScreen({history}) {
 
     const classes = useStyles();
@@ -177,7 +198,11 @@ function MainScreen({history}) {
         socket.on('RES|info-start', responseInfoStart);
         
         // Error Handler
-        socket.on('err', (err) => {setStatus(`${err.name}: ${err.details}`) /*console.log(err);*/} );
+        socket.on('err', (err) => { 
+            if (err.details && !err.details.includes('old value') && !err.details.includes('no new value')) {
+                setStatus(`${err.name}: ${err.details}`)
+            }
+        });
         
         // On Disconnect
         socket.on('disconnect', ()=>{window.serverURI == "http://localhost:3000" ? window.open("http://localhost:3001", "_self") : window.open(window.serverURI, "_self")});
@@ -222,9 +247,10 @@ function MainScreen({history}) {
         // Committee Management
         socket.on('RES|committee-link', resCommitteeLink); // Recieved By: ["admin", "delegate", "dias"]
 
-        socket.on('RES|net-ping', (res) => console.log('ping', res.timestamp));
+        socket.on('RES|net-ping', (res) => {});
 
-        setInterval(() => socket.emit('REQ|net-ping', {}), 7000); //keep pinging
+        //keep pinging
+        setRandomInterval(() => socket.emit('REQ|net-ping', {}), 7000, 11000); //between 7 and 11s
     }, []);
 
 

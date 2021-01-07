@@ -375,6 +375,7 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                             endIcon={<SendIcon fontSize="small"/>} 
                             color="primary" 
                             onClick={submitForm}
+                            type="submit"
                             >Set</Button>
                         </Form>
                         )}

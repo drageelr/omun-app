@@ -7,17 +7,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
 import Grid from '@material-ui/core/Grid';
 import FlagIfAvailable from '../Zoom/FlagIfAvailable'
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import * as Yup from 'yup'
-// import IconButton from '@material-ui/core/IconButton';
-import SendIcon from '@material-ui/icons/Send';
-import { Formik, Form, Field } from 'formik';
-import { TextField } from 'formik-material-ui';
-import MaskedInput from 'react-text-mask';
+import TimeInputDialog from './TimeInputDialog'
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -69,6 +60,8 @@ const useStyles = makeStyles((theme) => ({
  *        0: Topic Timer's current value = session.topicTime
 */
 
+
+
 export function secToMinsec(sec){
   return `${("0" + parseInt(sec/60)).slice(-2)}:${("0" + sec%60).slice(-2)}`;
 }
@@ -89,7 +82,9 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   const [time, setTime] = useState('06:00');
 
   function handleClickOpen() {
-    setOpen(true);
+    if (timer.speakerToggle !== 2) { //prevent duration edit while timer running
+      setOpen(true);
+    }
   };
 
   function handleClose() {
@@ -97,7 +92,9 @@ export default function InformationBar ({session, timer, type, setSessionType, s
   };
 
   function handleClickOpen2() {
-    setOpen2(true);
+    if (timer.speakerToggle !== 2) { //prevent duration edit while timer running
+      setOpen2(true);
+    }
   };
 
   function handleClose2() {
@@ -141,15 +138,6 @@ export default function InformationBar ({session, timer, type, setSessionType, s
     setTimerSEnded(true);
   }
 
-  // function enterDurationS(){
-  //   if (timer.speakerToggle !== 2) { //if not playing
-  //     const newDurationS = parseInt(prompt('Speaker Duration'));
-  //     if (newDurationS) {
-  //       setSessionTime('speaker', newDurationS);
-  //     }
-  //   }
-  // }
-
   function resetTimerT() {
     //stop S,T
     timerToggle(true, 1, session.speakerTime);
@@ -159,31 +147,6 @@ export default function InformationBar ({session, timer, type, setSessionType, s
     timerToggle(false, 0);
   }
 
-  function enterDurationT(){
-    if (timer.speakerToggle !== 2) { //if not playing
-      const newDurationT = parseInt(prompt('Topic Duration'));
-      if (newDurationT) {
-        setSessionTime('topic', newDurationT);
-      }
-    }
-  }
-
-  function TextMaskCustom(props) {
-    const { inputRef, ...other } = props;
-
-    return (
-        <MaskedInput
-            // style=
-            {...other}
-            ref={(ref) => {
-            inputRef(ref ? ref.inputElement : null);
-            }}
-            mask={[/\d/, /\d/, ':', /\d/, /\d/]}
-            placeholderChar={'\u2000'}
-            showMask
-        />
-    );
-}
 
 function minsecToSeconds(minsec){
     const [min, sec] = minsec.split(':');
@@ -227,34 +190,34 @@ function minsecToSeconds(minsec){
             </Grid>
             
             <Grid item xs={2}>
-            <ButtonGroup orientation="vertical">
-            <Button 
-            variant={session.type === "MOD" ?  "contained" : "outlined"} 
-            size="small"
-            onClick={()=>setSessionType("MOD")} 
-            color="primary">
-            mod</Button>
+              <ButtonGroup orientation="vertical">
+              <Button 
+              variant={session.type === "MOD" ?  "contained" : "outlined"} 
+              size="small"
+              onClick={()=>setSessionType("MOD")} 
+              color="primary">
+              mod</Button>
 
-            <Button variant={session.type === "UNMOD" ?  "contained" : "outlined"} 
-            size="small" 
-            color="primary"
-            onClick={()=>setSessionType("UNMOD")}
-            >unMod</Button>
+              <Button variant={session.type === "UNMOD" ?  "contained" : "outlined"} 
+              size="small" 
+              color="primary"
+              onClick={()=>setSessionType("UNMOD")}
+              >unMod</Button>
 
-            <Button 
-            variant={session.type === "GSL" ?  "contained" : "outlined"} 
-            size="small" 
-            color="secondary"
-            onClick={()=>setSessionType("GSL")}
-            >gsl</Button>
-            
-            <Button 
-            variant={session.type === "IDLE" ?  "contained" : "outlined"} 
-            size="small" 
-            color="secondary"
-            onClick={()=>setSessionType("IDLE")}
-            >idle</Button>
-            </ButtonGroup>
+              <Button 
+              variant={session.type === "GSL" ?  "contained" : "outlined"} 
+              size="small" 
+              color="secondary"
+              onClick={()=>setSessionType("GSL")}
+              >gsl</Button>
+              
+              <Button 
+              variant={session.type === "IDLE" ?  "contained" : "outlined"} 
+              size="small" 
+              color="secondary"
+              onClick={()=>setSessionType("IDLE")}
+              >idle</Button>
+              </ButtonGroup>
             </Grid>
 
             <Grid item xs={4}>
@@ -288,56 +251,19 @@ function minsecToSeconds(minsec){
                       <Button size="small" className={classes.bgstyle} onClick={resetTimerS} color="secondary">Reset</Button>
                       <Button size="small" className={classes.bgstyle} onClick={handleClickOpen2} color="secondary">Duration</Button>
                       
-                      <Dialog open={open2} onClose={handleClose2} aria-labelledby="form-dialog-title">
-                          <DialogTitle id="form-dialog-title">Set Speaker Time Duration</DialogTitle>
-                          <DialogContent style={{marginTop: -20}}>
-                              <Formik 
-                                  validateOnChange={false} validateOnBlur={true}
-                                  initialValues={{
-                                    timeMinute: '',
-                                    timeSecond: ''
-                                  }}
-                                  validationSchema={Yup.object({
-                                  timeMinute: Yup.number()
-                                      .min(0)
-                                      .max(99),
-                                  timeSecond: Yup.number()
-                                  .min(0)
-                                  .max(99),
-                                  })}
-                                  onSubmit={(values, {setSubmitting}) => {
-                                      console.log("values.minute:  ", values.timeMinute)
-                                      console.log("values.second:  ", values.timeSecond)
-                                      const totalTime = Number(values.timeMinute)*60+Number(values.timeSecond);
-                                      if (timer.speakerToggle !== 2){
-                                        if (totalTime) {
-                                          setSessionTime('speaker', totalTime);
-                                          setSubmitting(false);
-                                          setOpen2(false);
-                                        }
-                                      }
-                                  }}
-                              >
-                                  {({ submitForm}) => (
-                                  <Form>
-                                      <Field component={TextField} required variant="outlined" name="timeMinute" label={`Min`} style={{width: '70px'}} />
-                                      
-                                      <Field component={TextField} required variant="outlined" name="timeSecond" label={`Sec`} style={{width: '70px'}}/>
-                                      
-                                      <Button
-                                      style={{marginTop: 10, float: 'right', marginBottom: 10, marginLeft: 5,}}
-                                      alignRight 
-                                      variant="contained" 
-                                      endIcon={<SendIcon fontSize="small"/>} 
-                                      color="primary" 
-                                      onClick={submitForm}
-                                      size="small"
-                                      >Set</Button>
-                                  </Form>
-                                  )}
-                              </Formik>
-                          </DialogContent>
-                      </Dialog>
+                      <TimeInputDialog 
+                        title={"Set Speaker Duration"} 
+                        submitFunc={(time)=> {
+                          if (timer.speakerToggle !== 2){
+                            if (time) {
+                              setSessionTime("speaker", time)
+                              setOpen2(false);
+                            }
+                          }
+                        }} 
+                        handleClose={handleClose2} 
+                        open={open2}
+                      />
                   </ButtonGroup>
                 }
                 
@@ -368,54 +294,20 @@ function minsecToSeconds(minsec){
                           <Button size="small" className={classes.bgstyle} onClick={resetTimerT} color="secondary">Reset</Button>
                           <Button size="small" className={classes.bgstyle} onClick={handleClickOpen} color="secondary">Duration</Button>
                           
-                          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-                          <DialogTitle id="form-dialog-title">Set Topic Time Duration</DialogTitle>
-                          <DialogContent style={{marginTop: -20}}>
-                              <Formik 
-                                  validateOnChange={false} validateOnBlur={true}
-                                  initialValues={{
-                                    timeMinute: '',
-                                    timeSecond: ''
-                                  }}
-                                  validationSchema={Yup.object({
-                                  timeMinute: Yup.number()
-                                      .min(0)
-                                      .max(99),
-                                  timeSecond: Yup.number()
-                                  .min(0)
-                                  .max(99),
-                                  })}
-                                  onSubmit={(values, {setSubmitting}) => {
-                                      console.log("values.minute:  ", values.timeMinute)
-                                      console.log("values.second:  ", values.timeSecond)
-                                      const totalTime = Number(values.timeMinute)*60+Number(values.timeSecond);
-                                      if (timer.speakerToggle !== 2){
-                                        if (totalTime) {
-                                                setSessionTime('topic', totalTime);
-                                                setSubmitting(false);
-                                                setOpen(false);
-                                              }
-                                      }
-                                  }}
-                              >
-                                  {({ submitForm}) => (
-                                  <Form>
-                                      <Field component={TextField} required variant="outlined" name="timeMinute" label={`Min`} style={{width: '70px'}}/>
-                                      <Field component={TextField} required variant="outlined" name="timeSecond" label={`Sec`} style={{width: '70px'}}/>
-                                      <Button
-                                      style={{marginTop: 10, float: 'right', marginBottom: 10, marginLeft: 5,}}
-                                      alignRight 
-                                      variant="contained" 
-                                      endIcon={<SendIcon fontSize="small"/>} 
-                                      color="primary" 
-                                      onClick={submitForm}
-                                      size="small"
-                                      >Set</Button>
-                                  </Form>
-                                  )}
-                              </Formik>
-                          </DialogContent>
-                      </Dialog>
+                          <TimeInputDialog 
+                          title={"Set Topic Duration"} 
+                          submitFunc={(time)=> {
+                            if (timer.speakerToggle !== 2){
+                              if (time) {
+                                setSessionTime("topic", time)
+                                setOpen(false);
+                              }
+                            }
+                          }} 
+                          handleClose={handleClose} 
+                          open={open}
+                          />
+
                       </ButtonGroup>
                     }
                   </div>
