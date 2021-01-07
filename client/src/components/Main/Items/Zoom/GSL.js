@@ -121,7 +121,7 @@ export default function GSL({type, gsList, delegates, reachedTop, singleAddition
     }
 
     React.useEffect(() => {
-        if (singleAddition) {
+        if (singleAddition || reachedTop) {
             scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight-scrollContainer.current.clientHeight);
         }
         else if(!reachedTop) { //fetch multiple and top not reached

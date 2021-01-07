@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import * as Yup from 'yup'
 import Button from '@material-ui/core/Button';
-import {Card, Paper, List} from '@material-ui/core'
+import {Card, Paper, List, Divider} from '@material-ui/core'
 import { Formik, Form, Field } from 'formik'
 import { TextField } from 'formik-material-ui'
 import SendIcon from '@material-ui/icons/Send';
@@ -33,7 +33,7 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
 
   useEffect(() => {
     // triggers react state update whenever their is a message
-    if (singleAddition) {
+    if (singleAddition || reachedTop) {
       scrollContainer.current.scrollTo(0, scrollContainer.current.scrollHeight); // scroll to end
     }
     else if (!reachedTop) { //fetch multiple and top not reached
@@ -82,22 +82,48 @@ export default function MessageBox({id, type, singleAddition, reachedTop, curren
 
   return (
     <Card className={classes.root}>
-        <SortedTabs>
-        { 
-          diasList && (type == 'delegate') &&
-          diasList.map((d,i)=> {
-            return <div label={`${d.title} ${d.name}`} um={dias[d.id].unreadMessages} key={d.id} value={`${d.id}|dias`}></div>;
-          })
-        }     
-        {
-          delegatesList &&
-          delegatesList.map((d,i)=> {
-            if (!(Number(d.id) === Number(id) && type==='delegate')){
-              return <div label={d.countryName} um={delegates[d.id].unreadMessages} key={d.id} value={`${d.id}|delegate`}></div>;
-            }
-          })
-        }
-        </SortedTabs>
+        <Tabs indicatorColor="primary" orientation="vertical" variant="scrollable" 
+          value={chatId} 
+          onChange={handleChange} 
+          className={classes.tabs} >
+          { 
+            diasList && (type == 'delegate') &&
+            diasList.map((d,i)=> {
+              const um = dias[d.id].unreadMessages;
+              if (um > 0){
+                return <Tab className={classes.chatTab} label={`${d.title} ${d.name}`} value={`${d.id}|dias`} um={dias[d.id].unreadMessages} component={NotifBadge}/>
+              }
+            })
+          }
+          { 
+            diasList && (type == 'delegate') &&
+            diasList.map((d,i)=> {
+              const um = dias[d.id].unreadMessages;
+              if (um == 0){
+                return <Tab className={classes.chatTab} label={`${d.title} ${d.name}`} value={`${d.id}|dias`} um={um} component={NotifBadge}/>
+              }
+            })
+          }
+          <Divider/>
+          {
+            delegatesList &&
+            delegatesList.map((d,i)=> {
+              const um = delegates[d.id].unreadMessages;
+              if (!(Number(d.id) === Number(id) && type==='delegate') && um > 0){
+                return <Tab className={classes.chatTab} label={d.countryName} value={`${d.id}|delegate`} um={um} component={NotifBadge}/>;
+              }
+            })
+          }
+          {
+            delegatesList &&
+            delegatesList.map((d,i)=> {
+              const um = delegates[d.id].unreadMessages;
+              if (!(Number(d.id) === Number(id) && type==='delegate') && um == 0){
+                return <Tab className={classes.chatTab} label={d.countryName} value={`${d.id}|delegate`} um={um} component={NotifBadge}/>;
+              }
+            })
+          }
+        </Tabs>
       <Formik
         validateOnChange={false} validateOnBlur={true}
         initialValues={{Message: ''}}
