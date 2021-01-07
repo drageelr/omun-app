@@ -17,6 +17,7 @@ let setKey = util.promisify(redis_client.hset).bind(redis_client);
 let delKey = util.promisify(redis_client.hdel).bind(redis_client);
 let getAllKey = util.promisify(redis_client.hgetall).bind(redis_client);
 let delAllKey = util.promisify(redis_client.del).bind(redis_client);
+let existsKey = util.promisify(redis_client.exists).bind(redis_client);
 
 
 /**
@@ -53,7 +54,7 @@ exports.addUser = async (nspName, userType, userId, socketId) => {
     return false;
 }
 
-exports.deleteUser = (nspName, userType, userId) => {
+exports.deleteUser = async (nspName, userType, userId) => {
     let oldsocketId = await getKey(nspName, userType + '|' + userId);
     if (!oldsocketId) { return false; }
     await delKey(nspName, userType + '|' + userId);
@@ -61,7 +62,7 @@ exports.deleteUser = (nspName, userType, userId) => {
     return true;
 }
 
-exports.fetchUsers = (nspName, userType) => {
+exports.fetchUsers = async (nspName, userType) => {
     let allUsers = await getAllKey(nspName);
     let typeAndId = Object.keys(allUsers);
     let result = [];
@@ -73,16 +74,7 @@ exports.fetchUsers = (nspName, userType) => {
     return result;
 }
 
-// exports.createNamespaceObj = (nspName) => {
-//     if (namespaceUsers[nspName] === undefined){
-//         namespaceUsers[nspName] = {};
-//         return true;
-//     }
-
-//     return false;
-// }
-
-exports.deleteNamespaceObj = (nspName) => {
+exports.deleteNamespaceObj = async (nspName) => {
     let allUsers = await getAllKey(nspName);
     console.log(allUsers);
     if (!allUsers) {
