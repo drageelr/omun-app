@@ -121,12 +121,6 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
 
     useEffect(()=> {
         console.log("Someone connected/disconnected!");
-        console.log("connectedAdmins : ", connectedAdmins);
-        console.log("connectedDelegates : ", connectedDelegates);
-        console.log("connectedDias : ", connectedDias);
-        console.log("delegates : ", delegates);
-        console.log("dias : ", dias);
-        console.log("admins : ", admins);
     }, [connectedDias, connectedDelegates, connectedAdmins])
 
 
@@ -157,10 +151,6 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
     }
 
     React.useEffect(()=> {
-        console.log("Someone connected/disconnected!");
-        console.log("connectedAdmins : ", connectedAdmins);
-        console.log("connectedDelegates : ", connectedDelegates);
-        console.log("connectedDias : ", connectedDias);
     }, [connectedDias, connectedDelegates, connectedAdmins])
     
     
@@ -211,15 +201,17 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                     <Divider className={classes.listDivider}/>
                     <ListSubheader className={classes.listSubheader}>Admins</ListSubheader>
                     <div className={classes.onlineBox}>
-                    {
-                        connectedAdmins.filter(id => admins[id] !== undefined).map((id,i) =>
-                            <ListItem>
-                                <Typography style={classes.listText} key={i}>
-                                    {admins[id].name}
-                                </Typography>
-                            </ListItem>
-                        )
-                    }
+                        {
+                            connectedAdmins.map((id,i)=> {
+                                console.log(connectedAdmins, id, admins)
+                                return <ListItem>
+                                    <Typography className={classes.listText} key={i}>
+                                        {admins[id].name}
+                                    </Typography>
+                                </ListItem>
+                            }
+                            )
+                        }
                     </div>
                 </List>
             </div>
