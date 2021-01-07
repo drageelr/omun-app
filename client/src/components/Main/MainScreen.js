@@ -1508,8 +1508,8 @@ function MainScreen({history}) {
                     deleteSessionSpeaker={deleteSessionSpeaker} 
                     setSessionTime={setSessionTime}
                     timerToggle={timerToggle}/>
-                    <div style={{marginTop:'2vh'}} className='Zoom'>
 
+                    <div style={{marginTop:'2vh'}} className='Zoom'>
                         <Card style={{height:"48vh",overflowY:"hidden"}}>
                             <Paper >
                                 <Tabs
@@ -1566,7 +1566,7 @@ function MainScreen({history}) {
                             }                
                             </CardContent>
                         </Card>
-
+                        
                         <ButtonGroup 
                         fileButtonClick={fileButtonClick}
                         zoomButtonClick={zoomButtonClick}
@@ -1609,7 +1609,7 @@ function MainScreen({history}) {
                     </div>
                 </div>
             }
-            {
+            {/* {
                 connected && 
                 <div className='Notifications'>
                     <Notification 
@@ -1660,7 +1660,7 @@ function MainScreen({history}) {
                         }
                     </div>
                 </div>
-            }
+            } */}
             <Backdrop className={classes.backdrop} open={!connected}>
                 <CircularProgress color="inherit" />
             </Backdrop>

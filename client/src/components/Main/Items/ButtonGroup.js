@@ -337,26 +337,26 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                 <DialogTitle id="form-dialog-title">Edit Zoom Link</DialogTitle>
                 <DialogContent style={{marginTop: -20}}>
                     <DialogContentText>
-                        Enter the link of the zoom
+                        Enter the link of Zoom
                     </DialogContentText>
-                    <Formik 
-                        validateOnChange={false} validateOnBlur={true}
-                        initialValues={{zoomLink: ''}}
-                        validate={values => {
-                        const errors = {}
-                        if (values.zoomLink.length > 300) {
-                            errors.zoomLink = 'Please do not exceed 300 characters.'
-                        }
-                        return errors
-                        }}
-                        onSubmit={(values, {setSubmitting}) => {
-                            const zoomLink = values.zoomLink;
-                            console.log(zoomLink);
-                            changeZoomLink(zoomLink);
-                            setSubmitting(false);
-                            setZoomPopup(false);
-                        }}
-                    >
+                        <Formik 
+                            validateOnChange={false} validateOnBlur={true}
+                            initialValues={{zoomLink: ''}}
+                            validate={values => {
+                            const errors = {}
+                            if (values.zoomLink.length > 300) {
+                                errors.zoomLink = 'Please do not exceed 300 characters.'
+                            }
+                            return errors
+                            }}
+                            onSubmit={(values, {setSubmitting}) => {
+                                const zoomLink = values.zoomLink;
+                                console.log(zoomLink);
+                                changeZoomLink(zoomLink);
+                                setSubmitting(false);
+                                setZoomPopup(false);
+                            }}
+                        >
                         {({ submitForm}) => (
                         <Form>
                             <Field component={TextField} multiline rows={2} required variant="outlined" fullWidth name="zoomLink" label={`Edit Zoom Link`}/>
@@ -375,25 +375,25 @@ function ButtonGroup({fileButtonClick, zoomButtonClick, type, changeFileLink, ch
                 </DialogContent>
             </Dialog>
 
-            &nbsp;&nbsp;
+            {/* &nbsp;&nbsp; */}
 
 
-            <Button variant='contained' size={type !== 'delegate' ? "small" : "medium"}  color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button>
+            {/* <Button variant='contained' size={type !== 'delegate' ? "small" : "medium"}  color='secondary' startIcon={<SupervisedUserCircleIcon/>} onClick={toggleOnlineDrawer}>USERS</Button> */}
             
-            { // only admin/dias can preview logs
+            {/* { // only admin/dias can preview logs
                 (type !== 'delegate') &&
                 <>
                     &nbsp;&nbsp; 
                     <Button variant='contained' size="small" style={{backgroundColor:'#111111', color: 'white'}} startIcon={<InboxIcon/>} onClick={toggleLogsDrawer}>LOGS</Button>
                 </>
-            }
+            } */}
 
 
-            &nbsp;&nbsp;
+            {/* &nbsp;&nbsp;
             {
                 (type !== 'delegate') &&
                 <Button variant="outlined" size="small" color="secondary" onClick={()=>setMChatOpen(true)}> MONITOR </Button>
-            }
+            } */}
 
             <Drawer anchor='right' open={onlineDrawerOpen} onClose={toggleOnlineDrawer}>
                 <OnlineList/>

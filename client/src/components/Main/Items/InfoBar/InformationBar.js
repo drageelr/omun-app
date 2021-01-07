@@ -3,11 +3,12 @@ import './InformationBar.css'
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { Button, Card, List, CardContent, ButtonGroup, IconButton, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import CancelIcon from '@material-ui/icons/Cancel';
 import Grid from '@material-ui/core/Grid';
 import FlagIfAvailable from '../Zoom/FlagIfAvailable'
 import TimeInputDialog from './TimeInputDialog'
+import { confirmAlert } from 'react-confirm-alert'
+import 'react-confirm-alert/src/react-confirm-alert.css'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -29,8 +30,6 @@ const useStyles = makeStyles((theme) => ({
   },
   timerHeadText: {
     fontSize: '0.9rem', 
-    marginLeft: '3.5vw',
-    width: '90%'
   },
   horizontal: {display: 'flex', flexDirection: 'row'},
   bgstyle: {padding: 3, width: '5.3vw', fontSize: '0.7rem'},
@@ -129,8 +128,21 @@ export default function InformationBar ({session, timer, type, setSessionType, s
 
   function resetTimerS() {
     let newTopicValue = topicValue;
-    if (session.type !== "UNMOD" && window.confirm("Do you want to adjust the topic time as well?")) {
-      newTopicValue += session.speakerTime - speakerValue;
+    if (session.type !== "UNMOD") {
+      confirmAlert({
+        title: 'Confirm to set',
+        message: 'Do you want to adjust the topic time as well?',
+        buttons: [
+          {
+            label: 'No, just reset speaker time.',
+            onClick: () => {}
+          },
+          {
+            label: 'Yes, restore topic time lost.',
+            onClick: () => { newTopicValue += session.speakerTime - speakerValue; } 
+          },
+        ]
+      });
     } 
 
     //stop S,T
@@ -207,7 +219,7 @@ function minsecToSeconds(minsec){
             </List>
             
             <List className={classes.lthird}>
-              <ButtonGroup orientation="vertical" style={{alignSelf: 'center', verticalAlign: 'center', marginTop: '30%'}}>
+              <ButtonGroup orientation="vertical" style={{alignSelf: 'center', verticalAlign: 'center', marginTop: '5%'}}>
               <Button 
               variant={session.type === "MOD" ?  "contained" : "outlined"} 
               size="small"
@@ -238,11 +250,11 @@ function minsecToSeconds(minsec){
             </List>
 
             <List className={classes.lthird}>
-                  <div style={{ marginBottom: 10}} className={classes.timerHeadText}>
+                  <div style={{alignSelf:'center', marginBottom: 10}} className={classes.timerHeadText}>
                   {session.type === "UNMOD" ? "Unmod" : "Speaker" } Time [{`${("0" + parseInt(session.speakerTime/60)).slice(-2)}:${("0" + session.speakerTime%60).slice(-2)}`}
                   ]</div> 
                   <CountdownCircleTimer
-                      style={{alignSelf: 'center'}}
+                      style={{alignSelf: 'center', display: 'inline-block'}}
                       key={timerKeyS}
                       isPlaying={timer.speakerToggle === 2}
                       size={80}
@@ -287,24 +299,26 @@ function minsecToSeconds(minsec){
                 
                 {
                   session.type !== "UNMOD" && //topic timer not shown on unmod
-                  <>
-                    <div style={{alignSelf:'center', marginTop: 20, marginBottom: 10}}className={classes.timerHeadText}> 
+                  <List className={classes.lthird}>
+                    <div style={{alignSelf:'center', marginTop: 20, marginBottom: 10}} className={classes.timerHeadText}> 
                     Topic Time [{`${("0" + parseInt(session.topicTime/60)).slice(-2)}:${("0" + session.topicTime%60).slice(-2)}`}]
-                    </div> 
-                      <CountdownCircleTimer
-                          style={{alignSelf: 'center', margin: '5 0'}}
-                          key={timerKeyT}
-                          isPlaying={!timerSEnded && timer.speakerToggle === 2}
-                          size={80}
-                          initialRemainingTime={timer.topicToggle ? timer.topicValue : session.topicTime}
-                          duration={session.topicTime}
-                          colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
-                      >
-                        {({ remainingTime }) => {
-                          setTopicValue(remainingTime);
-                          return secToMinsec(remainingTime);
-                        }}
-                      </CountdownCircleTimer>
+                    </div>
+                      <div>
+                        <CountdownCircleTimer
+                            style={{alignSelf: 'center'}}
+                            key={timerKeyT}
+                            isPlaying={!timerSEnded && timer.speakerToggle === 2}
+                            size={80}
+                            initialRemainingTime={timer.topicToggle ? timer.topicValue : session.topicTime}
+                            duration={session.topicTime}
+                            colors={[ ['#ffcf33', 0.7], ['#aa2e25', 0.3] ]}
+                        >
+                          {({ remainingTime }) => {
+                            setTopicValue(remainingTime);
+                            return secToMinsec(remainingTime);
+                          }}
+                        </CountdownCircleTimer>
+                      </div> 
                     {
                       type === 'dias' &&
                       <ButtonGroup style={{alignSelf: 'center', marginTop: 10}}>
@@ -327,7 +341,7 @@ function minsecToSeconds(minsec){
 
                       </ButtonGroup>
                     }
-                  </>
+                  </List>
                 }
             </List>
           </Grid>

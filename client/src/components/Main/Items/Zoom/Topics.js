@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
     contentStyle:  {
         padding:0, 
         paddingTop: 5, 
-        height:'27vh', 
+        height:'24vh', 
         overflowY: "scroll"
     },
     delegateSelector: {
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
         paddingTop: 10,
     },
     descriptionField: {
-        width: '19vw'
+        width: '40%'
     },
     iconButton: {
         width: '7vw',
@@ -96,23 +96,23 @@ function TopicRow({countryName, delegateId, description, imageName, canEdit, vis
     return (
     <ListItem onContextMenu={handleClick} style={{ cursor: 'context-menu' }} key={delegateId} style={{paddingLeft: 10}} dense>            
         <div style={{display: 'flex', flexDirection: 'row', marginBottom: 2}}>
-            <Paper style={{backgroundColor: visible ? '#aa9525' : 'whitesmoke', margin: 3, width: '12vw', display: 'flex', flexDirection: 'row'}}>
+            <Paper style={{backgroundColor: visible ? '#aa9525' : 'whitesmoke', margin: 3, width: '20vw', display: 'flex', flexDirection: 'row'}}>
                 <FlagIfAvailable imageName={imageName}/>
                 <Typography style={descStyle}>
                     {countryName}
                 </Typography>
             </Paper>
-            <Paper style={{backgroundColor: visible ? '#aa2e25' : 'whitesmoke', margin: 3, width: '19vw'}}>
+            <Paper style={{backgroundColor: visible ? '#aa2e25' : 'whitesmoke', margin: 3, width: '60vw'}}>
                 <Typography style={descStyle}>
                     {description}
                 </Typography>
             </Paper>
-            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, display: 'flex' }}>
+            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, width: '5vw', display: 'flex' }}>
                 <Typography style={descStyle}>
                     {secToMinsec(totalTime)}
                 </Typography>
             </Paper>
-            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, display: 'flex'}}>
+            <Paper style={{backgroundColor: visible ? '#555555' : 'whitesmoke', margin: 3, width: '5vw', display: 'flex'}}>
                 <Typography style={descStyle}>
                     {secToMinsec(speakerTime)}
                 </Typography>
